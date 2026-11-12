@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#093821" />
+      <stop offset="100%" stop-color="#051B10" />
+    </linearGradient>
+    <linearGradient id="leftWingTop" x1="10" y1="14" x2="32" y2="38" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F6C854" />
+      <stop offset="100%" stop-color="#C88A14" />
+    </linearGradient>
+    <linearGradient id="leftWingBottom" x1="10" y1="30" x2="32" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#B6780C" />
+      <stop offset="100%" stop-color="#8A5705" />
+    </linearGradient>
+    <linearGradient id="rightBeakTop" x1="32" y1="14" x2="55" y2="30" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6EE7B7" />
+      <stop offset="100%" stop-color="#10B981" />
+    </linearGradient>
+    <linearGradient id="rightBeakLower" x1="32" y1="26" x2="52" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#057A44" />
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded Square OS App Badge -->
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="url(#bgGrad)" stroke="#10B981" stroke-width="1.5" stroke-opacity="0.45" />
+
+  <!-- Faceted Geometric Chevron / Rooster Crest (Matches Reference Icon Silhouette) -->
+  <!-- Left Upper Facet -->
+  <polygon points="10,31 32,14 32,27 15,37" fill="url(#leftWingTop)" />
+  <!-- Left Lower Facet -->
+  <polygon points="10,31 15,37 32,27 32,35 10,49" fill="url(#leftWingBottom)" />
+  <!-- Right Upper Facet -->
+  <polygon points="32,14 55,29 45,35 32,26" fill="url(#rightBeakTop)" />
+  <!-- Right Lower Beak Tip Facet -->
+  <polygon points="32,26 52,40 32,35" fill="url(#rightBeakLower)" />
+</svg>
+

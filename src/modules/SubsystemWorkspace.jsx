@@ -1,0 +1,1954 @@
+import React, { useState } from 'react';
+import { useArena } from '../context/ArenaContext.jsx';
+import { DatabaseRelationshipGraph } from '../components/DatabaseRelationshipGraph.jsx';
+import { ArbacManager } from '../components/ArbacManager.jsx';
+
+export function SubsystemWorkspace({ moduleId }) {
+  const {
+    arenaState,
+    loading,
+    submitting,
+    mutateApi,
+    setActiveModuleId,
+    theme,
+    toggleTheme,
+    wallpaper,
+    setWallpaper,
+    soundEnabled,
+    toggleSound
+  } = useArena();
+
+  const [notice, setNotice] = useState(null);
+  const [dbTab, setDbTab] = useState('graph'); // 'graph' | 'tables'
+
+  // Form states for dynamic creation across modules
+  const [arenaForm, setArenaForm] = useState({
+    arena_name: '',
+    gab_license: '',
+    mayors_permit: '',
+    bir_cas_min: '',
+    plasada_rate: '0.10',
+    weight_min_grams: '1800',
+    weight_max_grams: '2650',
+    kasahan_tolerance_grams: '30',
+    min_rest_gap: '4',
+    vip_seats: '320',
+    lower_box_seats: '1450',
+    upper_grandstand_seats: '3200',
+    total_cockhouse_bays: '120'
+  });
+
+  const [deviceForm, setDeviceForm] = useState({
+    code: '',
+    label: '',
+    station_zone: 'Center Cashier Cage',
+    mac_address: '',
+    ip_address: ''
+  });
+
+  const [empForm, setEmpForm] = useState({
+    full_name: '',
+    role: 'Head Monton Cashier',
+    zone: 'Center Cashier Cage',
+    cash_float: '50000',
+    permissions_count: '23'
+  });
+
+  const [eventForm, setEventForm] = useState({
+    title: '',
+    format: '4-Cock Stag Derby',
+    event_date: new Date().toISOString().slice(0, 10),
+    min_bet: '5500',
+    pot_fee: '55000',
+    promoter: '',
+    plasada_split: '70/30'
+  });
+
+  const [entryForm, setEntryForm] = useState({
+    entry_name: '',
+    owner_gallero: '',
+    syndicate_tier: 'VIP Ringside',
+    pot_payment_status: 'PAID'
+  });
+
+  const [roosterForm, setRoosterForm] = useState({
+    entry_id: '',
+    wing_band: '',
+    leg_band: '',
+    weight_grams: '',
+    plumage_color: 'Alimbuyugin (Red/Black)',
+    leg_color: 'Dilaw (Yellow)'
+  });
+
+  const [wagerForm, setWagerForm] = useState({
+    fight_number: '',
+    side: 'MERON',
+    amount: ''
+  });
+
+  const [bayForm, setBayForm] = useState({
+    bay_number: '',
+    assigned_entry: '',
+    room_suite: '',
+    rooster_count: '4',
+    biosecurity_status: 'DISINFECTED'
+  });
+
+  const [vetForm, setVetForm] = useState({
+    fight_number: '',
+    wing_band: '',
+    entry_name: '',
+    manggagamot: '',
+    procedure_notes: ''
+  });
+
+  const [invForm, setInvForm] = useState({
+    sku: '',
+    item_name: '',
+    category: 'Tari Armory',
+    stock_qty: '',
+    unit: 'pcs',
+    prerequisite_kit: '',
+    custodian: ''
+  });
+
+  if (loading || !arenaState) {
+    return (
+      <div className="skeleton-stack">
+        <div className="skeleton-line" />
+        <div className="skeleton-line" />
+        <div className="skeleton-line" />
+      </div>
+    );
+  }
+
+  const handleAction = async (endpoint, method, payload, successMessage) => {
+    setNotice(null);
+    const result = await mutateApi(endpoint, method, payload);
+    if (result.ok && successMessage) {
+      setNotice(successMessage);
+    }
+    return result;
+  };
+
+  // 1. COMMAND OVERVIEW (Gate 0 - Gate 8 Matrix)
+  if (moduleId === 'command-overview') {
+    const gates = arenaState.gates || [];
+    return (
+      <>
+        <div className="gate-cards-grid">
+          {gates.map((g) => (
+            <div
+              key={g.gateId}
+              className={`gate-status-card ${g.passed ? 'is-passed' : ''}`}
+            >
+              <div className="gate-card-top">
+                <span className="gate-id-tag">{g.gateId}</span>
+                <span className={`status-badge ${g.passed ? 'is-passed' : 'is-pending'}`}>
+                  {g.passed ? 'VERIFIED' : 'PREREQUISITE PENDING'}
+                </span>
+              </div>
+              <div className="gate-name-title">{g.name}</div>
+              <div className="gate-metric-text">{g.metric}</div>
+              <div>
+                <button
+                  type="button"
+                  className="btn-secondary-gold"
+                  onClick={() => setActiveModuleId(g.owner)}
+                >
+                  Open {g.owner} &rarr;
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </>
+    );
+  }
+
+  // 2. ARENA SETUP
+  if (moduleId === 'arena-setup') {
+    const current = arenaState.arenaConfig;
+    return (
+      <div className="workspace-split-grid">
+        <form
+          className="workspace-panel form-stack"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            await handleAction(
+              '/api/arena-config',
+              'POST',
+              arenaForm,
+              'Arena configuration saved to SQLite SSOT.'
+            );
+          }}
+        >
+          <div className="workspace-panel-title">Save Coliseum Parameters</div>
+          {notice && <div className="status-alert-banner is-success">{notice}</div>}
+          <div className="form-field">
+            <label className="form-label">Arena / Coliseum Name</label>
+            <input
+              className="form-input"
+              required
+              placeholder="e.g. San Juan Coliseum Arena"
+              value={arenaForm.arena_name}
+              onChange={(e) => setArenaForm({ ...arenaForm, arena_name: e.target.value })}
+            />
+          </div>
+          <div className="form-row-2col">
+            <div className="form-field">
+              <label className="form-label">GAB License No.</label>
+              <input
+                className="form-input"
+                required
+                placeholder="GAB-COL-2026-01"
+                value={arenaForm.gab_license}
+                onChange={(e) => setArenaForm({ ...arenaForm, gab_license: e.target.value })}
+              />
+            </div>
+            <div className="form-field">
+              <label className="form-label">LGU Mayor Permit</label>
+              <input
+                className="form-input"
+                required
+                placeholder="LGU-MP-2026-01"
+                value={arenaForm.mayors_permit}
+                onChange={(e) => setArenaForm({ ...arenaForm, mayors_permit: e.target.value })}
+              />
+            </div>
+          </div>
+          <div className="form-row-2col">
+            <div className="form-field">
+              <label className="form-label">BIR CAS MIN</label>
+              <input
+                className="form-input"
+                required
+                placeholder="MIN-2026-00001"
+                value={arenaForm.bir_cas_min}
+                onChange={(e) => setArenaForm({ ...arenaForm, bir_cas_min: e.target.value })}
+              />
+            </div>
+            <div className="form-field">
+              <label className="form-label">House Plasada Rate</label>
+              <input
+                type="number"
+                step="0.01"
+                className="form-input"
+                value={arenaForm.plasada_rate}
+                onChange={(e) => setArenaForm({ ...arenaForm, plasada_rate: e.target.value })}
+              />
+            </div>
+          </div>
+          <div className="form-row-2col">
+            <div className="form-field">
+              <label className="form-label">Min Weight (g)</label>
+              <input
+                type="number"
+                className="form-input"
+                value={arenaForm.weight_min_grams}
+                onChange={(e) => setArenaForm({ ...arenaForm, weight_min_grams: e.target.value })}
+              />
+            </div>
+            <div className="form-field">
+              <label className="form-label">Max Weight (g)</label>
+              <input
+                type="number"
+                className="form-input"
+                value={arenaForm.weight_max_grams}
+                onChange={(e) => setArenaForm({ ...arenaForm, weight_max_grams: e.target.value })}
+              />
+            </div>
+          </div>
+          <button type="submit" className="btn-primary-emerald" disabled={submitting}>
+            {submitting ? 'Saving Configuration...' : 'Save Arena Setup'}
+          </button>
+        </form>
+
+        <div className="workspace-panel">
+          <div className="workspace-panel-title">Active SSOT Venue Profile</div>
+          {!current ? (
+            <div className="module-empty-state">
+              <div className="module-empty-title">Arena Profile Not Yet Configured</div>
+              <div className="module-empty-desc">
+                Submit the form on the left to establish official GAB, LGU, and BIR CAS MIN parameters along with weight and Kasahan tolerance brackets.
+              </div>
+            </div>
+          ) : (
+            <div className="data-table-wrap">
+              <table className="data-table">
+                <tbody>
+                  <tr>
+                    <th>Arena Name</th>
+                    <td>{current.arena_name}</td>
+                  </tr>
+                  <tr>
+                    <th>GAB License</th>
+                    <td>{current.gab_license}</td>
+                  </tr>
+                  <tr>
+                    <th>Mayor&apos;s Permit</th>
+                    <td>{current.mayors_permit}</td>
+                  </tr>
+                  <tr>
+                    <th>BIR CAS MIN</th>
+                    <td>{current.bir_cas_min}</td>
+                  </tr>
+                  <tr>
+                    <th>Plasada Commission</th>
+                    <td>{Math.round(current.plasada_rate * 100)}%</td>
+                  </tr>
+                  <tr>
+                    <th>Weight Bracket</th>
+                    <td>
+                      {current.weight_min_grams}g – {current.weight_max_grams}g (Kasahan &le;{' '}
+                      {current.kasahan_tolerance_grams}g)
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // 3. DEVICES & TERMINALS (Gate 0)
+  if (moduleId === 'devices-terminals') {
+    const devices = arenaState.devices || [];
+    return (
+      <div className="workspace-split-grid">
+        <form
+          className="workspace-panel form-stack"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const res = await handleAction(
+              '/api/devices',
+              'POST',
+              deviceForm,
+              `Whitelisted terminal ${deviceForm.code.toUpperCase()}.`
+            );
+            if (res.ok) {
+              setDeviceForm({
+                code: '',
+                label: '',
+                station_zone: 'Center Cashier Cage',
+                mac_address: '',
+                ip_address: ''
+              });
+            }
+          }}
+        >
+          <div className="workspace-panel-title">Gate 0: Whitelist Hardware Terminal</div>
+          {notice && <div className="status-alert-banner is-success">{notice}</div>}
+          <div className="form-row-2col">
+            <div className="form-field">
+              <label className="form-label">Terminal Code</label>
+              <input
+                className="form-input"
+                required
+                placeholder="e.g. T01"
+                value={deviceForm.code}
+                onChange={(e) => setDeviceForm({ ...deviceForm, code: e.target.value })}
+              />
+            </div>
+            <div className="form-field">
+              <label className="form-label">Terminal Label</label>
+              <input
+                className="form-input"
+                required
+                placeholder="e.g. Cashier 1"
+                value={deviceForm.label}
+                onChange={(e) => setDeviceForm({ ...deviceForm, label: e.target.value })}
+              />
+            </div>
+          </div>
+          <div className="form-field">
+            <label className="form-label">Assigned Station Zone</label>
+            <input
+              className="form-input"
+              required
+              value={deviceForm.station_zone}
+              onChange={(e) => setDeviceForm({ ...deviceForm, station_zone: e.target.value })}
+            />
+          </div>
+          <div className="form-row-2col">
+            <div className="form-field">
+              <label className="form-label">MAC Address</label>
+              <input
+                className="form-input"
+                required
+                placeholder="00:1B:44:11:3A:01"
+                value={deviceForm.mac_address}
+                onChange={(e) => setDeviceForm({ ...deviceForm, mac_address: e.target.value })}
+              />
+            </div>
+            <div className="form-field">
+              <label className="form-label">Static LAN IP</label>
+              <input
+                className="form-input"
+                required
+                placeholder="192.168.1.101"
+                value={deviceForm.ip_address}
+                onChange={(e) => setDeviceForm({ ...deviceForm, ip_address: e.target.value })}
+              />
+            </div>
+          </div>
+          <button type="submit" className="btn-primary-emerald" disabled={submitting}>
+            {submitting ? 'Whitelisting...' : '+ Authorize Terminal'}
+          </button>
+        </form>
+
+        <div className="workspace-panel">
+          <div className="workspace-panel-title">
+            Registered Arena Terminals ({devices.length})
+          </div>
+          {devices.length === 0 ? (
+            <div className="module-empty-state">
+              <div className="module-empty-title">No Hardware Terminals Whitelisted</div>
+              <div className="module-empty-desc">
+                Gate 0 enforces strict 1-Operator, 1-Machine binding. Register your Cashier, Kiosk, or POS terminals on the left so they appear in the Active Terminals panel.
+              </div>
+            </div>
+          ) : (
+            <div className="data-table-wrap">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Code</th>
+                    <th>Label</th>
+                    <th>Zone</th>
+                    <th>MAC / IP</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {devices.map((d) => (
+                    <tr key={d.device_id}>
+                      <td>
+                        <strong>{d.code}</strong>
+                      </td>
+                      <td>{d.label}</td>
+                      <td>{d.station_zone}</td>
+                      <td>
+                        {d.mac_address} ({d.ip_address})
+                      </td>
+                      <td>
+                        <span
+                          className={`status-badge ${d.status === 'Online' ? 'is-passed' : 'is-pending'}`}
+                        >
+                          {d.status}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className="btn-secondary-gold"
+                          onClick={() => handleAction(`/api/devices/${d.device_id}`, 'PATCH', {})}
+                        >
+                          Toggle Online
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // 4. USERS & PERMISSIONS (Granular 23-Checkbox ARBAC + Multi-Tenant DB Users CRUD)
+  if (moduleId === 'users-permissions') {
+    return <ArbacManager />;
+  }
+
+  // 5. EVENTS & SCHEDULE (Gate 1 & Gate 2)
+  if (moduleId === 'events-schedule') {
+    const events = arenaState.events || [];
+    const entries = arenaState.entries || [];
+    return (
+      <div className="workspace-split-grid">
+        <div className="form-stack">
+          <form
+            className="workspace-panel form-stack"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const res = await handleAction(
+                '/api/events',
+                'POST',
+                eventForm,
+                `Created derby "${eventForm.title}".`
+              );
+              if (res.ok) setEventForm({ ...eventForm, title: '', promoter: '' });
+            }}
+          >
+            <div className="workspace-panel-title">Gate 1: Schedule Derby Event</div>
+            <div className="form-field">
+              <label className="form-label">Tournament Title</label>
+              <input
+                className="form-input"
+                required
+                placeholder="e.g. 2026 National Stag 4-Cock Derby"
+                value={eventForm.title}
+                onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
+              />
+            </div>
+            <div className="form-row-2col">
+              <div className="form-field">
+                <label className="form-label">Format</label>
+                <select
+                  className="form-select"
+                  value={eventForm.format}
+                  onChange={(e) => setEventForm({ ...eventForm, format: e.target.value })}
+                >
+                  <option>2-Cock Ulutan</option>
+                  <option>3-Cock Derby</option>
+                  <option>4-Cock Stag Derby</option>
+                  <option>5-Cock Championship</option>
+                  <option>7-Cock Invitational</option>
+                </select>
+              </div>
+              <div className="form-field">
+                <label className="form-label">Pot Fee (₱)</label>
+                <input
+                  type="number"
+                  className="form-input"
+                  value={eventForm.pot_fee}
+                  onChange={(e) => setEventForm({ ...eventForm, pot_fee: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="form-field">
+              <label className="form-label">Host / Promoter</label>
+              <input
+                className="form-input"
+                required
+                placeholder="e.g. San Juan Syndicate"
+                value={eventForm.promoter}
+                onChange={(e) => setEventForm({ ...eventForm, promoter: e.target.value })}
+              />
+            </div>
+            <button type="submit" className="btn-primary-emerald" disabled={submitting}>
+              {submitting ? 'Creating...' : '+ Create Derby Event'}
+            </button>
+          </form>
+
+          <form
+            className="workspace-panel form-stack"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const res = await handleAction(
+                '/api/entries',
+                'POST',
+                entryForm,
+                `Enrolled syndicate entry "${entryForm.entry_name.toUpperCase()}".`
+              );
+              if (res.ok) setEntryForm({ ...entryForm, entry_name: '', owner_gallero: '' });
+            }}
+          >
+            <div className="workspace-panel-title">Gate 2: Enroll Entry & Pot Escrow</div>
+            <div className="form-field">
+              <label className="form-label">Entry / Team Name</label>
+              <input
+                className="form-input"
+                required
+                placeholder="e.g. THUNDERBIRD GOLD"
+                value={entryForm.entry_name}
+                onChange={(e) => setEntryForm({ ...entryForm, entry_name: e.target.value })}
+              />
+            </div>
+            <div className="form-field">
+              <label className="form-label">Owner / Gallero</label>
+              <input
+                className="form-input"
+                required
+                placeholder="e.g. Boss Atong / San Juan Farm"
+                value={entryForm.owner_gallero}
+                onChange={(e) => setEntryForm({ ...entryForm, owner_gallero: e.target.value })}
+              />
+            </div>
+            <div className="form-row-2col">
+              <div className="form-field">
+                <label className="form-label">Pot Escrow Status</label>
+                <select
+                  className="form-select"
+                  value={entryForm.pot_payment_status}
+                  onChange={(e) =>
+                    setEntryForm({ ...entryForm, pot_payment_status: e.target.value })
+                  }
+                >
+                  <option value="PAID">PAID</option>
+                  <option value="PENDING_CASHIER">PENDING_CASHIER</option>
+                  <option value="EXEMPT">EXEMPT</option>
+                </select>
+              </div>
+              <div className="form-field">
+                <label className="form-label">Seating Tier</label>
+                <select
+                  className="form-select"
+                  value={entryForm.syndicate_tier}
+                  onChange={(e) => setEntryForm({ ...entryForm, syndicate_tier: e.target.value })}
+                >
+                  <option>VIP Ringside</option>
+                  <option>Lower Box</option>
+                  <option>Upper Grandstand</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" className="btn-primary-emerald" disabled={submitting}>
+              {submitting ? 'Enrolling...' : '+ Enroll Syndicate Entry'}
+            </button>
+          </form>
+        </div>
+
+        <div className="form-stack">
+          <div className="workspace-panel">
+            <div className="workspace-panel-title">
+              Tournament Calendar ({events.length}) — Single Active Derby Rule
+            </div>
+            {events.length === 0 ? (
+              <div className="module-empty-state">
+                <div className="module-empty-title">No Tournaments Scheduled</div>
+                <div className="module-empty-desc">
+                  Create a Derby Event on the left to unlock Gate 1 and enable participant entry enrollment.
+                </div>
+              </div>
+            ) : (
+              <div className="data-table-wrap">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Format</th>
+                      <th>Promoter</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {events.map((ev) => (
+                      <tr key={ev.event_id}>
+                        <td>
+                          <strong>{ev.title}</strong>
+                        </td>
+                        <td>{ev.format}</td>
+                        <td>{ev.promoter}</td>
+                        <td>
+                          <span
+                            className={`status-badge ${ev.status === 'ACTIVE' ? 'is-passed' : 'is-pending'}`}
+                          >
+                            {ev.status}
+                          </span>
+                        </td>
+                        <td>
+                          {ev.status !== 'ACTIVE' && (
+                            <button
+                              type="button"
+                              className="btn-secondary-gold"
+                              onClick={() =>
+                                handleAction(`/api/events/${ev.event_id}`, 'PATCH', {})
+                              }
+                            >
+                              Make Active
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          <div className="workspace-panel">
+            <div className="workspace-panel-title">
+              Enrolled Syndicate Entries & Standings ({entries.length})
+            </div>
+            {entries.length === 0 ? (
+              <div className="module-empty-state">
+                <div className="module-empty-title">No Entries Enrolled Yet</div>
+                <div className="module-empty-desc">
+                  Enroll at least 2 entries in Gate 2 so their roosters can be weighed and paired in Kasahan Matchmaking.
+                </div>
+              </div>
+            ) : (
+              <div className="data-table-wrap">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Entry Name</th>
+                      <th>Gallero</th>
+                      <th>Pot Escrow</th>
+                      <th>W-D-L</th>
+                      <th>Points</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {entries.map((en) => (
+                      <tr key={en.entry_id}>
+                        <td>
+                          <strong>{en.entry_name}</strong>
+                        </td>
+                        <td>{en.owner_gallero}</td>
+                        <td>
+                          <span className="status-badge is-passed">{en.pot_payment_status}</span>
+                        </td>
+                        <td>
+                          {en.wins}-{en.draws}-{en.losses}
+                        </td>
+                        <td>
+                          <strong>{en.points.toFixed(1)} pts</strong>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 6. KASAHAN MATCHMAKING (Gate 3, Gate 4, Gate 5)
+  if (moduleId === 'kasahan-matchmaking') {
+    const entries = arenaState.entries || [];
+    const roosters = arenaState.roosters || [];
+    const fights = arenaState.fights || [];
+
+    return (
+      <div className="workspace-split-grid">
+        <div className="form-stack">
+          <form
+            className="workspace-panel form-stack"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const res = await handleAction(
+                '/api/timbangan/intake',
+                'POST',
+                roosterForm,
+                `Weighed rooster ${roosterForm.wing_band.toUpperCase()} (${roosterForm.weight_grams}g).`
+              );
+              if (res.ok) {
+                setRoosterForm({
+                  ...roosterForm,
+                  wing_band: '',
+                  leg_band: '',
+                  weight_grams: ''
+                });
+              }
+            }}
+          >
+            <div className="workspace-panel-title">Gate 3: Sub-60s Timbangan Scale Intake</div>
+            {notice && <div className="status-alert-banner is-success">{notice}</div>}
+            <div className="form-field">
+              <label className="form-label">Select Enrolled Syndicate Entry</label>
+              <select
+                className="form-select"
+                required
+                value={roosterForm.entry_id}
+                onChange={(e) => setRoosterForm({ ...roosterForm, entry_id: e.target.value })}
+              >
+                <option value="">-- Choose Entry --</option>
+                {entries.map((en) => (
+                  <option key={en.entry_id} value={en.entry_id}>
+                    {en.entry_name} ({en.owner_gallero})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="form-row-2col">
+              <div className="form-field">
+                <label className="form-label">Wingband Tag</label>
+                <input
+                  className="form-input"
+                  required
+                  placeholder="WB-2026-001"
+                  value={roosterForm.wing_band}
+                  onChange={(e) => setRoosterForm({ ...roosterForm, wing_band: e.target.value })}
+                />
+              </div>
+              <div className="form-field">
+                <label className="form-label">Legband Tag</label>
+                <input
+                  className="form-input"
+                  required
+                  placeholder="LB-01A"
+                  value={roosterForm.leg_band}
+                  onChange={(e) => setRoosterForm({ ...roosterForm, leg_band: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="form-field">
+              <label className="form-label">Digital Scale Weight (1,800g – 2,650g)</label>
+              <input
+                type="number"
+                className="form-input"
+                required
+                placeholder="e.g. 2140"
+                value={roosterForm.weight_grams}
+                onChange={(e) => setRoosterForm({ ...roosterForm, weight_grams: e.target.value })}
+              />
+            </div>
+            <div className="form-row-2col">
+              <div className="form-field">
+                <label className="form-label">Plumage Color</label>
+                <input
+                  className="form-input"
+                  required
+                  value={roosterForm.plumage_color}
+                  onChange={(e) =>
+                    setRoosterForm({ ...roosterForm, plumage_color: e.target.value })
+                  }
+                />
+              </div>
+              <div className="form-field">
+                <label className="form-label">Leg / Shank Color</label>
+                <input
+                  className="form-input"
+                  required
+                  value={roosterForm.leg_color}
+                  onChange={(e) => setRoosterForm({ ...roosterForm, leg_color: e.target.value })}
+                />
+              </div>
+            </div>
+            <button type="submit" className="btn-primary-emerald" disabled={submitting}>
+              {submitting ? 'Logging Biometrics...' : '+ Log Calibrated Scale Weight'}
+            </button>
+          </form>
+
+          <div className="workspace-panel">
+            <div className="workspace-panel-title">Gate 4: Algorithmic Kasahan Pairing</div>
+            <p className="module-empty-desc">
+              Matches un-paired roosters within &le;30g tolerance while preventing same-owner collisions.
+            </p>
+            <button
+              type="button"
+              className="btn-secondary-gold"
+              disabled={submitting}
+              onClick={() =>
+                handleAction(
+                  '/api/kasahan/auto-pair',
+                  'POST',
+                  {},
+                  'Kasahan pairing matrix executed and published to Fight Card.'
+                )
+              }
+            >
+              Run Auto-Pairing Matrix (&le;30g)
+            </button>
+          </div>
+        </div>
+
+        <div className="form-stack">
+          <div className="workspace-panel">
+            <div className="workspace-panel-title">
+              Weighed Rooster Pool ({roosters.length})
+            </div>
+            {roosters.length === 0 ? (
+              <div className="module-empty-state">
+                <div className="module-empty-title">Timbangan Pool is Empty</div>
+                <div className="module-empty-desc">
+                  Weigh stags using the intake form on the left. Once at least 2 stags from different entries are within 30g of each other, click Run Auto-Pairing Matrix.
+                </div>
+              </div>
+            ) : (
+              <div className="data-table-wrap">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Wingband</th>
+                      <th>Entry</th>
+                      <th>Weight</th>
+                      <th>Biometrics</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {roosters.map((r) => (
+                      <tr key={r.rooster_id}>
+                        <td>
+                          <strong>{r.wing_band}</strong> ({r.leg_band})
+                        </td>
+                        <td>{r.entry_name}</td>
+                        <td>
+                          <strong>{r.weight_grams}g</strong>
+                        </td>
+                        <td>
+                          {r.plumage_color} / {r.leg_color}
+                        </td>
+                        <td>
+                          <span
+                            className={`status-badge ${r.status === 'PAIRED' ? 'is-passed' : 'is-pending'}`}
+                          >
+                            {r.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          <div className="workspace-panel">
+            <div className="workspace-panel-title">
+              Gate 4 & 5: Published Soltadas & Tari Armorer Sign-Off ({fights.length})
+            </div>
+            {fights.length === 0 ? (
+              <div className="module-empty-state">
+                <div className="module-empty-title">No Paired Fights Published</div>
+                <div className="module-empty-desc">
+                  Run the Kasahan Auto-Pairing Matrix after weighing compatible roosters.
+                </div>
+              </div>
+            ) : (
+              <div className="data-table-wrap">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Fight #</th>
+                      <th>MERON</th>
+                      <th>WALA</th>
+                      <th>Diff</th>
+                      <th>Gate 5 Tari</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {fights.map((f) => (
+                      <tr key={f.fight_id}>
+                        <td>
+                          <strong>#{f.fight_number}</strong>
+                        </td>
+                        <td>
+                          {f.meron_entry_name} ({f.meron_weight}g)
+                        </td>
+                        <td>
+                          {f.wala_entry_name} ({f.wala_weight}g)
+                        </td>
+                        <td>{f.weight_diff}g</td>
+                        <td>
+                          {f.tari_signed_by ? (
+                            <span className="status-badge is-passed">
+                              ARMED ({f.tari_signed_by})
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              className="btn-secondary-gold"
+                              onClick={() =>
+                                handleAction(`/api/fights/${f.fight_id}/tari-signoff`, 'POST', {
+                                  armorer_name: 'Chief Armorer'
+                                })
+                              }
+                            >
+                              Sign Off Tari Blade
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 7. RUEDO PIT & BELL (Gate 6, Gate 7, Gate 8)
+  if (moduleId === 'ruedo-pit') {
+    const fights = arenaState.fights || [];
+    const liveFight = fights.find((f) => f.staging_tier === 'LIVE_PIT');
+
+    return (
+      <div className="form-stack">
+        {notice && <div className="status-alert-banner is-success">{notice}</div>}
+        <div className="workspace-panel">
+          <div className="workspace-panel-title">
+            Mesa de Control — Live Pit Ring (Gate 6, 7 & 8)
+          </div>
+          {!liveFight ? (
+            <div className="module-empty-state">
+              <div className="module-empty-title">No Bout Currently in the Live Pit</div>
+              <div className="module-empty-desc">
+                Ensure a paired fight has Gate 5 Tari Armorer sign-off, then advance it into the LIVE_PIT staging tier below.
+              </div>
+            </div>
+          ) : (
+            <div className="form-stack">
+              <div className="metric-row">
+                <span>
+                  <strong>FIGHT #{liveFight.fight_number}:</strong> {liveFight.meron_entry_name} (
+                  {liveFight.meron_weight}g) vs. {liveFight.wala_entry_name} (
+                  {liveFight.wala_weight}g)
+                </span>
+                <span className="status-badge is-passed">
+                  {liveFight.is_betting_open ? 'PUSTA BUKAS (BETTING OPEN)' : liveFight.status}
+                </span>
+              </div>
+
+              <div className="action-btn-row">
+                <button
+                  type="button"
+                  className="btn-primary-emerald"
+                  onClick={() =>
+                    handleAction('/api/ruedo/betting-toggle', 'POST', {
+                      fight_id: liveFight.fight_id,
+                      open_betting: true
+                    })
+                  }
+                >
+                  Open Betting (Pusta Bukas)
+                </button>
+                <button
+                  type="button"
+                  className="btn-secondary-gold"
+                  onClick={() =>
+                    handleAction('/api/ruedo/betting-toggle', 'POST', {
+                      fight_id: liveFight.fight_id,
+                      open_betting: false
+                    })
+                  }
+                >
+                  Ring Pit Bell & Lock Bets (Gate 7)
+                </button>
+                <button
+                  type="button"
+                  className="btn-primary-emerald"
+                  onClick={() =>
+                    handleAction('/api/ruedo/verdict', 'POST', {
+                      fight_id: liveFight.fight_id,
+                      verdict: 'MERON'
+                    })
+                  }
+                >
+                  Declare MERON Winner [M]
+                </button>
+                <button
+                  type="button"
+                  className="btn-primary-emerald"
+                  onClick={() =>
+                    handleAction('/api/ruedo/verdict', 'POST', {
+                      fight_id: liveFight.fight_id,
+                      verdict: 'WALA'
+                    })
+                  }
+                >
+                  Declare WALA Winner [W]
+                </button>
+                <button
+                  type="button"
+                  className="btn-secondary-gold"
+                  onClick={() =>
+                    handleAction('/api/ruedo/verdict', 'POST', {
+                      fight_id: liveFight.fight_id,
+                      verdict: 'TABLA'
+                    })
+                  }
+                >
+                  Declare TABLA Draw [T]
+                </button>
+                <button
+                  type="button"
+                  className="btn-danger-outline"
+                  onClick={() =>
+                    handleAction('/api/ruedo/verdict', 'POST', {
+                      fight_id: liveFight.fight_id,
+                      verdict: 'CANCELLED'
+                    })
+                  }
+                >
+                  Cancel Bout [C]
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="workspace-panel">
+          <div className="workspace-panel-title">
+            Gate 6: 3-Tier Staging Call Ribbon (Heeling &rarr; On-Deck &rarr; Live Pit)
+          </div>
+          {fights.length === 0 ? (
+            <div className="module-empty-state">
+              <div className="module-empty-title">Staging Queue is Empty</div>
+              <div className="module-empty-desc">
+                Publish bouts from Kasahan Matchmaking to populate the 3-tier staging ribbon.
+              </div>
+            </div>
+          ) : (
+            <div className="data-table-wrap">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Fight #</th>
+                    <th>Matchup</th>
+                    <th>Staging Tier</th>
+                    <th>Status / Verdict</th>
+                    <th>Advance Stage</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {fights.map((f) => (
+                    <tr key={f.fight_id}>
+                      <td>
+                        <strong>#{f.fight_number}</strong>
+                      </td>
+                      <td>
+                        {f.meron_entry_name} vs. {f.wala_entry_name}
+                      </td>
+                      <td>
+                        <span className="status-badge is-passed">{f.staging_tier}</span>
+                      </td>
+                      <td>{f.verdict || f.status}</td>
+                      <td>
+                        {f.status !== 'COMPLETED' && (
+                          <div className="action-btn-row">
+                            <button
+                              type="button"
+                              className="btn-secondary-gold"
+                              onClick={() =>
+                                handleAction(`/api/fights/${f.fight_id}/stage`, 'POST', {
+                                  target_tier: 'HEELING'
+                                })
+                              }
+                            >
+                              Heeling
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-secondary-gold"
+                              onClick={() =>
+                                handleAction(`/api/fights/${f.fight_id}/stage`, 'POST', {
+                                  target_tier: 'ON_DECK'
+                                })
+                              }
+                            >
+                              On-Deck
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-primary-emerald"
+                              onClick={() =>
+                                handleAction(`/api/fights/${f.fight_id}/stage`, 'POST', {
+                                  target_tier: 'LIVE_PIT'
+                                })
+                              }
+                            >
+                              Send to Live Pit
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // 8. GRANDSTAND BETTING & 9. CASHIER PAYOUTS
+  if (moduleId === 'grandstand-betting' || moduleId === 'cashier-payouts') {
+    const fights = arenaState.fights || [];
+    const wagers = arenaState.wagers || [];
+
+    return (
+      <div className="workspace-split-grid">
+        <form
+          className="workspace-panel form-stack"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const res = await handleAction(
+              '/api/wagers',
+              'POST',
+              wagerForm,
+              'Bet ticket issued and pool odds updated.'
+            );
+            if (res.ok) setWagerForm({ ...wagerForm, amount: '' });
+          }}
+        >
+          <div className="workspace-panel-title">Issue Kristo / Cashier Wager Ticket</div>
+          {notice && <div className="status-alert-banner is-success">{notice}</div>}
+          <div className="form-field">
+            <label className="form-label">Select Open Fight</label>
+            <select
+              className="form-select"
+              required
+              value={wagerForm.fight_number}
+              onChange={(e) => setWagerForm({ ...wagerForm, fight_number: e.target.value })}
+            >
+              <option value="">-- Choose Bout --</option>
+              {fights.map((f) => (
+                <option key={f.fight_id} value={f.fight_number}>
+                  Fight #{f.fight_number}: {f.meron_entry_name} vs {f.wala_entry_name} (
+                  {f.is_betting_open ? 'OPEN' : 'LOCKED'})
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="form-row-2col">
+            <div className="form-field">
+              <label className="form-label">Side</label>
+              <select
+                className="form-select"
+                value={wagerForm.side}
+                onChange={(e) => setWagerForm({ ...wagerForm, side: e.target.value })}
+              >
+                <option value="MERON">MERON</option>
+                <option value="WALA">WALA</option>
+              </select>
+            </div>
+            <div className="form-field">
+              <label className="form-label">Wager Amount (₱)</label>
+              <input
+                type="number"
+                className="form-input"
+                required
+                placeholder="e.g. 5000"
+                value={wagerForm.amount}
+                onChange={(e) => setWagerForm({ ...wagerForm, amount: e.target.value })}
+              />
+            </div>
+          </div>
+          <button type="submit" className="btn-primary-emerald" disabled={submitting}>
+            {submitting ? 'Printing Ticket...' : '+ Issue Encrypted Bet Ticket'}
+          </button>
+        </form>
+
+        <div className="workspace-panel">
+          <div className="workspace-panel-title">
+            Issued Wager Tickets & Barcode Payouts ({wagers.length})
+          </div>
+          {wagers.length === 0 ? (
+            <div className="module-empty-state">
+              <div className="module-empty-title">No Bet Tickets Issued</div>
+              <div className="module-empty-desc">
+                Open betting on the active bout in Ruedo Pit & Bell, then issue wagers on the left to dynamically update Gross Handle, 10% House Plasada, and Meron/Wala pool percentages.
+              </div>
+            </div>
+          ) : (
+            <div className="data-table-wrap">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Ticket Barcode</th>
+                    <th>Fight / Side</th>
+                    <th>Wager</th>
+                    <th>Net Payout</th>
+                    <th>Status</th>
+                    <th>Cashier Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {wagers.map((w) => (
+                    <tr key={w.ticket_id}>
+                      <td>
+                        <strong>{w.ticket_id}</strong>
+                      </td>
+                      <td>
+                        #{w.fight_number} • {w.side}
+                      </td>
+                      <td>₱{w.amount.toLocaleString()}</td>
+                      <td>₱{w.potential_payout.toLocaleString()}</td>
+                      <td>
+                        <span
+                          className={`status-badge ${w.status === 'WON' || w.status === 'PAID_OUT' ? 'is-passed' : 'is-pending'}`}
+                        >
+                          {w.status}
+                        </span>
+                      </td>
+                      <td>
+                        {(w.status === 'WON' || w.status === 'REFUNDABLE') && (
+                          <button
+                            type="button"
+                            className="btn-primary-emerald"
+                            onClick={() =>
+                              handleAction(`/api/wagers/${w.ticket_id}/payout`, 'POST', {})
+                            }
+                          >
+                            Release Payout
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // 10. COCKPIT & ROOMS
+  if (moduleId === 'cockpit-rooms') {
+    const bays = arenaState.cockhouseBays || [];
+    return (
+      <div className="workspace-split-grid">
+        <form
+          className="workspace-panel form-stack"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const res = await handleAction(
+              '/api/cockhouse',
+              'POST',
+              bayForm,
+              `Assigned ${bayForm.bay_number.toUpperCase()} to ${bayForm.assigned_entry.toUpperCase()}.`
+            );
+            if (res.ok) setBayForm({ ...bayForm, bay_number: '', assigned_entry: '', room_suite: '' });
+          }}
+        >
+          <div className="workspace-panel-title">Assign Cockhouse Bay & Suite</div>
+          {notice && <div className="status-alert-banner is-success">{notice}</div>}
+          <div className="form-field">
+            <label className="form-label">Bay Number</label>
+            <input
+              className="form-input"
+              required
+              placeholder="BAY-001"
+              value={bayForm.bay_number}
+              onChange={(e) => setBayForm({ ...bayForm, bay_number: e.target.value })}
+            />
+          </div>
+          <div className="form-field">
+            <label className="form-label">Assigned Syndicate Entry</label>
+            <input
+              className="form-input"
+              required
+              placeholder="THUNDERBIRD GOLD"
+              value={bayForm.assigned_entry}
+              onChange={(e) => setBayForm({ ...bayForm, assigned_entry: e.target.value })}
+            />
+          </div>
+          <div className="form-field">
+            <label className="form-label">Handler Suite / Bunk</label>
+            <input
+              className="form-input"
+              required
+              placeholder="Executive Suite A-01"
+              value={bayForm.room_suite}
+              onChange={(e) => setBayForm({ ...bayForm, room_suite: e.target.value })}
+            />
+          </div>
+          <button type="submit" className="btn-primary-emerald" disabled={submitting}>
+            + Check In Cockhouse Bay
+          </button>
+        </form>
+
+        <div className="workspace-panel">
+          <div className="workspace-panel-title">Cockhouse Bay Manifest ({bays.length})</div>
+          {bays.length === 0 ? (
+            <div className="module-empty-state">
+              <div className="module-empty-title">No Cockhouse Bays Occupied</div>
+              <div className="module-empty-desc">
+                Check in traveling gamefowl teams on the left to track biosecurity disinfection and RFID bay custody.
+              </div>
+            </div>
+          ) : (
+            <div className="data-table-wrap">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Bay</th>
+                    <th>Entry</th>
+                    <th>Suite</th>
+                    <th>Biosecurity</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bays.map((b) => (
+                    <tr key={b.bay_number}>
+                      <td>
+                        <strong>{b.bay_number}</strong>
+                      </td>
+                      <td>{b.assigned_entry}</td>
+                      <td>{b.room_suite}</td>
+                      <td>
+                        <span className="status-badge is-passed">{b.biosecurity_status}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // 11. VET CLINIC & SUTURES
+  if (moduleId === 'vet-clinic') {
+    const cases = arenaState.vetSutures || [];
+    return (
+      <div className="workspace-split-grid">
+        <form
+          className="workspace-panel form-stack"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const res = await handleAction('/api/vet-clinic', 'POST', vetForm, 'Suture case recorded.');
+            if (res.ok)
+              setVetForm({
+                fight_number: '',
+                wing_band: '',
+                entry_name: '',
+                manggagamot: '',
+                procedure_notes: ''
+              });
+          }}
+        >
+          <div className="workspace-panel-title">Log Post-Fight Manggagamot Suture</div>
+          <div className="form-row-2col">
+            <div className="form-field">
+              <label className="form-label">Fight #</label>
+              <input
+                type="number"
+                className="form-input"
+                required
+                value={vetForm.fight_number}
+                onChange={(e) => setVetForm({ ...vetForm, fight_number: e.target.value })}
+              />
+            </div>
+            <div className="form-field">
+              <label className="form-label">Wingband</label>
+              <input
+                className="form-input"
+                required
+                value={vetForm.wing_band}
+                onChange={(e) => setVetForm({ ...vetForm, wing_band: e.target.value })}
+              />
+            </div>
+          </div>
+          <div className="form-field">
+            <label className="form-label">Entry Name</label>
+            <input
+              className="form-input"
+              required
+              value={vetForm.entry_name}
+              onChange={(e) => setVetForm({ ...vetForm, entry_name: e.target.value })}
+            />
+          </div>
+          <div className="form-field">
+            <label className="form-label">Attending Manggagamot / Vet</label>
+            <input
+              className="form-input"
+              required
+              value={vetForm.manggagamot}
+              onChange={(e) => setVetForm({ ...vetForm, manggagamot: e.target.value })}
+            />
+          </div>
+          <div className="form-field">
+            <label className="form-label">Suture & Medication Notes</label>
+            <input
+              className="form-input"
+              required
+              value={vetForm.procedure_notes}
+              onChange={(e) => setVetForm({ ...vetForm, procedure_notes: e.target.value })}
+            />
+          </div>
+          <button type="submit" className="btn-primary-emerald" disabled={submitting}>
+            + Record Vet Procedure
+          </button>
+        </form>
+
+        <div className="workspace-panel">
+          <div className="workspace-panel-title">Clinic Recovery Log ({cases.length})</div>
+          {cases.length === 0 ? (
+            <div className="module-empty-state">
+              <div className="module-empty-title">No Surgical Recovery Cases Logged</div>
+              <div className="module-empty-desc">
+                Post-fight suture and antibiotic logs recorded by the arena Manggagamot will appear here.
+              </div>
+            </div>
+          ) : (
+            <div className="data-table-wrap">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Case ID</th>
+                    <th>Fight / Wingband</th>
+                    <th>Entry</th>
+                    <th>Manggagamot</th>
+                    <th>Procedure</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cases.map((c) => (
+                    <tr key={c.case_id}>
+                      <td>
+                        <strong>{c.case_id}</strong>
+                      </td>
+                      <td>
+                        #{c.fight_number} • {c.wing_band}
+                      </td>
+                      <td>{c.entry_name}</td>
+                      <td>{c.manggagamot}</td>
+                      <td>{c.procedure_notes}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // 12. INVENTORY & EQUIPMENT
+  if (moduleId === 'inventory-equipment') {
+    const items = arenaState.inventoryAssets || [];
+    return (
+      <div className="workspace-split-grid">
+        <form
+          className="workspace-panel form-stack"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const res = await handleAction('/api/inventory', 'POST', invForm, 'Inventory asset saved.');
+            if (res.ok)
+              setInvForm({
+                sku: '',
+                item_name: '',
+                category: 'Tari Armory',
+                stock_qty: '',
+                unit: 'pcs',
+                prerequisite_kit: '',
+                custodian: ''
+              });
+          }}
+        >
+          <div className="workspace-panel-title">Register Armory / Arena Asset</div>
+          <div className="form-row-2col">
+            <div className="form-field">
+              <label className="form-label">SKU</label>
+              <input
+                className="form-input"
+                required
+                placeholder="ARM-TARI-01"
+                value={invForm.sku}
+                onChange={(e) => setInvForm({ ...invForm, sku: e.target.value })}
+              />
+            </div>
+            <div className="form-field">
+              <label className="form-label">Quantity</label>
+              <input
+                type="number"
+                className="form-input"
+                required
+                value={invForm.stock_qty}
+                onChange={(e) => setInvForm({ ...invForm, stock_qty: e.target.value })}
+              />
+            </div>
+          </div>
+          <div className="form-field">
+            <label className="form-label">Item Name</label>
+            <input
+              className="form-input"
+              required
+              placeholder="Slasher Gaff Blade 3.25 in"
+              value={invForm.item_name}
+              onChange={(e) => setInvForm({ ...invForm, item_name: e.target.value })}
+            />
+          </div>
+          <div className="form-field">
+            <label className="form-label">Prerequisite Kit Dependency</label>
+            <input
+              className="form-input"
+              required
+              placeholder="Requires Leather Sheath + Tie Cord"
+              value={invForm.prerequisite_kit}
+              onChange={(e) => setInvForm({ ...invForm, prerequisite_kit: e.target.value })}
+            />
+          </div>
+          <div className="form-field">
+            <label className="form-label">Custodian</label>
+            <input
+              className="form-input"
+              required
+              placeholder="Chief Armorer"
+              value={invForm.custodian}
+              onChange={(e) => setInvForm({ ...invForm, custodian: e.target.value })}
+            />
+          </div>
+          <button type="submit" className="btn-primary-emerald" disabled={submitting}>
+            + Save Inventory Asset
+          </button>
+        </form>
+
+        <div className="workspace-panel">
+          <div className="workspace-panel-title">Asset Registry ({items.length})</div>
+          {items.length === 0 ? (
+            <div className="module-empty-state">
+              <div className="module-empty-title">No Inventory Assets Registered</div>
+              <div className="module-empty-desc">
+                Register Tari blades, thermal receipt rolls, and calibrated platform scales on the left.
+              </div>
+            </div>
+          ) : (
+            <div className="data-table-wrap">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>SKU</th>
+                    <th>Asset Name</th>
+                    <th>Stock</th>
+                    <th>Prerequisite Kit</th>
+                    <th>Custodian</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((it) => (
+                    <tr key={it.sku}>
+                      <td>
+                        <strong>{it.sku}</strong>
+                      </td>
+                      <td>{it.item_name}</td>
+                      <td>
+                        {it.stock_qty} {it.unit}
+                      </td>
+                      <td>{it.prerequisite_kit}</td>
+                      <td>{it.custodian}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // 13. DATABASE EXPLORER (Interactive Obsidian Relationship Graph + SQLite WAL Table Inspector)
+  if (moduleId === 'database-explorer') {
+    const tables = arenaState.databaseTables || [];
+    return (
+      <div className="form-stack">
+        <div className="action-btn-row">
+          <button
+            type="button"
+            className={dbTab === 'graph' ? 'btn-primary-emerald' : 'btn-secondary-gold'}
+            onClick={() => setDbTab('graph')}
+          >
+            Interactive Relationship Graph (Node View)
+          </button>
+          <button
+            type="button"
+            className={dbTab === 'tables' ? 'btn-primary-emerald' : 'btn-secondary-gold'}
+            onClick={() => setDbTab('tables')}
+          >
+            SQLite WAL Table Inspector ({tables.length} Tables)
+          </button>
+        </div>
+
+        {dbTab === 'graph' ? (
+          <DatabaseRelationshipGraph />
+        ) : (
+          <div className="workspace-panel">
+            <div className="workspace-panel-title">
+              Native SQLite (WAL Mode) Live Table Counts
+            </div>
+            <div className="data-table-wrap">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>SQLite Table Name</th>
+                    <th>Columns</th>
+                    <th>Foreign Keys</th>
+                    <th>Live Record Count</th>
+                    <th>Storage Engine</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tables.map((t) => (
+                    <tr key={t.tableName}>
+                      <td>
+                        <strong>{t.tableName}</strong>
+                      </td>
+                      <td>{t.columns?.length || 0} cols</td>
+                      <td>{t.foreignKeys?.length || 0} FKs</td>
+                      <td>{t.rowCount} rows</td>
+                      <td>
+                        <span className="status-badge is-passed">node:sqlite WAL</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // 14. SECURITY & AUDIT LOGTRAIL
+  if (moduleId === 'security-audit') {
+    const logs = arenaState.auditLogs || [];
+    return (
+      <div className="workspace-panel">
+        <div className="workspace-panel-title">
+          Tamper-Evident Append-Only Audit Logtrail ({logs.length})
+        </div>
+        {logs.length === 0 ? (
+          <div className="module-empty-state">
+            <div className="module-empty-title">No Audit Events Recorded Yet</div>
+            <div className="module-empty-desc">
+              Every state transition across Gates 0–8 is immutably appended here with actor and terminal attribution.
+            </div>
+          </div>
+        ) : (
+          <div className="data-table-wrap">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Log ID</th>
+                  <th>Event Code</th>
+                  <th>Actor</th>
+                  <th>Terminal</th>
+                  <th>Details</th>
+                  <th>Timestamp</th>
+                </tr>
+              </thead>
+              <tbody>
+                {logs.map((l) => (
+                  <tr key={l.log_id}>
+                    <td>#{l.log_id}</td>
+                    <td>
+                      <strong>{l.event_code}</strong>
+                    </td>
+                    <td>{l.actor}</td>
+                    <td>{l.terminal_id}</td>
+                    <td>{l.details}</td>
+                    <td>{l.created_at}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (moduleId === 'settings') {
+    return (
+      <div className="workspace-panel">
+        <div className="workspace-panel-title">
+          Desktop Environment, Fullscreen Wallpaper &amp; Arena Preferences
+        </div>
+
+        {/* 1. Fullscreen Wallpaper Picker */}
+        <div className="form-card">
+          <div className="form-card-title">Fullscreen Desktop Wallpaper (Nanobanana AI Coliseo)</div>
+          <p className="form-card-help">
+            Choose between the smooth wavy silk aesthetic (ultra-high legibility) or the futuristic coliseo arena wallpapers (optimized for night mode).
+          </p>
+
+          <div className="wallpaper-picker-grid">
+            <button
+              type="button"
+              className={`wallpaper-card-option ${wallpaper === 'luxury_wavy' ? 'is-active' : ''}`}
+              onClick={() => setWallpaper('luxury_wavy')}
+            >
+              <img
+                src="/assets/cockpit_os_luxury_wallpaper.jpg"
+                alt="Emerald Silk Wave — Subtle Classy Rooster"
+                className="wallpaper-preview-thumb"
+              />
+              <div className="wallpaper-card-meta">
+                <span className="wallpaper-card-name">Emerald Silk Wave (Subtle &amp; Classy)</span>
+                <span className="wallpaper-card-desc">
+                  Smooth wavy flowing silk ribbons, pearlescent ivory base, and a subtle classy embossed rooster motif. Optimal text contrast.
+                </span>
+                {wallpaper === 'luxury_wavy' && (
+                  <span className="wallpaper-card-badge">ACTIVE WALLPAPER</span>
+                )}
+              </div>
+            </button>
+
+            <button
+              type="button"
+              className={`wallpaper-card-option ${wallpaper === 'wallpaper_v2' ? 'is-active' : ''}`}
+              onClick={() => setWallpaper('wallpaper_v2')}
+            >
+              <img
+                src="/assets/wallpaper_v2.jpg"
+                alt="Coliseo Arena — Centered Champion Gamecock"
+                className="wallpaper-preview-thumb"
+              />
+              <div className="wallpaper-card-meta">
+                <span className="wallpaper-card-name">Coliseo Arena (Centered Champion)</span>
+                <span className="wallpaper-card-desc">
+                  Majestic Philippine Sweater/Kelso gamecock on pedestal inside emerald stadium tiers. Breathtaking in Night Mode.
+                </span>
+                {wallpaper === 'wallpaper_v2' && (
+                  <span className="wallpaper-card-badge">ACTIVE WALLPAPER</span>
+                )}
+              </div>
+            </button>
+
+            <button
+              type="button"
+              className={`wallpaper-card-option ${wallpaper === 'wallpaper_v3' ? 'is-active' : ''}`}
+              onClick={() => setWallpaper('wallpaper_v3')}
+            >
+              <img
+                src="/assets/wallpaper_v3.jpg"
+                alt="Coliseo Dome — Wide Cinematic Staging"
+                className="wallpaper-preview-thumb"
+              />
+              <div className="wallpaper-card-meta">
+                <span className="wallpaper-card-name">Coliseo Dome (Cinematic Widescreen)</span>
+                <span className="wallpaper-card-desc">
+                  Wide arena dome with right platform gamecock and left negative space. Optimized for dark coliseum ambiance.
+                </span>
+                {wallpaper === 'wallpaper_v3' && (
+                  <span className="wallpaper-card-badge">ACTIVE WALLPAPER</span>
+                )}
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* 2. Theme & Sound Preferences */}
+        <div className="form-card">
+          <div className="form-card-title">Display Theme &amp; Audio Cues</div>
+          <div className="form-row-cols">
+            <div className="form-group">
+              <label className="form-label">Visual Theme Mode</label>
+              <div className="btn-group-row">
+                <button
+                  type="button"
+                  className={theme === 'light' ? 'btn-primary-emerald' : 'btn-secondary-gold'}
+                  onClick={() => {
+                    if (theme !== 'light') toggleTheme();
+                  }}
+                >
+                  Emerald Light Glass
+                </button>
+                <button
+                  type="button"
+                  className={theme === 'dark' ? 'btn-primary-emerald' : 'btn-secondary-gold'}
+                  onClick={() => {
+                    if (theme !== 'dark') toggleTheme();
+                  }}
+                >
+                  Coliseum Dark Titanium
+                </button>
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Terminal Audio Feedback</label>
+              <button
+                type="button"
+                className={soundEnabled ? 'btn-primary-emerald' : 'btn-secondary-gold'}
+                onClick={toggleSound}
+              >
+                {soundEnabled ? 'Terminal Audio Enabled (Gate Cues)' : 'Terminal Audio Muted'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* 3. Mesa de Control Hotkeys */}
+        <div className="form-card">
+          <div className="form-card-title">Mesa de Control Hotkeys &amp; Single-Key Shortcuts</div>
+          <div className="hotkey-table-wrap">
+            <table className="hotkey-table">
+              <thead>
+                <tr>
+                  <th>Key</th>
+                  <th>Action</th>
+                  <th>Zero-Trust Context</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><kbd className="table-kbd">Space</kbd></td>
+                  <td>Toggle Ruedo Fight Clock (Timer Start / Pause)</td>
+                  <td>Gate 6 Verdict Authority</td>
+                </tr>
+                <tr>
+                  <td><kbd className="table-kbd">B</kbd></td>
+                  <td>Ring Ruedo Bell / Kampana Audio Cue</td>
+                  <td>Coliseum Acoustic Protocol</td>
+                </tr>
+                <tr>
+                  <td><kbd className="table-kbd">M</kbd></td>
+                  <td>Meron Wager / Quick Meron Select</td>
+                  <td>Gate 7 Grandstand Bet Pool</td>
+                </tr>
+                <tr>
+                  <td><kbd className="table-kbd">W</kbd></td>
+                  <td>Wala Wager / Quick Wala Select</td>
+                  <td>Gate 7 Grandstand Bet Pool</td>
+                </tr>
+                <tr>
+                  <td><kbd className="table-kbd">T</kbd></td>
+                  <td>Declare Tabla / Draw Fight Result</td>
+                  <td>Gate 8 Dual Sign-Off Required</td>
+                </tr>
+                <tr>
+                  <td><kbd className="table-kbd">C</kbd></td>
+                  <td>Cancel Fight / Void Round</td>
+                  <td>Emergency Referee Override</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // DEFAULT / FINANCE / REPORTS / PAPERWORKS / NETWORK
+  const ops = arenaState.operationsSummary;
+  const sys = arenaState.systemMetrics;
+  return (
+    <div className="workspace-panel">
+      <div className="workspace-panel-title">
+        Live Module Telemetry & Regulatory Summary ({moduleId})
+      </div>
+      <div className="gate-cards-grid">
+        <div className="gate-status-card is-passed">
+          <div className="gate-id-tag">GROSS HANDLE</div>
+          <div className="gate-name-title">
+            ₱{Number(ops?.grossHandle || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+          </div>
+          <div className="gate-metric-text">Total Wager Pool Across Fights</div>
+        </div>
+        <div className="gate-status-card is-passed">
+          <div className="gate-id-tag">HOUSE PLASADA ({ops?.plasadaRatePct ?? 10}%)</div>
+          <div className="gate-name-title">
+            ₱{Number(ops?.housePlasada || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+          </div>
+          <div className="gate-metric-text">Retained Arena Commission Ledger</div>
+        </div>
+        <div className="gate-status-card is-passed">
+          <div className="gate-id-tag">LOCAL LAN GATEWAY</div>
+          <div className="gate-name-title">{sys?.lanIp}</div>
+          <div className="gate-metric-text">
+            Host: {sys?.terminalId} • {sys?.wsClientCount} Active WS Mesh Clients
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

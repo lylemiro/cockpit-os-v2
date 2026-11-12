@@ -1,0 +1,1710 @@
+/* ==========================================================================
+   COCKPIT OS v2.4.0 — Operational Window Modals, Forms, Empty States & Tables
+   ========================================================================== */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--bg-modal-backdrop);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+}
+
+.os-window-modal {
+  width: 100%;
+  max-width: 1120px;
+  height: 82vh;
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-modal);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+}
+
+.os-window-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: linear-gradient(90deg, var(--emerald-900) 0%, var(--emerald-800) 100%);
+  color: #ffffff;
+}
+
+.os-window-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.os-window-badge {
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.16);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.os-window-title {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.os-window-subtitle {
+  font-size: 11.5px;
+  opacity: 0.82;
+}
+
+.os-window-close-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.os-window-close-btn:hover {
+  background: rgba(220, 38, 38, 0.85);
+  border-color: transparent;
+}
+
+.os-window-body {
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Alerts & Banners */
+.status-alert-banner {
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 12.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.status-alert-banner.is-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+.status-alert-banner.is-success {
+  background: var(--emerald-50);
+  border: 1px solid var(--emerald-400);
+  color: var(--emerald-800);
+}
+
+/* Workspace Layout Grid */
+.workspace-split-grid {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.workspace-panel {
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.workspace-panel-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border-card);
+  padding-bottom: 8px;
+}
+
+/* Forms */
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.form-input,
+.form-select {
+  padding: 8px 11px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card-solid);
+  color: var(--text-primary);
+  font-size: 12.5px;
+  outline: none;
+}
+
+.form-input:focus,
+.form-select:focus {
+  border-color: var(--emerald-600);
+  box-shadow: 0 0 0 2px rgba(14, 138, 78, 0.15);
+}
+
+.btn-primary-emerald {
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: linear-gradient(135deg, #10a358 0%, #087a3f 100%);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.btn-primary-emerald:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-secondary-gold {
+  padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--gold-border);
+  background: var(--gold-100);
+  color: var(--gold-700);
+  font-size: 11.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.btn-danger-outline {
+  padding: 6px 11px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #fca5a5;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Tables */
+.data-table-wrap {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 9px 10px;
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.data-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--border-card);
+  color: var(--text-primary);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.status-badge.is-passed {
+  background: var(--emerald-100);
+  color: var(--emerald-800);
+}
+
+.status-badge.is-pending {
+  background: var(--gold-100);
+  color: var(--gold-700);
+}
+
+/* Module Full Empty State */
+.module-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 36px 20px;
+  background: var(--bg-card-solid);
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-lg);
+  gap: 8px;
+}
+
+.module-empty-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.module-empty-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  max-width: 420px;
+  line-height: 1.45;
+}
+
+/* Gate Matrix Grid */
+.gate-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.gate-status-card {
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gate-status-card.is-passed {
+  border-color: var(--emerald-400);
+}
+
+.gate-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gate-id-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--emerald-700);
+}
+
+.gate-name-title {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.gate-metric-text {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.action-btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* ==========================================================================
+   Obsidian-Style Interactive Force-Directed Database Relationship Graph
+   ========================================================================== */
+.db-graph-shell {
+  display: grid;
+  grid-template-columns: 1fr 310px;
+  gap: 14px;
+  height: 580px;
+  min-height: 0;
+}
+
+.db-graph-stage {
+  position: relative;
+  background: radial-gradient(circle at 50% 50%, #1f2226 0%, #141619 100%);
+  border: 1px solid rgba(52, 199, 123, 0.25);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.db-graph-toolbar {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.db-graph-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(20, 22, 25, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 5px 8px;
+  border-radius: var(--radius-md);
+  pointer-events: auto;
+}
+
+.db-graph-filter-btn {
+  border: 1px solid transparent;
+  background: transparent;
+  color: #a1a1aa;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.db-graph-filter-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.db-graph-filter-btn.is-active {
+  background: rgba(16, 185, 129, 0.22);
+  border-color: #10b981;
+  color: #6ee7b7;
+}
+
+.db-graph-search {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.35);
+  color: #f4f4f5;
+  font-size: 11px;
+  padding: 4px 9px;
+  border-radius: var(--radius-sm);
+  outline: none;
+  width: 170px;
+}
+
+.db-graph-search:focus {
+  border-color: #10b981;
+}
+
+.db-graph-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+}
+
+.db-graph-canvas:active {
+  cursor: grabbing;
+}
+
+.db-graph-legend {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(20, 22, 25, 0.84);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  padding: 6px 12px;
+  font-size: 10.5px;
+  color: #d4d4d8;
+  pointer-events: none;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.legend-dot.is-table {
+  background: #10b981;
+}
+
+.legend-dot.is-record {
+  background: #f59e0b;
+}
+
+.legend-dot.is-security {
+  background: #38bdf8;
+}
+
+.db-graph-watermark {
+  position: absolute;
+  bottom: 12px;
+  right: 14px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.38);
+  pointer-events: none;
+}
+
+.db-graph-inspector {
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.inspector-chip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inspector-relation-chip {
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 7px 9px;
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: pointer;
+}
+
+.inspector-relation-chip:hover {
+  border-color: var(--emerald-500);
+}
+
+.inspector-rel-target {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--emerald-700);
+}
+
+.inspector-rel-desc {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   OS Kernel Boot Screen, Multi-Tenant Login & 23-Checkbox ARBAC Matrix
+   ========================================================================== */
+.os-boot-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background-image:
+    radial-gradient(circle at 50% 35%, rgba(16, 163, 88, 0.28) 0%, rgba(6, 28, 17, 0.92) 75%),
+    url('/assets/wallpaper_v2.jpg');
+  background-size: cover;
+  background-position: center center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: #ecfdf5;
+}
+
+.os-boot-card {
+  width: 100%;
+  max-width: 680px;
+  background: rgba(10, 34, 22, 0.92);
+  border: 1px solid rgba(52, 211, 153, 0.28);
+  border-radius: var(--radius-xl);
+  padding: 28px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.os-login-card {
+  width: 100%;
+  max-width: 920px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--bg-card-solid);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 26px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.os-login-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 14px;
+}
+
+.os-login-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.os-boot-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.os-boot-title {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.os-boot-subtitle {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  opacity: 0.78;
+  margin-top: 2px;
+}
+
+.os-boot-terminal-box {
+  background: rgba(4, 15, 10, 0.88);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.os-boot-log-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.os-boot-tag {
+  font-weight: 800;
+  min-width: 54px;
+}
+
+.os-boot-tag.is-ok {
+  color: #34d399;
+}
+
+.os-boot-tag.is-wait {
+  color: #fbbf24;
+}
+
+.os-boot-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pin-keypad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.pin-key-btn {
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card-solid);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.pin-key-btn:hover {
+  background: var(--emerald-50);
+  border-color: var(--emerald-500);
+}
+
+/* Granular 23-Checkbox ARBAC Matrix */
+.arbac-matrix-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  max-height: 330px;
+  overflow-y: auto;
+}
+
+.arbac-matrix-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-card);
+  padding-bottom: 8px;
+}
+
+.arbac-domains-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.arbac-domain-box {
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  background: var(--bg-card-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.arbac-domain-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--emerald-800);
+  cursor: pointer;
+}
+
+.arbac-checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-left: 6px;
+}
+
+.arbac-checkbox-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 5px 7px;
+  border-radius: 6px;
+  background: var(--bg-card-solid);
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.arbac-checkbox-item.is-checked {
+  border-color: rgba(16, 185, 129, 0.35);
+  background: var(--emerald-50);
+}
+
+.arbac-perm-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.arbac-perm-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.arbac-perm-key {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Windows 11 File Explorer Style Shell (Tabs, Address Bar, Left Tree, Drives)
+   ========================================================================== */
+.win-explorer-window {
+  width: 94vw;
+  max-width: 1380px;
+  height: 86vh;
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  box-shadow: var(--shadow-modal);
+  display: grid;
+  grid-template-rows: 40px 46px 1fr 28px;
+  overflow: hidden;
+  transition: width 0.15s ease, height 0.15s ease, border-radius 0.15s ease;
+}
+
+.win-explorer-window.is-maximized {
+  width: 100vw;
+  max-width: 100vw;
+  height: 100vh;
+  border-radius: 0;
+}
+
+/* 1. Tabbed Title Bar */
+.win-titlebar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  background: linear-gradient(90deg, #072817 0%, #0b3d23 100%);
+  padding: 6px 8px 0 10px;
+  color: #ffffff;
+}
+
+.win-tabs-strip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  max-width: calc(100% - 120px);
+}
+
+.win-tab-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border-radius: 8px 8px 0 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.win-tab-item:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+.win-tab-item.is-active {
+  background: var(--bg-card-subtle);
+  color: var(--text-primary);
+  font-weight: 800;
+  border-color: var(--border-card);
+}
+
+.win-tab-label {
+  max-width: 145px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.win-tab-close {
+  border: none;
+  background: transparent;
+  color: inherit;
+  opacity: 0.65;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.win-tab-close:hover {
+  opacity: 1;
+  background: rgba(220, 38, 38, 0.2);
+  color: #ef4444;
+}
+
+.win-new-tab-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.78);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-bottom: 3px;
+}
+
+.win-new-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.win-caption-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-bottom: 4px;
+}
+
+.win-caption-btn {
+  width: 32px;
+  height: 26px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.win-caption-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.win-caption-btn.is-close:hover {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+/* 2. Explorer Command Bar & Breadcrumb Address Bar */
+.win-command-bar {
+  display: grid;
+  grid-template-columns: auto 1fr 220px auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  background: var(--bg-card-subtle);
+  border-bottom: 1px solid var(--border-card);
+}
+
+.win-nav-buttons {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.win-nav-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.win-nav-btn:hover:not(:disabled) {
+  background: var(--emerald-50);
+  color: var(--emerald-700);
+}
+
+.win-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.win-address-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-subtle);
+  border-radius: 7px;
+  padding: 4px 10px;
+  height: 31px;
+  overflow: hidden;
+}
+
+.win-breadcrumb-segment {
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 2px 6px;
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.win-breadcrumb-segment:hover {
+  background: var(--emerald-50);
+  color: var(--emerald-800);
+}
+
+.win-breadcrumb-segment.is-current {
+  font-weight: 800;
+  color: var(--text-primary);
+  cursor: default;
+}
+
+.win-breadcrumb-sep {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.win-search-box {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-subtle);
+  border-radius: 7px;
+  padding: 4px 10px;
+  height: 31px;
+}
+
+.win-search-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 11.5px;
+  color: var(--text-primary);
+  width: 100%;
+}
+
+.win-view-toggles {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.win-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.win-view-btn:hover {
+  background: var(--emerald-50);
+}
+
+.win-view-btn.is-active {
+  background: var(--emerald-100);
+  border-color: var(--emerald-400);
+  color: var(--emerald-800);
+}
+
+/* 3. Explorer 3-Pane Split Body */
+.win-explorer-body {
+  display: grid;
+  grid-template-columns: 235px 1fr;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.win-explorer-body.has-details-pane {
+  grid-template-columns: 235px 1fr 255px;
+}
+
+/* Left Tree Navigation Pane */
+.win-tree-pane {
+  background: var(--bg-card-subtle);
+  border-right: 1px solid var(--border-card);
+  padding: 10px 8px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.win-tree-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.win-tree-section-header {
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-align: left;
+}
+
+.win-tree-section-header:hover {
+  background: rgba(14, 138, 78, 0.08);
+}
+
+.win-tree-items {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 12px;
+}
+
+.win-tree-item {
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+}
+
+.win-tree-item:hover {
+  background: rgba(14, 138, 78, 0.09);
+}
+
+.win-tree-item.is-selected {
+  background: var(--emerald-100);
+  color: var(--emerald-900);
+  font-weight: 800;
+}
+
+.win-tree-item-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.win-tree-count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-card-solid);
+  color: var(--emerald-700);
+}
+
+/* Center Explorer Content Area */
+.win-content-pane {
+  padding: 16px 18px;
+  overflow-y: auto;
+  background: var(--bg-card-solid);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* "This Arena PC" Drives & Folders Grid */
+.win-section-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.win-section-heading {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-card);
+  padding-bottom: 6px;
+}
+
+.win-drives-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.win-drive-tile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-card);
+  background: var(--bg-card-subtle);
+  cursor: pointer;
+}
+
+.win-drive-tile:hover {
+  border-color: var(--emerald-500);
+  background: var(--emerald-50);
+}
+
+.win-drive-tile.is-mounted {
+  border-color: var(--emerald-500);
+  background: var(--emerald-50);
+  box-shadow: 0 4px 12px rgba(14, 138, 78, 0.12);
+}
+
+.win-drive-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.win-drive-title {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.win-drive-bar-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(15, 41, 30, 0.12);
+  overflow: hidden;
+}
+
+.win-drive-bar-fill {
+  height: 100%;
+  width: 38%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+}
+
+.win-drive-bar-fill.is-high {
+  width: 78%;
+  background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+}
+
+.win-drive-meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.win-folders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+  gap: 10px;
+}
+
+.win-folder-tile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  border: 1px solid var(--border-card);
+  background: var(--bg-card-subtle);
+  cursor: pointer;
+  text-align: left;
+}
+
+.win-folder-tile:hover {
+  background: var(--emerald-50);
+  border-color: var(--emerald-400);
+}
+
+.win-folder-icon-wrap {
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-subtle);
+  color: var(--emerald-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.win-folder-text {
+  overflow: hidden;
+}
+
+.win-folder-name {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.win-folder-sub {
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+/* Right Details Pane */
+.win-details-pane {
+  background: var(--bg-card-subtle);
+  border-left: 1px solid var(--border-card);
+  padding: 14px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.win-details-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--emerald-700);
+}
+
+.win-details-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.win-details-type {
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+.win-details-desc {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.win-details-props {
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* 4. Explorer Bottom Status Bar */
+.win-statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  background: var(--bg-card-subtle);
+  border-top: 1px solid var(--border-card);
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.win-status-left,
+.win-status-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 5. Wallpaper & Display Settings */
+.wallpaper-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.wallpaper-card-option {
+  border: 2px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  overflow: hidden;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.wallpaper-card-option:hover {
+  border-color: var(--emerald-500);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card);
+}
+
+.wallpaper-card-option.is-active {
+  border-color: var(--emerald-600);
+  box-shadow: 0 0 0 2px var(--emerald-400), var(--shadow-card);
+}
+
+.wallpaper-preview-thumb {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  display: block;
+}
+
+.wallpaper-card-meta {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wallpaper-card-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.wallpaper-card-desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.wallpaper-card-badge {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 9.5px;
+  font-weight: 800;
+  background: var(--emerald-100);
+  color: var(--emerald-800);
+}
+
+/* ==========================================================================
+   6. Centralized Feedback Banners & State Boxes (Zero Tech Jargon)
+   ========================================================================== */
+.feedback-state-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 38px 24px;
+  border-radius: var(--radius-xl);
+  background: var(--bg-card-subtle);
+  border: 1px dashed var(--border-card);
+  margin: 14px 0;
+}
+
+.feedback-spinner-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: rgba(14, 138, 78, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.feedback-spinner-icon {
+  color: var(--emerald-600);
+  animation: spin 1.2s linear infinite;
+}
+
+.feedback-icon-bubble {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  background: rgba(14, 138, 78, 0.1);
+  color: var(--emerald-600);
+}
+
+.feedback-state-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.feedback-state-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  max-width: 440px;
+  line-height: 1.45;
+}
+
+.feedback-btn-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.feedback-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 14px;
+  border: 1px solid transparent;
+}
+
+.feedback-banner.is-error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+[data-theme='dark'] .feedback-banner.is-error {
+  background: rgba(153, 27, 27, 0.25);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+}
+
+.feedback-banner.is-warning {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+[data-theme='dark'] .feedback-banner.is-warning {
+  background: rgba(180, 83, 9, 0.25);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #fcd34d;
+}
+
+.feedback-banner.is-success {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #166534;
+}
+
+[data-theme='dark'] .feedback-banner.is-success {
+  background: rgba(22, 101, 52, 0.25);
+  border-color: rgba(34, 197, 94, 0.35);
+  color: #86efac;
+}
+
+.feedback-banner-icon-col {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.feedback-banner-content {
+  flex: 1;
+}
+
+.feedback-banner-title {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.feedback-banner-message {
+  font-size: 12px;
+  opacity: 0.92;
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+.feedback-banner-tip {
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 5px;
+  opacity: 0.88;
+}
+
+.feedback-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-banner-action {
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.btn-banner-action:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.btn-banner-close {
+  border: none;
+  background: transparent;
+  color: inherit;
+  opacity: 0.65;
+  cursor: pointer;
+  padding: 2px;
+}
+
+.btn-banner-close:hover {
+  opacity: 1;
+}
+
+/* ==========================================================================
+   7. Windows Explorer Executables (.exe) Grid & Table View
+   ========================================================================== */
+.win-exe-table-wrap {
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.win-exe-table-header {
+  display: grid;
+  grid-template-columns: 2.2fr 1.2fr 0.9fr 1fr 1.4fr;
+  align-items: center;
+  padding: 8px 14px;
+  background: var(--bg-card-subtle);
+  border-bottom: 1px solid var(--border-card);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.win-exe-row {
+  display: grid;
+  grid-template-columns: 2.2fr 1.2fr 0.9fr 1fr 1.4fr;
+  align-items: center;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+  font-size: 12px;
+}
+
+.win-exe-row:last-child {
+  border-bottom: none;
+}
+
+.win-exe-row:hover {
+  background: rgba(14, 138, 78, 0.08);
+}
+
+.win-exe-name-col {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.win-exe-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--emerald-600);
+  flex-shrink: 0;
+}
+
+.win-exe-type {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+.win-exe-size {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.win-exe-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 10px;
+  font-weight: 800;
+  background: var(--emerald-100);
+  color: var(--emerald-800);
+  width: fit-content;
+}
+
+[data-theme='dark'] .win-exe-badge {
+  background: rgba(52, 211, 153, 0.18);
+  color: #6ee7b7;
+}
+
+.win-exe-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-run-admin {
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--gold-500);
+  background: rgba(217, 155, 26, 0.1);
+  color: var(--gold-700);
+  font-size: 10.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.14s ease;
+  white-space: nowrap;
+}
+
+.btn-run-admin:hover {
+  background: var(--gold-500);
+  color: #ffffff;
+}
+
+[data-theme='dark'] .btn-run-admin {
+  color: #fcd34d;
+}
