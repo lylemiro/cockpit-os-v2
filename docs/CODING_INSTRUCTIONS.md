@@ -235,3 +235,4 @@ dist/assets/index-*.js
 
 ---
 *COCKPIT OS v2.4.0 — High-Performance, Zero-Trust Coliseum Operations Engineering Standards.*
+
