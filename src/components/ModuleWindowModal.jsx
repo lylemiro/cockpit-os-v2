@@ -726,11 +726,12 @@ function ExplorerWindow({
         <div className="win-nav-buttons">
           <button
             type="button"
-            className={`win-nav-btn ${!isSidebarCollapsed ? 'is-active' : ''}`}
+            className={`win-sidebar-toggle-btn ${isSidebarCollapsed ? 'is-collapsed' : ''}`}
             onClick={toggleSidebarCollapse}
-            title={isSidebarCollapsed ? 'Show Navigation Pane' : 'Hide Navigation Pane'}
+            title={isSidebarCollapsed ? 'Show Navigation Pane (Ctrl + B)' : 'Hide Navigation Pane (Ctrl + B)'}
           >
-            <PanelLeft size={15} />
+            <PanelLeft size={14} />
+            <span>{isSidebarCollapsed ? 'Show Navigation' : 'Nav'}</span>
           </button>
           <button
             type="button"
@@ -873,179 +874,167 @@ function ExplorerWindow({
           showDetailsPane ? 'has-details-pane' : ''
         }`}
       >
-        {/* Floating Expand Rail button when the entire side nav is collapsed */}
-        {isSidebarCollapsed && (
-          <button
-            type="button"
-            className="win-sidebar-expand-rail"
-            onClick={toggleSidebarCollapse}
-            title="Expand Navigation Pane"
-          >
-            <PanelLeft size={13} />
-            <span>Show Navigation</span>
-            <ChevronRight size={12} />
-          </button>
-        )}
-
         {/* Left Navigation Tree Pane */}
-        <aside className="win-tree-pane">
-          {/* Header row with Vertical Fold/Unfold All & Horizontal Collapse Pane */}
-          <div className="win-tree-pane-top-row">
-            <span className="win-tree-header-title">Navigation</span>
-            <div className="win-tree-top-actions">
-              <button
-                type="button"
-                className="win-tree-header-btn"
-                onClick={toggleAllSectionsVertically}
-                title={areAllSectionsExpanded ? 'Fold All Sections Vertically' : 'Unfold All Sections Vertically'}
-              >
-                <ChevronsUpDown size={12} />
-                <span>{areAllSectionsExpanded ? 'Fold All' : 'Unfold All'}</span>
-              </button>
-              <button
-                type="button"
-                className="win-tree-header-btn"
-                onClick={toggleSidebarCollapse}
-                title="Collapse Navigation Pane Horizontally"
-              >
-                <ChevronLeft size={13} />
-              </button>
-            </div>
-          </div>
-
-          {/* Section A: Quick Access */}
-          <div className="win-tree-group">
-            <button
-              type="button"
-              className="win-tree-section-header"
-              onClick={() => toggleSection('quickAccess')}
-            >
-              {expandedSections.quickAccess ? (
-                <ChevronDown size={13} />
-              ) : (
-                <ChevronRight size={13} />
-              )}
-              <Star size={13} className="card-title-icon-gold" />
-              <span>Quick Access</span>
-            </button>
-
-            {expandedSections.quickAccess && (
-              <div className="win-tree-items">
+        {!isSidebarCollapsed && (
+          <aside className="win-tree-pane">
+            {/* Header row with Vertical Fold/Unfold All & Horizontal Collapse Pane */}
+            <div className="win-tree-pane-top-row">
+              <span className="win-tree-header-title">Navigation</span>
+              <div className="win-tree-top-actions">
                 <button
                   type="button"
-                  className={`win-tree-item ${viewMode === 'this-pc' ? 'is-selected' : ''}`}
-                  onClick={() => navigateToFolder('this-pc')}
+                  className="win-tree-header-btn"
+                  onClick={toggleAllSectionsVertically}
+                  title={areAllSectionsExpanded ? 'Fold All Sections Vertically' : 'Unfold All Sections Vertically'}
                 >
-                  <Monitor size={14} className="card-title-icon-emerald" />
-                  <span className="win-tree-item-label">This Arena PC</span>
+                  <ChevronsUpDown size={12} />
+                  <span>{areAllSectionsExpanded ? 'Fold All' : 'Unfold All'}</span>
                 </button>
-                {quickAccessIds.map((qid) => {
-                  const qapp = DESKTOP_APPS.find((a) => a.id === qid);
-                  if (!qapp) return null;
-                  const isSel = activeModuleId === qid && viewMode === 'workspace';
-                  return (
-                    <button
-                      key={qid}
-                      type="button"
-                      className={`win-tree-item ${isSel ? 'is-selected' : ''}`}
-                      onClick={() => navigateToFolder(qid)}
-                    >
-                      <AppIconGlyph name={qapp.icon} size={14} />
-                      <span className="win-tree-item-label">{qapp.label}</span>
-                    </button>
-                  );
-                })}
+                <button
+                  type="button"
+                  className="win-tree-header-btn"
+                  onClick={toggleSidebarCollapse}
+                  title="Collapse Navigation Pane Horizontally"
+                >
+                  <ChevronLeft size={13} />
+                </button>
               </div>
-            )}
-          </div>
+            </div>
 
-          {/* Section B: Multi-Tenant SQLite Drives */}
-          <div className="win-tree-group">
-            <button
-              type="button"
-              className="win-tree-section-header"
-              onClick={() => toggleSection('drives')}
-            >
-              {expandedSections.drives ? (
-                <ChevronDown size={13} />
-              ) : (
-                <ChevronRight size={13} />
+            {/* Section A: Quick Access */}
+            <div className="win-tree-group">
+              <button
+                type="button"
+                className="win-tree-section-header"
+                onClick={() => toggleSection('quickAccess')}
+              >
+                {expandedSections.quickAccess ? (
+                  <ChevronDown size={13} />
+                ) : (
+                  <ChevronRight size={13} />
+                )}
+                <Star size={13} className="card-title-icon-gold" />
+                <span>Quick Access</span>
+              </button>
+
+              {expandedSections.quickAccess && (
+                <div className="win-tree-items">
+                  <button
+                    type="button"
+                    className={`win-tree-item ${viewMode === 'this-pc' ? 'is-selected' : ''}`}
+                    onClick={() => navigateToFolder('this-pc')}
+                  >
+                    <Monitor size={14} className="card-title-icon-emerald" />
+                    <span className="win-tree-item-label">This Arena PC</span>
+                  </button>
+                  {quickAccessIds.map((qid) => {
+                    const qapp = DESKTOP_APPS.find((a) => a.id === qid);
+                    if (!qapp) return null;
+                    const isSel = activeModuleId === qid && viewMode === 'workspace';
+                    return (
+                      <button
+                        key={qid}
+                        type="button"
+                        className={`win-tree-item ${isSel ? 'is-selected' : ''}`}
+                        onClick={() => navigateToFolder(qid)}
+                      >
+                        <AppIconGlyph name={qapp.icon} size={14} />
+                        <span className="win-tree-item-label">{qapp.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               )}
-              <HardDrive size={13} className="card-title-icon-emerald" />
-              <span>Tenant SQLite Drives ({tenants.length})</span>
-            </button>
+            </div>
 
-            {expandedSections.drives && (
-              <div className="win-tree-items">
-                {tenants.map((t) => {
-                  const isMounted = t.tenant_id === activeTenantId;
-                  return (
-                    <button
-                      key={t.tenant_id}
-                      type="button"
-                      className={`win-tree-item ${isMounted ? 'is-selected' : ''}`}
-                      onClick={() => switchTenant(t.tenant_id)}
-                      title={`Mount ${t.db_file_name}`}
-                    >
-                      <HardDrive
-                        size={14}
-                        className={
-                          isMounted ? 'card-title-icon-gold' : 'card-title-icon-emerald'
-                        }
-                      />
-                      <span className="win-tree-item-label">
-                        ({t.tenant_code}:) {t.arena_name}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+            {/* Section B: Multi-Tenant SQLite Drives */}
+            <div className="win-tree-group">
+              <button
+                type="button"
+                className="win-tree-section-header"
+                onClick={() => toggleSection('drives')}
+              >
+                {expandedSections.drives ? (
+                  <ChevronDown size={13} />
+                ) : (
+                  <ChevronRight size={13} />
+                )}
+                <HardDrive size={13} className="card-title-icon-emerald" />
+                <span>Tenant SQLite Drives ({tenants.length})</span>
+              </button>
 
-          {/* Section C: Coliseum Subsystem Folders */}
-          <div className="win-tree-group">
-            <button
-              type="button"
-              className="win-tree-section-header"
-              onClick={() => toggleSection('folders')}
-            >
-              {expandedSections.folders ? (
-                <ChevronDown size={13} />
-              ) : (
-                <ChevronRight size={13} />
+              {expandedSections.drives && (
+                <div className="win-tree-items">
+                  {tenants.map((t) => {
+                    const isMounted = t.tenant_id === activeTenantId;
+                    return (
+                      <button
+                        key={t.tenant_id}
+                        type="button"
+                        className={`win-tree-item ${isMounted ? 'is-selected' : ''}`}
+                        onClick={() => switchTenant(t.tenant_id)}
+                        title={`Mount ${t.db_file_name}`}
+                      >
+                        <HardDrive
+                          size={14}
+                          className={
+                            isMounted ? 'card-title-icon-gold' : 'card-title-icon-emerald'
+                          }
+                        />
+                        <span className="win-tree-item-label">
+                          ({t.tenant_code}:) {t.arena_name}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               )}
-              <Folder size={13} className="card-title-icon-gold" />
-              <span>System Folders ({filteredFolders.length})</span>
-            </button>
+            </div>
 
-            {expandedSections.folders && (
-              <div className="win-tree-items">
-                {filteredFolders.map((app) => {
-                  const isSel = activeModuleId === app.id && viewMode === 'workspace';
-                  const count =
-                    typeof app.getCount === 'function' ? app.getCount(arenaState) : 0;
-                  return (
-                    <button
-                      key={app.id}
-                      type="button"
-                      className={`win-tree-item ${isSel ? 'is-selected' : ''}`}
-                      onClick={() => navigateToFolder(app.id)}
-                    >
-                      {isSel ? (
-                        <FolderOpen size={14} className="card-title-icon-gold" />
-                      ) : (
-                        <Folder size={14} className="card-title-icon-emerald" />
-                      )}
-                      <span className="win-tree-item-label">{app.label}</span>
-                      {count > 0 && <span className="win-tree-count">{count}</span>}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </aside>
+            {/* Section C: Coliseum Subsystem Folders */}
+            <div className="win-tree-group">
+              <button
+                type="button"
+                className="win-tree-section-header"
+                onClick={() => toggleSection('folders')}
+              >
+                {expandedSections.folders ? (
+                  <ChevronDown size={13} />
+                ) : (
+                  <ChevronRight size={13} />
+                )}
+                <Folder size={13} className="card-title-icon-gold" />
+                <span>System Folders ({filteredFolders.length})</span>
+              </button>
+
+              {expandedSections.folders && (
+                <div className="win-tree-items">
+                  {filteredFolders.map((app) => {
+                    const isSel = activeModuleId === app.id && viewMode === 'workspace';
+                    const count =
+                      typeof app.getCount === 'function' ? app.getCount(arenaState) : 0;
+                    return (
+                      <button
+                        key={app.id}
+                        type="button"
+                        className={`win-tree-item ${isSel ? 'is-selected' : ''}`}
+                        onClick={() => navigateToFolder(app.id)}
+                      >
+                        {isSel ? (
+                          <FolderOpen size={14} className="card-title-icon-gold" />
+                        ) : (
+                          <Folder size={14} className="card-title-icon-emerald" />
+                        )}
+                        <span className="win-tree-item-label">{app.label}</span>
+                        {count > 0 && <span className="win-tree-count">{count}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </aside>
+        )}
 
         {/* Center Explorer Content Pane */}
         <main className="win-content-pane">
