@@ -151,10 +151,12 @@ export function TelemetrySidebar() {
               <span className="operational-orb" />
               <div>
                 <div className="operational-headline">
-                  {error ? 'DEGRADED' : 'OPERATIONAL'}
+                  {error ? 'NOTICE' : 'OPERATIONAL'}
                 </div>
                 <div className="operational-subtext">
-                  {error || 'All systems running normally'}
+                  {typeof error === 'object' && error !== null
+                    ? error.message || error.title || 'Action notice recorded'
+                    : error || 'All systems running normally'}
                 </div>
               </div>
             </div>

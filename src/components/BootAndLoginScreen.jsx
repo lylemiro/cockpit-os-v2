@@ -318,7 +318,11 @@ export function BootAndLoginScreen() {
       {error && (
         <div className="real-os-error-toast">
           <AlertCircle size={16} />
-          <span>{error}</span>
+          <span>
+            {typeof error === 'object' && error !== null
+              ? error.message || error.title || 'Authentication error'
+              : String(error)}
+          </span>
           <button
             type="button"
             className="toast-close-x"

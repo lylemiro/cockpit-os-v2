@@ -1615,7 +1615,11 @@ export function SubsystemWorkspace({ moduleId }) {
                       </tr>
                     </thead>
                     <tbody>
-                      {events.map((ev) => (
+                      {events.map((ev) => {
+                        const now = new Date();
+                        const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                        const isFutureDate = String(ev.event_date || '').slice(0, 10) > todayIso;
+                        return (
                         <tr key={ev.event_id}>
                           <td>
                             <button
@@ -1638,7 +1642,11 @@ export function SubsystemWorkspace({ moduleId }) {
                           </td>
                           <td>
                             <span className={`status-badge ${ev.status === 'ACTIVE' ? 'is-passed' : 'is-pending'}`}>
-                              {ev.status}
+                              {ev.status === 'ACTIVE'
+                                ? 'ACTIVE'
+                                : isFutureDate
+                                ? 'SCHEDULED • AUTO-LIVE'
+                                : ev.status}
                             </span>
                           </td>
                           <td>
@@ -1661,50 +1669,52 @@ export function SubsystemWorkspace({ moduleId }) {
                               >
                                 Edit
                               </button>
-                              {ev.status !== 'ACTIVE' ? (
-                                <button
-                                  type="button"
-                                  className="btn-table-shift"
-                                  onClick={() => {
-                                    setCrudPinInput('');
-                                    setCrudPinError('');
-                                    setCrudPinModal({
-                                      title: `Activate "${ev.title}" Live`,
-                                      description:
-                                        'Requires Operator Security PIN / Password. Note: Future-dated events stay SCHEDULED until their event date arrives.',
-                                      confirmLabel: 'Set Live',
-                                      isDanger: false,
-                                      endpoint: `/api/events/${ev.event_id}`,
-                                      method: 'PATCH',
-                                      payload: { status: 'ACTIVE' },
-                                      successMessage: `Activated tournament "${ev.title}".`
-                                    });
-                                  }}
-                                >
-                                  Set Live
-                                </button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  className="btn-table-shift"
-                                  onClick={() => {
-                                    setCrudPinInput('');
-                                    setCrudPinError('');
-                                    setCrudPinModal({
-                                      title: `Set "${ev.title}" to Scheduled Standby`,
-                                      description:
-                                        'Requires Operator Security PIN / Password to move this live tournament back to SCHEDULED standby.',
-                                      confirmLabel: 'Set Standby',
-                                      isDanger: false,
-                                      endpoint: `/api/events/${ev.event_id}`,
-                                      method: 'PATCH',
-                                      payload: { status: 'SCHEDULED' },
-                                      successMessage: `Moved tournament "${ev.title}" to SCHEDULED standby.`
-                                    });
-                                  }}
-                                >
-                                  Standby
-                                </button>
+                              {!isFutureDate && (
+                                ev.status !== 'ACTIVE' ? (
+                                  <button
+                                    type="button"
+                                    className="btn-table-shift"
+                                    onClick={() => {
+                                      setCrudPinInput('');
+                                      setCrudPinError('');
+                                      setCrudPinModal({
+                                        title: `Activate "${ev.title}" Live`,
+                                        description:
+                                          'Requires Operator Security PIN / Password to activate this tournament live.',
+                                        confirmLabel: 'Set Live',
+                                        isDanger: false,
+                                        endpoint: `/api/events/${ev.event_id}`,
+                                        method: 'PATCH',
+                                        payload: { status: 'ACTIVE' },
+                                        successMessage: `Activated tournament "${ev.title}".`
+                                      });
+                                    }}
+                                  >
+                                    Set Live
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    className="btn-table-shift"
+                                    onClick={() => {
+                                      setCrudPinInput('');
+                                      setCrudPinError('');
+                                      setCrudPinModal({
+                                        title: `Set "${ev.title}" to Scheduled Standby`,
+                                        description:
+                                          'Requires Operator Security PIN / Password to move this live tournament back to SCHEDULED standby.',
+                                        confirmLabel: 'Set Standby',
+                                        isDanger: false,
+                                        endpoint: `/api/events/${ev.event_id}`,
+                                        method: 'PATCH',
+                                        payload: { status: 'SCHEDULED' },
+                                        successMessage: `Moved tournament "${ev.title}" to SCHEDULED standby.`
+                                      });
+                                    }}
+                                  >
+                                    Standby
+                                  </button>
+                                )
                               )}
                               <button
                                 type="button"
@@ -1730,7 +1740,8 @@ export function SubsystemWorkspace({ moduleId }) {
                             </div>
                           </td>
                         </tr>
-                      ))}
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -2050,7 +2061,11 @@ export function SubsystemWorkspace({ moduleId }) {
                         </tr>
                       </thead>
                       <tbody>
-                        {events.map((ev) => (
+                        {events.map((ev) => {
+                          const now = new Date();
+                          const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                          const isFutureDate = String(ev.event_date || '').slice(0, 10) > todayIso;
+                          return (
                           <tr key={ev.event_id}>
                             <td>
                               <button
@@ -2067,7 +2082,11 @@ export function SubsystemWorkspace({ moduleId }) {
                             </td>
                             <td>
                               <span className={`status-badge ${ev.status === 'ACTIVE' ? 'is-passed' : 'is-pending'}`}>
-                                {ev.status}
+                                {ev.status === 'ACTIVE'
+                                  ? 'ACTIVE'
+                                  : isFutureDate
+                                  ? 'SCHEDULED • AUTO-LIVE'
+                                  : ev.status}
                               </span>
                             </td>
                             <td>
@@ -2090,50 +2109,52 @@ export function SubsystemWorkspace({ moduleId }) {
                                 >
                                   Edit
                                 </button>
-                                {ev.status !== 'ACTIVE' ? (
-                                  <button
-                                    type="button"
-                                    className="btn-table-shift"
-                                    onClick={() => {
-                                      setCrudPinInput('');
-                                      setCrudPinError('');
-                                      setCrudPinModal({
-                                        title: `Activate "${ev.title}" Live`,
-                                        description:
-                                          'Requires Operator Security PIN / Password. Note: Future-dated events stay SCHEDULED until their event date arrives.',
-                                        confirmLabel: 'Set Live',
-                                        isDanger: false,
-                                        endpoint: `/api/events/${ev.event_id}`,
-                                        method: 'PATCH',
-                                        payload: { status: 'ACTIVE' },
-                                        successMessage: `Activated tournament "${ev.title}".`
-                                      });
-                                    }}
-                                  >
-                                    Set Live
-                                  </button>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    className="btn-table-shift"
-                                    onClick={() => {
-                                      setCrudPinInput('');
-                                      setCrudPinError('');
-                                      setCrudPinModal({
-                                        title: `Set "${ev.title}" to Scheduled Standby`,
-                                        description:
-                                          'Requires Operator Security PIN / Password to move this live tournament back to SCHEDULED standby.',
-                                        confirmLabel: 'Set Standby',
-                                        isDanger: false,
-                                        endpoint: `/api/events/${ev.event_id}`,
-                                        method: 'PATCH',
-                                        payload: { status: 'SCHEDULED' },
-                                        successMessage: `Moved tournament "${ev.title}" to SCHEDULED standby.`
-                                      });
-                                    }}
-                                  >
-                                    Standby
-                                  </button>
+                                {!isFutureDate && (
+                                  ev.status !== 'ACTIVE' ? (
+                                    <button
+                                      type="button"
+                                      className="btn-table-shift"
+                                      onClick={() => {
+                                        setCrudPinInput('');
+                                        setCrudPinError('');
+                                        setCrudPinModal({
+                                          title: `Activate "${ev.title}" Live`,
+                                          description:
+                                            'Requires Operator Security PIN / Password to activate this tournament live.',
+                                          confirmLabel: 'Set Live',
+                                          isDanger: false,
+                                          endpoint: `/api/events/${ev.event_id}`,
+                                          method: 'PATCH',
+                                          payload: { status: 'ACTIVE' },
+                                          successMessage: `Activated tournament "${ev.title}".`
+                                        });
+                                      }}
+                                    >
+                                      Set Live
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      className="btn-table-shift"
+                                      onClick={() => {
+                                        setCrudPinInput('');
+                                        setCrudPinError('');
+                                        setCrudPinModal({
+                                          title: `Set "${ev.title}" to Scheduled Standby`,
+                                          description:
+                                            'Requires Operator Security PIN / Password to move this live tournament back to SCHEDULED standby.',
+                                          confirmLabel: 'Set Standby',
+                                          isDanger: false,
+                                          endpoint: `/api/events/${ev.event_id}`,
+                                          method: 'PATCH',
+                                          payload: { status: 'SCHEDULED' },
+                                          successMessage: `Moved tournament "${ev.title}" to SCHEDULED standby.`
+                                        });
+                                      }}
+                                    >
+                                      Standby
+                                    </button>
+                                  )
                                 )}
                                 <button
                                   type="button"
@@ -2159,7 +2180,8 @@ export function SubsystemWorkspace({ moduleId }) {
                               </div>
                             </td>
                           </tr>
-                        ))}
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
