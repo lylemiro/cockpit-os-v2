@@ -67,8 +67,8 @@ export function TopSystemBar() {
               title="Open Multi-Tenant & ARBAC Manager"
               onClick={() => setActiveModuleId('users-permissions')}
             >
-              {authenticatedOperator.staff_code}: {authenticatedOperator.full_name} (
-              {authenticatedOperator.permissions_count}/23)
+              {authenticatedOperator.staff_code || 'EMP-01'}: {authenticatedOperator.full_name || 'Operator'} (
+              {authenticatedOperator.permissions_count ?? (Array.isArray(authenticatedOperator.permissions) ? authenticatedOperator.permissions.length : 23)}/23)
             </button>
             <span className="top-divider">|</span>
           </>

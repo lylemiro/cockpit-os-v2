@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Bell,
   CheckCircle2,
@@ -15,7 +16,8 @@ import {
   Monitor,
   Terminal,
   Sparkles,
-  ExternalLink
+  ExternalLink,
+  X
 } from 'lucide-react';
 import { useArena } from '../context/ArenaContext.jsx';
 
@@ -114,37 +116,51 @@ export function WindowsNotificationFlyout({ isOpen, onClose }) {
 
   const totalNotifsCount = toasts.length + systemAlerts.length + auditLogs.length;
 
-  return (
-    <div
-      ref={flyoutRef}
-      className="win-notification-flyout"
-      role="dialog"
-      aria-label="Windows Action Center & Notifications"
-    >
-      {/* 1. Flyout Header */}
-      <div className="notif-header">
-        <div className="notif-header-title">
-          <Bell size={16} className="card-title-icon-gold" />
-          <span>Coliseum Action Center</span>
-          {totalNotifsCount > 0 && (
-            <span className="notif-count-badge">{totalNotifsCount}</span>
-          )}
-        </div>
+  return createPortal(
+    <>
+      <div
+        className="win-notification-backdrop"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <aside
+        ref={flyoutRef}
+        className="win-notification-flyout is-full-side"
+        role="dialog"
+        aria-label="Windows Action Center & Notifications"
+      >
+        {/* 1. Flyout Header */}
+        <div className="notif-header">
+          <div className="notif-header-title">
+            <Bell size={17} className="card-title-icon-gold" />
+            <span>Coliseum Action Center</span>
+            {totalNotifsCount > 0 && (
+              <span className="notif-count-badge">{totalNotifsCount}</span>
+            )}
+          </div>
 
-        <div className="notif-header-actions">
-          {toasts.length > 0 && (
+          <div className="notif-header-actions">
+            {toasts.length > 0 && (
+              <button
+                type="button"
+                className="notif-clear-btn"
+                onClick={clearAllToasts}
+                title="Clear active toasts"
+              >
+                <Trash2 size={13} />
+                <span>Clear</span>
+              </button>
+            )}
             <button
               type="button"
-              className="notif-clear-btn"
-              onClick={clearAllToasts}
-              title="Clear active toasts"
+              className="notif-close-btn"
+              onClick={onClose}
+              title="Close Action Center (Esc)"
             >
-              <Trash2 size={13} />
-              <span>Clear</span>
+              <X size={17} />
             </button>
-          )}
+          </div>
         </div>
-      </div>
 
       {/* 2. Notification Category Tabs */}
       <div className="notif-category-bar">
@@ -333,6 +349,8 @@ export function WindowsNotificationFlyout({ isOpen, onClose }) {
           <span>Audit Log</span>
         </button>
       </div>
-    </div>
-  );
+    </aside>
+  </>,
+  document.body
+);
 }

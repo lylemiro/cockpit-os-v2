@@ -1918,27 +1918,81 @@
   color: var(--text-muted);
 }
 
-/* C. NOTIFICATIONS FLYOUT */
+/* C. NOTIFICATIONS & ACTION CENTER FULL SIDE DRAWER (ABOVE ALL) */
+.win-notification-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 14, 9, 0.52);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 9999;
+  animation: fadeInBackdrop 0.2s ease-out;
+}
+
+@keyframes fadeInBackdrop {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes flyoutSlideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0.6;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 .win-notification-flyout {
   position: fixed;
-  bottom: 60px;
-  right: 16px;
-  width: 370px;
-  max-width: calc(100vw - 32px);
-  max-height: calc(100vh - 80px);
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 420px;
+  max-width: calc(100vw - 24px);
+  height: 100vh;
+  max-height: 100vh;
   background: var(--bg-card);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border: 1px solid var(--border-card);
-  border-radius: var(--radius-xl);
-  box-shadow: 0 20px 60px -10px rgba(6, 26, 17, 0.28);
-  z-index: 99;
+  backdrop-filter: blur(36px);
+  -webkit-backdrop-filter: blur(36px);
+  border: none;
+  border-left: 1px solid var(--border-card);
+  border-radius: 20px 0 0 20px;
+  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.45);
+  z-index: 10000;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px;
-  overflow-y: auto;
-  animation: flyoutSlideUp 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+  gap: 14px;
+  padding: 20px 20px 18px 20px;
+  overflow: hidden;
+  animation: flyoutSlideInRight 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme='dark'] .win-notification-flyout {
+  background: rgba(6, 22, 15, 0.96);
+  border-left: 1px solid rgba(18, 168, 95, 0.28);
+  box-shadow: -24px 0 70px rgba(0, 0, 0, 0.72);
+}
+
+.notif-close-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.notif-close-btn:hover {
+  background: var(--bg-card-subtle);
+  color: var(--text-primary);
 }
 
 .notif-header {
@@ -2077,8 +2131,11 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 380px;
+  flex: 1;
+  min-height: 0;
+  max-height: none;
   overflow-y: auto;
+  padding-right: 4px;
 }
 
 .notif-card {

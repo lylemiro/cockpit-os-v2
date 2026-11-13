@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { translateToFriendlyError } from '../utils/friendlyErrors.js';
 
 const ArenaContext = createContext(null);
@@ -49,7 +49,12 @@ export function ArenaProvider({ children }) {
     readStorage('cockpit_active_module_id', null)
   );
 
-  const [theme, setTheme] = useState(() => readStorage('cockpit_theme', 'light'));
+  const authOpRef = useRef(authenticatedOperator);
+  useEffect(() => {
+    authOpRef.current = authenticatedOperator;
+  }, [authenticatedOperator]);
+
+  const [theme, setTheme] = useState(() => readStorage('cockpit_theme', 'dark'));
   const [wallpaper, setWallpaperState] = useState(() => {
     const saved = readStorage('cockpit_wallpaper', null);
     if (!saved || saved === 'wallpaper_v2' || saved === 'default') {
@@ -154,23 +159,29 @@ export function ArenaProvider({ children }) {
         // If no tenants exist in DB at all (fresh wipe), clear stale operator session
         if (Array.isArray(data.tenants) && data.tenants.length === 0) {
           setAuthenticatedOperator(null);
-        } else if (authenticatedOperator && Array.isArray(data.employees)) {
-          // Sync live ARBAC permission count if current operator was edited
-          const updatedOp = data.employees.find(
-            (e) => e.staff_code === authenticatedOperator.staff_code
-          );
-          if (
-            updatedOp &&
-            updatedOp.permissions_count !== authenticatedOperator.permissions_count
-          ) {
-            setAuthenticatedOperator({
-              ...authenticatedOperator,
-              full_name: updatedOp.full_name,
-              role: updatedOp.role,
-              zone: updatedOp.zone,
-              permissions: updatedOp.permissions,
-              permissions_count: updatedOp.permissions_count
-            });
+        } else {
+          const currentOp = authOpRef.current;
+          if (currentOp && Array.isArray(data.employees)) {
+            // Sync live ARBAC permission count if current operator was edited
+            const updatedOp = data.employees.find(
+              (e) =>
+                (e.staff_code && e.staff_code === currentOp.staff_code) ||
+                (e.employee_id && e.employee_id === currentOp.employee_id)
+            );
+            if (
+              updatedOp &&
+              Number(updatedOp.permissions_count ?? updatedOp.permissions?.length ?? 0) !==
+                Number(currentOp.permissions_count ?? currentOp.permissions?.length ?? 0)
+            ) {
+              setAuthenticatedOperator({
+                ...currentOp,
+                full_name: updatedOp.full_name,
+                role: updatedOp.role,
+                zone: updatedOp.zone,
+                permissions: updatedOp.permissions,
+                permissions_count: updatedOp.permissions_count
+              });
+            }
           }
         }
 
@@ -181,7 +192,7 @@ export function ArenaProvider({ children }) {
         setLoading(false);
       }
     },
-    [activeTenantId, authenticatedOperator, setAuthenticatedOperator]
+    [activeTenantId, setAuthenticatedOperator]
   );
 
   useEffect(() => {
@@ -244,7 +255,7 @@ export function ArenaProvider({ children }) {
       if (reconnectTimer) clearTimeout(reconnectTimer);
       if (ws) ws.close();
     };
-  }, [fetchState]);
+  }, [activeTenantId]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);

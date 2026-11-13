@@ -10,6 +10,7 @@ import { BootAndLoginScreen } from './components/BootAndLoginScreen.jsx';
 import { AltTabSwitcher } from './components/AltTabSwitcher.jsx';
 import { DesktopContextMenu } from './components/DesktopContextMenu.jsx';
 import { ToastContainer } from './components/CentralizedFeedbackStates.jsx';
+import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 
 function CockpitDesktopInner() {
   const {
@@ -53,9 +54,11 @@ function CockpitDesktopInner() {
 
 export default function App() {
   return (
-    <ArenaProvider>
-      <CockpitDesktopInner />
-    </ArenaProvider>
+    <ErrorBoundary>
+      <ArenaProvider>
+        <CockpitDesktopInner />
+      </ArenaProvider>
+    </ErrorBoundary>
   );
 }
 
