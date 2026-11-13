@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Upload, X, Trophy } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Upload, X, Trophy, Edit3, Lock, FileText, CheckCircle2, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { useArena } from '../context/ArenaContext.jsx';
 import { DatabaseRelationshipGraph } from '../components/DatabaseRelationshipGraph.jsx';
 import { ArbacManager } from '../components/ArbacManager.jsx';
@@ -21,6 +21,8 @@ export function SubsystemWorkspace({ moduleId }) {
 
   const [notice, setNotice] = useState(null);
   const [dbTab, setDbTab] = useState('graph'); // 'graph' | 'tables'
+  const [isEditingArena, setIsEditingArena] = useState(false);
+  const [paperworkDocType, setPaperworkDocType] = useState('bout_sheet'); // 'bout_sheet' | 'tari_clearance' | 'plasada_voucher'
 
   // Form states for dynamic creation across modules
   const [arenaForm, setArenaForm] = useState({
@@ -30,6 +32,7 @@ export function SubsystemWorkspace({ moduleId }) {
     bir_cas_min: '',
     plasada_rate: '0.10',
     logo_url: '',
+    security_pin: '',
     min_rest_gap: '4',
     vip_seats: '320',
     lower_box_seats: '1450',
@@ -115,6 +118,28 @@ export function SubsystemWorkspace({ moduleId }) {
     custodian: ''
   });
 
+  // Pre-fill arenaForm whenever current config is loaded from SQLite SSOT
+  useEffect(() => {
+    if (arenaState?.arenaConfig) {
+      const c = arenaState.arenaConfig;
+      setArenaForm((prev) => ({
+        ...prev,
+        arena_name: c.arena_name || '',
+        gab_license: c.gab_license || '',
+        mayors_permit: c.mayors_permit || '',
+        bir_cas_min: c.bir_cas_min || '',
+        plasada_rate: c.plasada_rate != null ? String(c.plasada_rate) : '0.10',
+        logo_url: c.logo_url || '',
+        security_pin: '',
+        min_rest_gap: String(c.min_rest_gap || 4),
+        vip_seats: String(c.vip_seats || 320),
+        lower_box_seats: String(c.lower_box_seats || 1450),
+        upper_grandstand_seats: String(c.upper_grandstand_seats || 3200),
+        total_cockhouse_bays: String(c.total_cockhouse_bays || 120)
+      }));
+    }
+  }, [arenaState?.arenaConfig]);
+
   if (loading || !arenaState) {
     return (
       <div className="skeleton-stack">
@@ -172,134 +197,207 @@ export function SubsystemWorkspace({ moduleId }) {
   // 2. ARENA SETUP
   if (moduleId === 'arena-setup') {
     const current = arenaState.arenaConfig;
+    const showForm = !current || isEditingArena;
+    const previewConfig = current || {
+      arena_name: arenaForm.arena_name || 'Leyte Recreational & Amusement Complex (LRAC)',
+      gab_license: arenaForm.gab_license || 'GAB-COL-2026-0884',
+      mayors_permit: arenaForm.mayors_permit || 'LGU-MP-2026-89201',
+      bir_cas_min: arenaForm.bir_cas_min || 'MIN-20260411-88392014',
+      plasada_rate: Number(arenaForm.plasada_rate || 0.1),
+      logo_url: arenaForm.logo_url || ''
+    };
+
     return (
       <div className="workspace-split-grid">
-        <form
-          className="workspace-panel form-stack"
-          onSubmit={async (e) => {
-            e.preventDefault();
-            await handleAction(
-              '/api/arena-config',
-              'POST',
-              arenaForm,
-              'Arena configuration saved to SQLite SSOT.'
-            );
-          }}
-        >
-          <div className="workspace-panel-title">Save Coliseum Parameters</div>
-          {notice && <div className="status-alert-banner is-success">{notice}</div>}
-          <div className="form-field">
-            <label className="form-label">Arena / Coliseum Name</label>
-            <input
-              className="form-input"
-              required
-              placeholder="e.g. San Juan Coliseum Arena"
-              value={arenaForm.arena_name}
-              onChange={(e) => setArenaForm({ ...arenaForm, arena_name: e.target.value })}
-            />
-          </div>
-          <div className="form-row-2col">
-            <div className="form-field">
-              <label className="form-label">GAB License No.</label>
-              <input
-                className="form-input"
-                required
-                placeholder="GAB-COL-2026-01"
-                value={arenaForm.gab_license}
-                onChange={(e) => setArenaForm({ ...arenaForm, gab_license: e.target.value })}
-              />
-            </div>
-            <div className="form-field">
-              <label className="form-label">LGU Mayor Permit</label>
-              <input
-                className="form-input"
-                required
-                placeholder="LGU-MP-2026-01"
-                value={arenaForm.mayors_permit}
-                onChange={(e) => setArenaForm({ ...arenaForm, mayors_permit: e.target.value })}
-              />
-            </div>
-          </div>
-          <div className="form-row-2col">
-            <div className="form-field">
-              <label className="form-label">BIR CAS MIN</label>
-              <input
-                className="form-input"
-                required
-                placeholder="MIN-2026-00001"
-                value={arenaForm.bir_cas_min}
-                onChange={(e) => setArenaForm({ ...arenaForm, bir_cas_min: e.target.value })}
-              />
-            </div>
-            <div className="form-field">
-              <label className="form-label">House Plasada Rate</label>
-              <input
-                type="number"
-                step="0.01"
-                className="form-input"
-                value={arenaForm.plasada_rate}
-                onChange={(e) => setArenaForm({ ...arenaForm, plasada_rate: e.target.value })}
-              />
-            </div>
-          </div>
-          <div className="form-field">
-            <label className="form-label">Coliseum Official Logo / Crest</label>
-            <div className="arena-logo-upload-box">
-              {arenaForm.logo_url ? (
-                <div className="arena-logo-preview-card">
-                  <img src={arenaForm.logo_url} alt="Coliseum Logo" className="arena-logo-img" />
-                  <div className="arena-logo-actions">
-                    <button
-                      type="button"
-                      className="btn-secondary-gold"
-                      onClick={() => setArenaForm({ ...arenaForm, logo_url: '' })}
-                    >
-                      <X size={14} />
-                      <span>Remove Logo</span>
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <label className="arena-logo-dropzone">
-                  <Upload size={20} className="card-title-icon-emerald" />
-                  <div className="arena-logo-drop-text">
-                    <strong>Click to upload official Coliseum Logo / Crest</strong>
-                    <span>Supports PNG, JPG, WebP, SVG</span>
-                  </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="arena-file-input-hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (rev) => {
-                          setArenaForm((prev) => ({ ...prev, logo_url: rev.target.result }));
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                  />
-                </label>
+        {/* Left Column: Form (when editing or first setup) OR Profile Card (when view mode) */}
+        {showForm ? (
+          <form
+            className="workspace-panel form-stack"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const res = await handleAction(
+                '/api/arena-config',
+                'POST',
+                arenaForm,
+                'Arena configuration and paperwork parameters saved to SQLite SSOT.'
+              );
+              if (res?.ok) {
+                setIsEditingArena(false);
+                setArenaForm((prev) => ({ ...prev, security_pin: '' }));
+              }
+            }}
+          >
+            <div className="arena-panel-header-row">
+              <div className="workspace-panel-title">
+                {current ? 'Edit Coliseum Parameters' : 'Save Coliseum Parameters'}
+              </div>
+              {current && (
+                <button
+                  type="button"
+                  className="btn-secondary-gold"
+                  onClick={() => {
+                    setIsEditingArena(false);
+                    setArenaForm((prev) => ({ ...prev, security_pin: '' }));
+                  }}
+                >
+                  <X size={14} />
+                  <span>Cancel</span>
+                </button>
               )}
             </div>
-          </div>
-          <button type="submit" className="btn-primary-emerald" disabled={submitting}>
-            {submitting ? 'Saving Configuration...' : 'Save Arena Setup'}
-          </button>
-        </form>
-
-        <div className="workspace-panel">
-          <div className="workspace-panel-title">Active SSOT Venue Profile</div>
-          {!current ? (
-            <div className="module-empty-state">
-              <div className="module-empty-title">Arena Profile Not Yet Configured</div>
-              <div className="module-empty-desc">
-                Submit the form on the left to establish official GAB, LGU, and BIR CAS MIN parameters and upload the Coliseum Logo.
+            {notice && <div className="status-alert-banner is-success">{notice}</div>}
+            <div className="form-field">
+              <label className="form-label">Arena / Coliseum Name</label>
+              <input
+                className="form-input"
+                required
+                placeholder="e.g. San Juan Coliseum Arena"
+                value={arenaForm.arena_name}
+                onChange={(e) => setArenaForm({ ...arenaForm, arena_name: e.target.value })}
+              />
+            </div>
+            <div className="form-row-2col">
+              <div className="form-field">
+                <label className="form-label">GAB License No.</label>
+                <input
+                  className="form-input"
+                  required
+                  placeholder="GAB-COL-2026-01"
+                  value={arenaForm.gab_license}
+                  onChange={(e) => setArenaForm({ ...arenaForm, gab_license: e.target.value })}
+                />
+              </div>
+              <div className="form-field">
+                <label className="form-label">LGU Mayor Permit</label>
+                <input
+                  className="form-input"
+                  required
+                  placeholder="LGU-MP-2026-01"
+                  value={arenaForm.mayors_permit}
+                  onChange={(e) => setArenaForm({ ...arenaForm, mayors_permit: e.target.value })}
+                />
               </div>
             </div>
-          ) : (
+            <div className="form-row-2col">
+              <div className="form-field">
+                <label className="form-label">BIR CAS MIN</label>
+                <input
+                  className="form-input"
+                  required
+                  placeholder="MIN-2026-00001"
+                  value={arenaForm.bir_cas_min}
+                  onChange={(e) => setArenaForm({ ...arenaForm, bir_cas_min: e.target.value })}
+                />
+              </div>
+              <div className="form-field">
+                <label className="form-label">House Plasada Rate</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="form-input"
+                  value={arenaForm.plasada_rate}
+                  onChange={(e) => setArenaForm({ ...arenaForm, plasada_rate: e.target.value })}
+                />
+              </div>
+            </div>
+
+            {/* Coliseum Logo Upload */}
+            <div className="form-field">
+              <label className="form-label">Coliseum Official Logo / Crest</label>
+              <div className="arena-logo-upload-box">
+                {arenaForm.logo_url ? (
+                  <div className="arena-logo-preview-card">
+                    <img src={arenaForm.logo_url} alt="Coliseum Logo" className="arena-logo-img" />
+                    <div className="arena-logo-actions">
+                      <button
+                        type="button"
+                        className="btn-secondary-gold"
+                        onClick={() => setArenaForm({ ...arenaForm, logo_url: '' })}
+                      >
+                        <X size={14} />
+                        <span>Remove Logo</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <label className="arena-logo-dropzone">
+                    <Upload size={20} className="card-title-icon-emerald" />
+                    <div className="arena-logo-drop-text">
+                      <strong>Click to upload official Coliseum Logo / Crest</strong>
+                      <span>Supports PNG, JPG, WebP, SVG</span>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="arena-file-input-hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (rev) => {
+                            setArenaForm((prev) => ({ ...prev, logo_url: rev.target.result }));
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
+                )}
+              </div>
+            </div>
+
+            {/* Mandatory Operator Security PIN / Password */}
+            <div className="form-field">
+              <label className="form-label">
+                <Lock size={13} className="card-title-icon-gold" />
+                <span>Operator Security PIN / Password (Required to Save)</span>
+              </label>
+              <input
+                type="password"
+                className="form-input"
+                required
+                placeholder="Enter 4-digit Security PIN to authenticate changes"
+                value={arenaForm.security_pin}
+                onChange={(e) => setArenaForm({ ...arenaForm, security_pin: e.target.value })}
+              />
+              <div className="arena-pin-notice">
+                <AlertTriangle size={13} />
+                <span>Zero-Trust Gate 0: Authorized operator credentials required to commit legal Coliseum SSOT parameters.</span>
+              </div>
+            </div>
+
+            <div className="arena-form-actions-row">
+              <button type="submit" className="btn-primary-emerald" disabled={submitting}>
+                {submitting ? 'Authenticating & Saving...' : current ? 'Update Arena Parameters' : 'Save Arena Setup'}
+              </button>
+              {current && (
+                <button
+                  type="button"
+                  className="btn-secondary-gold"
+                  onClick={() => {
+                    setIsEditingArena(false);
+                    setArenaForm((prev) => ({ ...prev, security_pin: '' }));
+                  }}
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+          </form>
+        ) : (
+          <div className="workspace-panel form-stack">
+            <div className="arena-panel-header-row">
+              <div className="workspace-panel-title">Active SSOT Venue Profile</div>
+              <button
+                type="button"
+                className="btn-secondary-gold"
+                onClick={() => setIsEditingArena(true)}
+              >
+                <Edit3 size={14} />
+                <span>Edit Arena Parameters</span>
+              </button>
+            </div>
+            {notice && <div className="status-alert-banner is-success">{notice}</div>}
             <div className="data-table-wrap">
               {current.logo_url && (
                 <div className="venue-profile-crest-row">
@@ -308,7 +406,7 @@ export function SubsystemWorkspace({ moduleId }) {
                   </div>
                   <div className="venue-profile-crest-info">
                     <div className="venue-profile-crest-name">{current.arena_name}</div>
-                    <div className="venue-profile-crest-tag">Official GAB / LGU Licensed Coliseum Emblem</div>
+                    <div className="venue-profile-crest-tag">Official GAB &amp; LGU Licensed Coliseum Emblem</div>
                   </div>
                 </div>
               )}
@@ -316,28 +414,314 @@ export function SubsystemWorkspace({ moduleId }) {
                 <tbody>
                   <tr>
                     <th>Arena Name</th>
-                    <td>{current.arena_name}</td>
+                    <td><strong>{current.arena_name}</strong></td>
                   </tr>
                   <tr>
                     <th>GAB License</th>
-                    <td>{current.gab_license}</td>
+                    <td><span className="top-mono-item">{current.gab_license}</span></td>
                   </tr>
                   <tr>
                     <th>Mayor&apos;s Permit</th>
-                    <td>{current.mayors_permit}</td>
+                    <td><span className="top-mono-item">{current.mayors_permit}</span></td>
                   </tr>
                   <tr>
                     <th>BIR CAS MIN</th>
-                    <td>{current.bir_cas_min}</td>
+                    <td><span className="top-mono-item">{current.bir_cas_min}</span></td>
                   </tr>
                   <tr>
                     <th>Plasada Commission</th>
-                    <td>{Math.round(current.plasada_rate * 100)}%</td>
+                    <td><strong>{Math.round(current.plasada_rate * 100)}%</strong></td>
+                  </tr>
+                  <tr>
+                    <th>Regulatory Status</th>
+                    <td>
+                      <span className="badge-tag is-pass">
+                        <ShieldCheck size={12} />
+                        <span>PD 449 / GAB Certified</span>
+                      </span>
+                    </td>
                   </tr>
                 </tbody>
               </table>
             </div>
-          )}
+          </div>
+        )}
+
+        {/* Right Column: Official Paperwork Header Live Preview */}
+        <div className="workspace-panel">
+          <div className="arena-panel-header-row">
+            <div className="workspace-panel-title">
+              <FileText size={15} className="card-title-icon-emerald" />
+              <span>Official Coliseum Paperwork Header Preview</span>
+            </div>
+            <span className="top-mono-item">Printable 300-DPI Layout</span>
+          </div>
+
+          <div className="paperwork-tabs-bar">
+            <button
+              type="button"
+              className={`paperwork-tab-btn ${paperworkDocType === 'bout_sheet' ? 'is-active' : ''}`}
+              onClick={() => setPaperworkDocType('bout_sheet')}
+            >
+              <span>GAB Soltada Bout Sheet</span>
+            </button>
+            <button
+              type="button"
+              className={`paperwork-tab-btn ${paperworkDocType === 'tari_clearance' ? 'is-active' : ''}`}
+              onClick={() => setPaperworkDocType('tari_clearance')}
+            >
+              <span>Tari Armorer Clearance</span>
+            </button>
+            <button
+              type="button"
+              className={`paperwork-tab-btn ${paperworkDocType === 'plasada_voucher' ? 'is-active' : ''}`}
+              onClick={() => setPaperworkDocType('plasada_voucher')}
+            >
+              <span>BIR Plasada Voucher</span>
+            </button>
+          </div>
+
+          {/* Printable Document Sheet Preview */}
+          <div className="paperwork-sheet">
+            <div className="paperwork-watermark">GAB REGULATED • BIR CAS AUDITED</div>
+            <div className="paperwork-sheet-inner">
+              {/* Official Letterhead */}
+              <div className="paperwork-letterhead">
+                <div className="paperwork-logo-box">
+                  {previewConfig.logo_url ? (
+                    <img
+                      src={previewConfig.logo_url}
+                      alt="Coliseum Crest"
+                      className="paperwork-logo-img"
+                    />
+                  ) : (
+                    <div className="paperwork-logo-placeholder">
+                      <ShieldCheck size={26} color="#064e3b" />
+                      <span>COLISEO CREST</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="paperwork-gov-header">
+                  <span className="paperwork-gov-sup">Republic of the Philippines • Office of the President</span>
+                  <span className="paperwork-gov-agency">GAMES AND AMUSEMENTS BOARD (GAB)</span>
+                  <h3 className="paperwork-coliseum-name">
+                    {previewConfig.arena_name || 'COLISEUM ARENA'}
+                  </h3>
+                  <div className="paperwork-license-strip">
+                    <span className="paperwork-license-item">
+                      GAB LIC: <strong>{previewConfig.gab_license || 'PENDING'}</strong>
+                    </span>
+                    <span className="paperwork-license-item">
+                      MAYOR&apos;S PERMIT: <strong>{previewConfig.mayors_permit || 'PENDING'}</strong>
+                    </span>
+                    <span className="paperwork-license-item">
+                      BIR CAS MIN: <strong>{previewConfig.bir_cas_min || 'PENDING'}</strong>
+                    </span>
+                    <span className="paperwork-license-item">
+                      PLASADA: <strong>{Math.round((previewConfig.plasada_rate || 0.1) * 100)}%</strong>
+                    </span>
+                  </div>
+                </div>
+
+                <div className="paperwork-seal-box">
+                  <span className="paperwork-seal-text-top">OFFICIAL SEAL</span>
+                  <span className="paperwork-seal-star">★ GAB ★</span>
+                  <span className="paperwork-seal-text-bot">PD 449 AUDITED</span>
+                </div>
+              </div>
+
+              <div className="paperwork-double-divider" />
+
+              {/* Dynamic Document Type Content */}
+              {paperworkDocType === 'bout_sheet' && (
+                <>
+                  <div className="paperwork-doc-banner">
+                    <div>
+                      <div className="paperwork-doc-title">Official GAB Soltada Bout Sheet &amp; Referee Fight Card</div>
+                      <div className="paperwork-doc-decree">Legal Mandate: Presidential Decree No. 449 (Cockfighting Law of 1974)</div>
+                    </div>
+                    <span className="top-mono-item">SOLTADA #01</span>
+                  </div>
+                  <table className="paperwork-data-grid">
+                    <thead>
+                      <tr>
+                        <th>Side</th>
+                        <th>Entry Gallero</th>
+                        <th>Leg Band</th>
+                        <th>Wing Band</th>
+                        <th>Weight</th>
+                        <th>Variance</th>
+                        <th>GAB Gate</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>MERON</strong></td>
+                        <td>Thunderbird Alpha (VIP)</td>
+                        <td>LB-9021</td>
+                        <td>WB-4011</td>
+                        <td>2,185g</td>
+                        <td rowSpan={2} style={{ verticalAlign: 'middle', textAlign: 'center', fontWeight: 'bold' }}>
+                          5g (&lt; 30g)
+                        </td>
+                        <td><span className="paperwork-tag-pass">PASSED</span></td>
+                      </tr>
+                      <tr>
+                        <td><strong>WALA</strong></td>
+                        <td>Golden Falcon Syndicate</td>
+                        <td>LB-9025</td>
+                        <td>WB-4018</td>
+                        <td>2,190g</td>
+                        <td><span className="paperwork-tag-pass">PASSED</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div className="paperwork-signatures-row">
+                    <div className="paperwork-signature-col">
+                      <div className="paperwork-signature-line" />
+                      <div className="paperwork-signer-name">Arena Tagapamahala</div>
+                      <div className="paperwork-signer-title">General Coliseum Operations</div>
+                    </div>
+                    <div className="paperwork-signature-col">
+                      <div className="paperwork-signature-line" />
+                      <div className="paperwork-signer-name">Official Sentenciador</div>
+                      <div className="paperwork-signer-title">Licensed Ring Referee (Judge)</div>
+                    </div>
+                    <div className="paperwork-signature-col">
+                      <div className="paperwork-signature-line" />
+                      <div className="paperwork-signer-name">GAB Field Inspector</div>
+                      <div className="paperwork-signer-title">Games &amp; Amusements Board</div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {paperworkDocType === 'tari_clearance' && (
+                <>
+                  <div className="paperwork-doc-banner">
+                    <div>
+                      <div className="paperwork-doc-title">Tari Armorer Gaff Blade Inspection &amp; Biosecurity Clearance</div>
+                      <div className="paperwork-doc-decree">Pre-Fight Safety Inspection • Regulation Sec. 5 Armory Protocol</div>
+                    </div>
+                    <span className="top-mono-item">BAY #04 CLEARANCE</span>
+                  </div>
+                  <table className="paperwork-data-grid">
+                    <thead>
+                      <tr>
+                        <th>Inspection Item</th>
+                        <th>Specification Standard</th>
+                        <th>Armorer Assessment</th>
+                        <th>Compliance</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>Blade Sharpness &amp; Curve</strong></td>
+                        <td>Single curved high-carbon surgical gaff (&le; 3.0 in)</td>
+                        <td>2.75 in blade, curvature verified against standard gauge</td>
+                        <td><span className="paperwork-tag-pass">PASSED</span></td>
+                      </tr>
+                      <tr>
+                        <td><strong>Tying &amp; Leg Mounting</strong></td>
+                        <td>Braided cord, 0 looseness or lateral play</td>
+                        <td>Leg bone pad secured, zero rotational slip verified</td>
+                        <td><span className="paperwork-tag-pass">PASSED</span></td>
+                      </tr>
+                      <tr>
+                        <td><strong>Biosecurity Immersion</strong></td>
+                        <td>0.5% Chlorhexidine antiseptic pre-bout dip</td>
+                        <td>Sanitized at armory table prior to pit transfer</td>
+                        <td><span className="paperwork-tag-pass">PASSED</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div className="paperwork-signatures-row">
+                    <div className="paperwork-signature-col">
+                      <div className="paperwork-signature-line" />
+                      <div className="paperwork-signer-name">Licensed Mananari</div>
+                      <div className="paperwork-signer-title">GAB Coliseo Blade Armorer</div>
+                    </div>
+                    <div className="paperwork-signature-col">
+                      <div className="paperwork-signature-line" />
+                      <div className="paperwork-signer-name">Hukom sa Mesa</div>
+                      <div className="paperwork-signer-title">Pit Director &amp; Timer</div>
+                    </div>
+                    <div className="paperwork-signature-col">
+                      <div className="paperwork-signature-line" />
+                      <div className="paperwork-signer-name">Coliseum Safety Officer</div>
+                      <div className="paperwork-signer-title">Biosecurity &amp; Emergency Unit</div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {paperworkDocType === 'plasada_voucher' && (
+                <>
+                  <div className="paperwork-doc-banner">
+                    <div>
+                      <div className="paperwork-doc-title">BIR CAS Machine Plasada Audit &amp; Tax Clearance Voucher</div>
+                      <div className="paperwork-doc-decree">Bureau of Internal Revenue CAS RMO No. 10-2020 • RR No. 09-2021</div>
+                    </div>
+                    <span className="top-mono-item">CAS RECEIPT #2026-0089</span>
+                  </div>
+                  <table className="paperwork-data-grid">
+                    <thead>
+                      <tr>
+                        <th>Accounting Breakdown</th>
+                        <th>Percentage</th>
+                        <th>Amount (PHP)</th>
+                        <th>Audit Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>Gross Soltada Wager Pool</strong></td>
+                        <td>100.00%</td>
+                        <td>₱550,000.00</td>
+                        <td><span className="paperwork-tag-pass">BALANCED</span></td>
+                      </tr>
+                      <tr>
+                        <td><strong>Gross Arena Plasada Retained</strong></td>
+                        <td>{Math.round((previewConfig.plasada_rate || 0.1) * 100)}%</td>
+                        <td>₱55,000.00</td>
+                        <td><span className="paperwork-tag-pass">VERIFIED</span></td>
+                      </tr>
+                      <tr>
+                        <td><strong>LGU Amusement Tax (PD 449 / LGC)</strong></td>
+                        <td>10.00% of Plasada</td>
+                        <td>₱5,500.00</td>
+                        <td><span className="paperwork-tag-pass">REMITTED</span></td>
+                      </tr>
+                      <tr>
+                        <td><strong>Net Coliseum Operating Share</strong></td>
+                        <td>90.00% of Plasada</td>
+                        <td>₱49,500.00</td>
+                        <td><span className="paperwork-tag-pass">SETTLED</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div className="paperwork-signatures-row">
+                    <div className="paperwork-signature-col">
+                      <div className="paperwork-signature-line" />
+                      <div className="paperwork-signer-name">Head Cashier</div>
+                      <div className="paperwork-signer-title">Monton &amp; Vault Supervisor</div>
+                    </div>
+                    <div className="paperwork-signature-col">
+                      <div className="paperwork-signature-line" />
+                      <div className="paperwork-signer-name">BIR Compliance Officer</div>
+                      <div className="paperwork-signer-title">Internal Revenue Auditor</div>
+                    </div>
+                    <div className="paperwork-signature-col">
+                      <div className="paperwork-signature-line" />
+                      <div className="paperwork-signer-name">Arena Comptroller</div>
+                      <div className="paperwork-signer-title">Chief Financial Officer</div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     );

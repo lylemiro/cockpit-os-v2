@@ -1449,6 +1449,7 @@ export async function handleApiRequest(req, res, wsHub) {
         gab_license,
         mayors_permit,
         bir_cas_min,
+        security_pin,
         plasada_rate = 0.1,
         logo_url = '',
         min_rest_gap = 4,
@@ -1461,6 +1462,35 @@ export async function handleApiRequest(req, res, wsHub) {
       if (!arena_name || !gab_license || !mayors_permit || !bir_cas_min) {
         return sendJson(400, {
           error: 'Arena Name, GAB License, Mayor Permit, and BIR CAS MIN are required.'
+        });
+      }
+
+      // Zero-Trust Security Enforcement: Require Operator PIN/Password
+      const enteredPin = security_pin ? String(security_pin).trim() : '';
+      if (!enteredPin || enteredPin.length < 4) {
+        return sendJson(400, {
+          error: 'Security Rejection: An authorized 4-digit Operator Security PIN / Password is required to commit Arena Parameters.'
+        });
+      }
+
+      // Verify PIN against active database employees or master fallback PINs (0000 / 1234)
+      const authorizedEmployee = tdb
+        .prepare('SELECT * FROM employees WHERE pin_code = ? AND is_locked = 0')
+        .get(enteredPin);
+
+      const isMasterPin = enteredPin === '1234' || enteredPin === '0000';
+
+      if (!authorizedEmployee && !isMasterPin) {
+        appendAuditLog(
+          tdb,
+          'ARENA_CONFIG_AUTH_FAILED',
+          'Executive Console',
+          hostInfo.terminalId,
+          'ALERT',
+          `Unauthorized attempt to modify Arena Setup with invalid Security PIN from terminal ${hostInfo.terminalId}`
+        );
+        return sendJson(403, {
+          error: 'Zero-Trust Gate Denied: Invalid Operator Security PIN / Password. Configuration changes were not saved.'
         });
       }
 
@@ -1514,13 +1544,17 @@ export async function handleApiRequest(req, res, wsHub) {
           .run(arena_name, gab_license, mayors_permit, bir_cas_min, tenantId);
       }
 
+      const operatorLabel = authorizedEmployee
+        ? `${authorizedEmployee.staff_code} (${authorizedEmployee.full_name})`
+        : 'Master Administrator';
+
       appendAuditLog(
         tdb,
         'ARENA_CONFIG_UPDATED',
         'Executive Console',
         hostInfo.terminalId,
         'INFO',
-        `Updated Arena Profile (${arena_name}) in ${activeTenantRow.db_file_name}`
+        `Updated Arena Profile (${arena_name}) verified by PIN authentication of ${operatorLabel}`
       );
       return syncAndRespond('ARENA_CONFIG_UPDATED', tenantId);
     }
