@@ -69,11 +69,24 @@ export function BootAndLoginScreen() {
     }
   };
 
-  const triggerAutoFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
-    }
-  };
+  // Auto-request true hardware fullscreen on first user gesture anywhere
+  useEffect(() => {
+    const handleFirstGesture = () => {
+      if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+    };
+
+    window.addEventListener('click', handleFirstGesture, { once: true });
+    window.addEventListener('keydown', handleFirstGesture, { once: true });
+    window.addEventListener('pointerdown', handleFirstGesture, { once: true });
+
+    return () => {
+      window.removeEventListener('click', handleFirstGesture);
+      window.removeEventListener('keydown', handleFirstGesture);
+      window.removeEventListener('pointerdown', handleFirstGesture);
+    };
+  }, []);
 
   // Login Form State
   const [selectedUserCode, setSelectedUserCode] = useState('');
@@ -233,57 +246,7 @@ export function BootAndLoginScreen() {
   const showSetupWizard = isFirstBootNewServer || setupMode;
 
   return (
-    <div className="os-boot-screen is-real-os-login" onClick={triggerAutoFullscreen}>
-      {/* Top Bar with System Telemetry, Live Digital Clock & Fullscreen Toggle */}
-      <div className="real-os-top-bar">
-        <div className="real-os-brand-pill">
-          <AppIconGlyph name="Monitor" size={14} />
-          <span>COCKPIT OS v2.4.0</span>
-        </div>
-
-        {/* Live Top Center Lock Screen Clock */}
-        <div className="real-os-clock-header">
-          <span className="lock-clock-time">
-            {now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
-          </span>
-          <span className="lock-clock-dot">•</span>
-          <span className="lock-clock-date">
-            {now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
-          </span>
-        </div>
-
-        <div className="real-os-telemetry-cluster">
-          <span className="telemetry-pill">
-            <Cpu size={12} />
-            <span>{sys?.terminalId || 'TERM-LOCAL'}</span>
-          </span>
-          <span className="telemetry-pill is-online">
-            <Wifi size={12} />
-            <span>{sys?.lanIp || '127.0.0.1'}</span>
-          </span>
-          {activeTenant && !showSetupWizard && (
-            <span className="telemetry-pill is-venue">
-              <HardDrive size={12} />
-              <span>{activeTenant.tenant_code}: {activeTenant.arena_name}</span>
-            </span>
-          )}
-
-          {/* Explicit Fullscreen Toggle */}
-          <button
-            type="button"
-            className={`telemetry-pill btn-fs-pill ${isFullscreen ? 'is-active' : ''}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleFullscreen();
-            }}
-            title={isFullscreen ? 'Exit Fullscreen' : 'Enter Auto-Fullscreen'}
-          >
-            {isFullscreen ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
-            <span>{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}</span>
-          </button>
-        </div>
-      </div>
-
+    <div className="os-boot-screen is-real-os-login">
       {/* Global Error Banner */}
       {error && (
         <div className="real-os-error-toast">
@@ -501,6 +464,16 @@ export function BootAndLoginScreen() {
            CASE B: REAL OS USER LOGIN SCREEN (JUST LIKE WINDOWS 11 / REAL OS LOGIN)
            ========================================================================= */
         <div className="real-os-login-container">
+          {/* Centered Large Lock Screen Typography Clock (No Pill, No Border) */}
+          <div className="real-os-lock-clock-zone">
+            <div className="lock-clock-time-display">
+              {now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+            </div>
+            <div className="lock-clock-date-display">
+              {now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+            </div>
+          </div>
+
           <div className="real-os-user-card">
             {/* Operator Avatar with Glowing Halo */}
             <div className="real-os-avatar-cluster">
@@ -629,28 +602,48 @@ export function BootAndLoginScreen() {
                 </div>
               </div>
             )}
+
+            {/* Dedicated Arena & Server Setup Link INSIDE User Card */}
+            <div className="real-os-card-setup-link-wrap">
+              <button
+                type="button"
+                className="btn-card-setup-link"
+                onClick={() => setSetupMode(true)}
+                title="Open Server & Coliseum Database Setup"
+              >
+                <Settings2 size={13} />
+                <span>Database &amp; Server Setup</span>
+              </button>
+            </div>
           </div>
 
-          {/* Real OS Footer Bar with Arena DB Setup Link */}
-          <div className="real-os-bottom-footer">
+          {/* Unified Bottom-Right System Tray (The ONLY dock on the lock screen) */}
+          <div className="real-os-system-tray">
+            <div className="tray-stat-chip" title={`Terminal Hardware ID: ${sys?.terminalId || 'LOCAL'}`}>
+              <Cpu size={12} />
+              <span>{sys?.terminalId || 'TERM-LOCAL'}</span>
+            </div>
+            <div className="tray-stat-chip is-online" title={`LAN Mesh IP: ${sys?.lanIp || '127.0.0.1'}`}>
+              <Wifi size={12} />
+              <span>{sys?.lanIp || '127.0.0.1'}</span>
+            </div>
+            {activeTenant && (
+              <div className="tray-stat-chip is-venue" title={activeTenant.arena_name}>
+                <HardDrive size={12} />
+                <span>{activeTenant.tenant_code}</span>
+              </div>
+            )}
             <button
               type="button"
-              className="footer-setup-btn"
-              onClick={() => setSetupMode(true)}
-              title="Open Server & Coliseum Database Setup"
+              className="tray-btn-fs"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleFullscreen();
+              }}
+              title={isFullscreen ? 'Exit Fullscreen' : 'Enter Hardware Fullscreen'}
             >
-              <Settings2 size={14} />
-              <span>Database &amp; Server Setup</span>
+              {isFullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
             </button>
-
-            <span className="footer-copyright-text">
-              COCKPIT OS v2.4.0 • Enterprise Zero-Trust Arena Architecture
-            </span>
-
-            <span className="footer-status-pill">
-              <span className="pulse-green-dot" />
-              <span>Offline-First LAN Mesh</span>
-            </span>
           </div>
         </div>
       )}

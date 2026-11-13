@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -21,6 +22,49 @@ namespace CockpitOS
 {
     static class Program
     {
+        private static bool IsPortOpen(string host, int port)
+        {
+            try
+            {
+                using (var client = new TcpClient())
+                {
+                    var result = client.BeginConnect(host, port, null, null);
+                    bool success = result.AsyncWaitHandle.WaitOne(800);
+                    if (!success) return false;
+                    client.EndConnect(result);
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static string FindBrowserExecutable()
+        {
+            string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+            string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+            string[] candidatePaths = new string[]
+            {
+                Path.Combine(programFilesX86, @"Microsoft\Edge\Application\msedge.exe"),
+                Path.Combine(programFiles, @"Microsoft\Edge\Application\msedge.exe"),
+                Path.Combine(programFilesX86, @"Google\Chrome\Application\chrome.exe"),
+                Path.Combine(programFiles, @"Google\Chrome\Application\chrome.exe"),
+                Path.Combine(localAppData, @"Google\Chrome\Application\chrome.exe"),
+                Path.Combine(localAppData, @"Microsoft\Edge\Application\msedge.exe")
+            };
+
+            foreach (var path in candidatePaths)
+            {
+                if (File.Exists(path)) return path;
+            }
+
+            return null;
+        }
+
         [STAThread]
         static void Main()
         {
@@ -29,28 +73,66 @@ namespace CockpitOS
                 string baseDir = AppDomain.CurrentDomain.BaseDirectory;
                 string batPath = Path.Combine(baseDir, "Launch_Cockpit_OS.bat");
 
-                if (!File.Exists(batPath))
+                // Check if port 4000 daemon is already listening
+                bool daemonRunning = IsPortOpen("127.0.0.1", 4000);
+
+                if (!daemonRunning && File.Exists(batPath))
                 {
-                    MessageBox.Show(
-                        "Launch_Cockpit_OS.bat could not be found in:\n" + baseDir,
-                        "Cockpit OS — Boot Error",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Error
-                    );
+                    // Run batch file to ensure dependencies and launch kernel daemon
+                    ProcessStartInfo psi = new ProcessStartInfo
+                    {
+                        FileName = "cmd.exe",
+                        Arguments = "/c \"" + batPath + "\"",
+                        WorkingDirectory = baseDir,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        CreateNoWindow = true,
+                        UseShellExecute = false
+                    };
+                    Process.Start(psi);
                     return;
                 }
 
-                ProcessStartInfo psi = new ProcessStartInfo
-                {
-                    FileName = "cmd.exe",
-                    Arguments = "/c \"" + batPath + "\"",
-                    WorkingDirectory = baseDir,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    CreateNoWindow = true,
-                    UseShellExecute = true
-                };
+                // If daemon is already running or ready, launch browser directly in Kiosk Fullscreen
+                string browserPath = FindBrowserExecutable();
+                string targetUrl = "http://127.0.0.1:4000";
 
-                Process.Start(psi);
+                if (!string.IsNullOrEmpty(browserPath))
+                {
+                    bool isEdge = browserPath.IndexOf("msedge.exe", StringComparison.OrdinalIgnoreCase) >= 0;
+                    string args = isEdge
+                        ? "--kiosk \"" + targetUrl + "\" --edge-kiosk-type=fullscreen --no-first-run"
+                        : "--kiosk \"" + targetUrl + "\" --no-first-run";
+
+                    ProcessStartInfo browserPsi = new ProcessStartInfo
+                    {
+                        FileName = browserPath,
+                        Arguments = args,
+                        WorkingDirectory = baseDir,
+                        UseShellExecute = false
+                    };
+                    Process.Start(browserPsi);
+                }
+                else if (File.Exists(batPath))
+                {
+                    ProcessStartInfo psi = new ProcessStartInfo
+                    {
+                        FileName = "cmd.exe",
+                        Arguments = "/c \"" + batPath + "\"",
+                        WorkingDirectory = baseDir,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        CreateNoWindow = true,
+                        UseShellExecute = false
+                    };
+                    Process.Start(psi);
+                }
+                else
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = targetUrl,
+                        UseShellExecute = true
+                    });
+                }
             }
             catch (Exception ex)
             {
@@ -64,4 +146,3 @@ namespace CockpitOS
         }
     }
 }
-

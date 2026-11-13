@@ -3713,115 +3713,49 @@
 .os-boot-screen.is-real-os-login {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 20px 32px;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  padding: 0;
+  overflow: hidden;
+  background-color: #031008;
   background-image:
-    radial-gradient(circle at 50% 45%, rgba(6, 26, 17, 0.78) 0%, rgba(3, 14, 9, 0.95) 85%),
-    url('/assets/wallpaper_v2.jpg');
+    radial-gradient(ellipse at 50% 50%, rgba(3, 18, 10, 0.55) 0%, rgba(2, 9, 5, 0.92) 100%),
+    url('/assets/cockpit_os_luxury_wallpaper.jpg');
   background-size: cover;
   background-position: center center;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
 }
 
-/* 1. Top Bar Telemetry & Digital Clock */
-.real-os-top-bar {
+/* 1. Large Centered Digital Clock (Windows 11 / Real OS Lock Screen Style) */
+.real-os-lock-clock-zone {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  z-index: 10;
+  justify-content: center;
+  margin-bottom: 24px;
+  user-select: none;
+  animation: flyoutSlideUp 0.3s ease;
 }
 
-.real-os-clock-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 16px;
-  border-radius: var(--radius-pill);
-  background: rgba(10, 35, 22, 0.75);
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-}
-
-.lock-clock-time {
-  font-size: 13px;
-  font-weight: 800;
-  color: #ffffff;
-  font-family: var(--font-mono);
-}
-
-.lock-clock-dot {
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.lock-clock-date {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.75);
-}
-
-.btn-fs-pill {
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.btn-fs-pill:hover {
-  background: rgba(16, 185, 129, 0.25);
-  border-color: #34d399;
-  color: #ffffff;
-}
-
-.btn-fs-pill.is-active {
-  background: rgba(16, 185, 129, 0.35);
-  border-color: #10b981;
-  color: #ffffff;
-}
-
-.real-os-brand-pill {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  border-radius: var(--radius-pill);
-  background: rgba(10, 35, 22, 0.75);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(52, 211, 153, 0.25);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  color: #ecfdf5;
-}
-
-.real-os-telemetry-cluster {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.telemetry-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  border-radius: var(--radius-pill);
-  background: rgba(10, 35, 22, 0.75);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  font-family: var(--font-mono);
-  font-size: 11px;
+.lock-clock-time-display {
+  font-size: 68px;
   font-weight: 700;
-  color: #ecfdf5;
+  line-height: 1;
+  color: #ffffff;
+  letter-spacing: -1.5px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.65);
 }
 
-.telemetry-pill.is-online {
-  border-color: rgba(52, 211, 153, 0.35);
-  color: #6ee7b7;
-}
-
-.telemetry-pill.is-venue {
-  border-color: rgba(245, 158, 11, 0.35);
-  color: #fde68a;
+.lock-clock-date-display {
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 8px;
+  letter-spacing: 0.3px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
 }
 
 /* 2. Error Toast */
@@ -4191,64 +4125,93 @@
   font-family: var(--font-mono);
 }
 
-/* 4. Real OS Bottom Footer */
-.real-os-bottom-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+/* 4. Integrated Setup Action Inside Real OS User Card */
+.real-os-card-setup-link-wrap {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   width: 100%;
-  z-index: 10;
-  padding-top: 16px;
+  display: flex;
+  justify-content: center;
 }
 
-.footer-setup-btn {
+.btn-card-setup-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 11px;
-  font-weight: 700;
+  background: transparent;
+  border: 1px solid transparent;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 11.5px;
+  font-weight: 600;
   cursor: pointer;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
   transition: all 0.15s ease;
 }
 
-.footer-setup-btn:hover {
-  background: rgba(255, 255, 255, 0.18);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.3);
+.btn-card-setup-link:hover {
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.08);
+  border-color: rgba(52, 211, 153, 0.2);
 }
 
-.footer-copyright-text {
-  font-size: 10.5px;
-  color: rgba(255, 255, 255, 0.45);
-  font-weight: 600;
-}
-
-.footer-status-pill {
+/* 5. Unified System Tray Dock (Bottom-Right Corner ONLY) */
+.real-os-system-tray {
+  position: absolute;
+  bottom: 22px;
+  right: 24px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 10.5px;
-  color: rgba(255, 255, 255, 0.65);
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: rgba(8, 26, 17, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 20;
+  animation: flyoutSlideUp 0.3s ease;
+}
+
+.tray-stat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.75);
 }
 
-.pulse-green-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #34d399;
-  box-shadow: 0 0 6px #34d399;
-  animation: pulseDot 2s infinite;
+.tray-stat-chip.is-online {
+  color: #34d399;
 }
 
-@keyframes pulseDot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.85); }
+.tray-stat-chip.is-venue {
+  color: #fbbf24;
+}
+
+.tray-btn-fs {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-left: 2px;
+}
+
+.tray-btn-fs:hover {
+  background: rgba(16, 185, 129, 0.3);
+  border-color: #34d399;
+  color: #ffffff;
 }
 
 /* Setup Wizard Card (When in setup mode) */
