@@ -3900,6 +3900,15 @@
   justify-content: center;
 }
 
+.avatar-initials-text {
+  font-size: 26px;
+  font-weight: 800;
+  color: #34d399;
+  letter-spacing: -0.5px;
+  font-family: var(--font-mono);
+  user-select: none;
+}
+
 .real-os-avatar-status-dot {
   position: absolute;
   bottom: 4px;

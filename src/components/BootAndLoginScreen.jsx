@@ -88,8 +88,8 @@ export function BootAndLoginScreen() {
     };
   }, []);
 
-  // Login Form State
-  const [selectedUserCode, setSelectedUserCode] = useState('');
+  // Login Form State: seeded with user's username 'lylemiro'
+  const [usernameInput, setUsernameInput] = useState('lylemiro');
   const [pinInput, setPinInput] = useState('');
 
   // First-Boot / New Tenant DB Provisioning State
@@ -99,7 +99,7 @@ export function BootAndLoginScreen() {
     gab_license: 'GAB-COL-2026-0884',
     mayors_permit: 'LGU-MP-2026-99201',
     bir_cas_min: 'MIN-20260411-88392014',
-    full_name: '',
+    full_name: 'Lyle Miro',
     role: 'Superadmin / Pangulo ng Sabungan',
     zone: 'Executive Command Console',
     pin_code: '1234'
@@ -113,14 +113,16 @@ export function BootAndLoginScreen() {
   // Zero-Trust Rule: An active superadmin and database must exist for normal OS sign-in
   const hasConfiguredSuperadmin = !loading && tenants.length > 0 && employees.length > 0;
 
-  // Auto-select primary operator (e.g. EMP-01) on load
-  useEffect(() => {
-    if (employees.length > 0 && (!selectedUserCode || !employees.some((e) => e.staff_code === selectedUserCode))) {
-      setSelectedUserCode(employees[0].staff_code);
-    }
-  }, [employees, selectedUserCode]);
-
-  const currentOperator = employees.find((e) => e.staff_code === selectedUserCode) || employees[0] || null;
+  // Match active operator from username input
+  const currentOperator =
+    employees.find(
+      (e) =>
+        e.staff_code?.toLowerCase() === usernameInput.trim().toLowerCase() ||
+        e.employee_id?.toLowerCase() === usernameInput.trim().toLowerCase() ||
+        e.full_name?.toLowerCase() === usernameInput.trim().toLowerCase()
+    ) ||
+    employees[0] ||
+    null;
 
   // OS Boot Sequence progression (only on initial load)
   useEffect(() => {
@@ -274,15 +276,16 @@ export function BootAndLoginScreen() {
     );
   }
 
-  // Handle PIN submission
+  // Handle Login submission: requires both username and PIN
   const handleLoginSubmit = async (e) => {
     if (e) e.preventDefault();
-    if (!selectedUserCode || !pinInput) return;
+    const identifier = usernameInput.trim();
+    if (!identifier || !pinInput) return;
 
     setError(null);
     const res = await mutateApi('/api/auth/login', 'POST', {
       tenant_id: activeTenantId,
-      employee_id: selectedUserCode,
+      employee_id: identifier,
       pin_code: pinInput
     });
 
@@ -543,7 +546,17 @@ export function BootAndLoginScreen() {
             <div className="real-os-avatar-cluster">
               <div className="real-os-avatar-ring">
                 <div className="real-os-avatar-inner">
-                  <User size={48} className="card-title-icon-emerald" />
+                  {currentOperator ? (
+                    <span className="avatar-initials-text">
+                      {currentOperator.full_name
+                        .split(' ')
+                        .map((n) => n[0])
+                        .slice(0, 2)
+                        .join('')}
+                    </span>
+                  ) : (
+                    <User size={44} className="card-title-icon-emerald" />
+                  )}
                 </div>
               </div>
               <div className="real-os-avatar-status-dot" />
@@ -552,14 +565,14 @@ export function BootAndLoginScreen() {
             {/* Operator Identification */}
             <div className="real-os-identity-stack">
               <h1 className="real-os-operator-name">
-                {currentOperator ? currentOperator.full_name : 'Coliseum Operator'}
+                {currentOperator ? currentOperator.full_name : (usernameInput || 'Coliseum Operator')}
               </h1>
               <div className="real-os-role-badge">
                 <span className="role-code-tag">
-                  {currentOperator ? currentOperator.staff_code : 'EMP-01'}
+                  {currentOperator ? currentOperator.staff_code : (usernameInput ? `@${usernameInput}` : 'OPERATOR')}
                 </span>
                 <span className="role-name-text">
-                  {currentOperator ? currentOperator.role : 'Authorized Coliseum Staff'}
+                  {currentOperator ? currentOperator.role : 'Authorized Arena Personnel'}
                 </span>
               </div>
               <div className="real-os-zone-sub">
@@ -567,8 +580,24 @@ export function BootAndLoginScreen() {
               </div>
             </div>
 
-            {/* Password / PIN Login Input Form */}
+            {/* Username & Password / PIN Login Input Form */}
             <form className="real-os-pin-form" onSubmit={handleLoginSubmit}>
+              {/* Operator Username / Account Field */}
+              <div className="real-os-pin-input-wrap">
+                <div className="pin-key-icon">
+                  <User size={15} />
+                </div>
+                <input
+                  type="text"
+                  className="real-os-pin-input"
+                  required
+                  placeholder="Operator Username / Staff Code"
+                  value={usernameInput}
+                  onChange={(e) => setUsernameInput(e.target.value)}
+                />
+              </div>
+
+              {/* Security PIN Field */}
               <div className="real-os-pin-input-wrap">
                 <div className="pin-key-icon">
                   <Lock size={15} />
@@ -585,7 +614,7 @@ export function BootAndLoginScreen() {
                 <button
                   type="submit"
                   className="real-os-pin-submit-btn"
-                  disabled={submitting || !pinInput}
+                  disabled={submitting || !pinInput || !usernameInput.trim()}
                   title="Unlock Cockpit OS Session [Enter]"
                 >
                   <ArrowRight size={18} />
@@ -638,14 +667,16 @@ export function BootAndLoginScreen() {
                 <span className="switcher-label">Switch Operator Account:</span>
                 <div className="switcher-users-row">
                   {employees.map((emp) => {
-                    const isSelected = emp.staff_code === selectedUserCode;
+                    const isSelected =
+                      emp.staff_code?.toLowerCase() === usernameInput.toLowerCase() ||
+                      emp.employee_id?.toLowerCase() === usernameInput.toLowerCase();
                     return (
                       <button
                         key={emp.employee_id}
                         type="button"
                         className={`switcher-user-chip ${isSelected ? 'is-selected' : ''}`}
                         onClick={() => {
-                          setSelectedUserCode(emp.staff_code);
+                          setUsernameInput(emp.staff_code);
                           setPinInput('');
                         }}
                       >
