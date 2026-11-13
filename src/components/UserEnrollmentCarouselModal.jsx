@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   ChevronLeft,
@@ -17,7 +18,9 @@ import {
   Eye,
   EyeOff,
   Hash,
-  Filter
+  Filter,
+  RotateCw,
+  AlertCircle
 } from 'lucide-react';
 import {
   ARBAC_PERMISSION_GROUPS,
@@ -39,6 +42,8 @@ export function UserEnrollmentCarouselModal({
   const [showPin, setShowPin] = useState(false);
   const [permSearch, setPermSearch] = useState('');
   const [autoStaffCode, setAutoStaffCode] = useState(true);
+  const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'success' | 'error'
+  const [saveError, setSaveError] = useState('');
 
   const [form, setForm] = useState({
     full_name: '',
@@ -54,6 +59,8 @@ export function UserEnrollmentCarouselModal({
 
   // Initialize form when opened or editing
   useEffect(() => {
+    setSaveStatus('idle');
+    setSaveError('');
     if (editingEmployee) {
       setForm({
         full_name: editingEmployee.full_name || '',
@@ -168,8 +175,10 @@ export function UserEnrollmentCarouselModal({
     setCurrentStage((s) => Math.max(1, s - 1));
   };
 
-  const handleSubmitEnrollment = (e) => {
+  const handleSubmitEnrollment = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
+    if (saveStatus === 'saving' || saveStatus === 'success') return;
+
     if (!form.full_name.trim()) {
       alert('Please enter Operator Full Name.');
       setCurrentStage(2);
@@ -180,7 +189,26 @@ export function UserEnrollmentCarouselModal({
       setCurrentStage(2);
       return;
     }
-    onSubmit(form);
+
+    setSaveStatus('saving');
+    setSaveError('');
+
+    try {
+      const res = await onSubmit(form);
+      if (res && res.ok === false) {
+        setSaveStatus('error');
+        setSaveError(res.error || 'Failed to commit operator to database.');
+        return;
+      }
+      // Success: smoothly transition from rotating spinner to green checkmark
+      setSaveStatus('success');
+      setTimeout(() => {
+        onClose();
+      }, 1100);
+    } catch (err) {
+      setSaveStatus('error');
+      setSaveError(err?.message || 'Error occurred while saving operator.');
+    }
   };
 
   const filteredPermissionGroups = useMemo(() => {
@@ -211,7 +239,7 @@ export function UserEnrollmentCarouselModal({
 
   if (!isOpen) return null;
 
-  return (
+  const modalContent = (
     <div className="carousel-journey-backdrop" onClick={onClose}>
       <div
         className="carousel-journey-modal"
@@ -761,11 +789,82 @@ export function UserEnrollmentCarouselModal({
                   </div>
                 </div>
               </div>
+
+              {/* Dedicated Stage 4 Physical Enrollment Action Box */}
+              <div className="stage4-action-box">
+                <div className="stage4-action-info">
+                  <div className="stage4-action-title">
+                    {saveStatus === 'success' ? (
+                      <span className="text-emerald flex-inline gap-2">
+                        <CheckCircle2 size={18} className="journey-success-check-pulse" />
+                        <span>Operator Enrolled &amp; Committed to SQLite WAL!</span>
+                      </span>
+                    ) : saveStatus === 'saving' ? (
+                      <span className="text-emerald flex-inline gap-2">
+                        <RotateCw size={18} className="journey-spinner-rotating" />
+                        <span>Committing Operator to Physical SQLite WAL...</span>
+                      </span>
+                    ) : (
+                      <span>Ready for Physical Database Enrollment</span>
+                    )}
+                  </div>
+                  <div className="stage4-action-desc">
+                    {saveStatus === 'success'
+                      ? `Operator credentials and ${totalPerms} permissions are permanently written to ${activeTenant?.db_file_name || 'physical SQLite database'}.`
+                      : saveStatus === 'saving'
+                      ? 'Executing cryptographic verification and appending to employees table and tamper-evident audit logtrail...'
+                      : `Confirm all operator parameters above. Clicking Finish & Save will commit ${form.full_name || 'this operator'} to the active tenant SQLite WAL database.`}
+                  </div>
+                </div>
+
+                <div className="stage4-action-buttons">
+                  <button
+                    type="button"
+                    className="btn-secondary-gold"
+                    disabled={saveStatus === 'saving' || saveStatus === 'success'}
+                    onClick={handlePrev}
+                  >
+                    <ChevronLeft size={15} />
+                    <span>Back to ARBAC Matrix</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`btn-primary-emerald is-submit-btn ${saveStatus === 'success' ? 'is-success-btn' : ''}`}
+                    disabled={saveStatus === 'saving' || saveStatus === 'success'}
+                    onClick={handleSubmitEnrollment}
+                  >
+                    {saveStatus === 'saving' ? (
+                      <>
+                        <RotateCw size={17} className="journey-spinner-rotating" />
+                        <span>Writing to SQLite WAL...</span>
+                      </>
+                    ) : saveStatus === 'success' ? (
+                      <>
+                        <CheckCircle2 size={17} className="journey-success-check-pulse" />
+                        <span>Enrolled Successfully!</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShieldCheck size={17} />
+                        <span>{editingEmployee ? 'Finish & Save Operator Changes' : 'Finish & Save: Enroll Operator'}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {saveError && (
+                <div className="stage4-error-banner">
+                  <AlertCircle size={16} />
+                  <span>{saveError}</span>
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        {/* 3. Navigation Footer Bar (Direct Submit - No Next Button) */}
+        {/* 3. Navigation Footer Bar with Multi-Stage Controls */}
         <div className="journey-nav-footer">
           <div className="journey-footer-left">
             <span className="journey-active-summary">
@@ -774,29 +873,73 @@ export function UserEnrollmentCarouselModal({
           </div>
 
           <div className="journey-footer-right">
-            <button type="button" className="btn-cancel-flat" onClick={onClose}>
+            <button
+              type="button"
+              className="btn-cancel-flat"
+              disabled={saveStatus === 'saving'}
+              onClick={onClose}
+            >
               Cancel
             </button>
 
-            <button
-              type="button"
-              className="btn-primary-emerald is-submit-btn"
-              disabled={submitting}
-              onClick={handleSubmitEnrollment}
-            >
-              <ShieldCheck size={16} />
-              <span>
-                {submitting
-                  ? 'Writing to SQLite WAL...'
-                  : editingEmployee
-                  ? 'Confirm & Save Operator Changes'
-                  : 'Enroll Operator in Active Tenant DB'}
-              </span>
-            </button>
+            {currentStage > 1 && (
+              <button
+                type="button"
+                className="btn-secondary-gold"
+                disabled={saveStatus === 'saving' || saveStatus === 'success'}
+                onClick={handlePrev}
+              >
+                <ChevronLeft size={15} />
+                <span>Previous Stage</span>
+              </button>
+            )}
+
+            {currentStage < 4 ? (
+              <button
+                type="button"
+                className="btn-primary-emerald"
+                onClick={handleNext}
+              >
+                <span>Continue to Stage {currentStage + 1}</span>
+                <ChevronRight size={15} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                className={`btn-primary-emerald is-submit-btn ${saveStatus === 'success' ? 'is-success-btn' : ''}`}
+                disabled={saveStatus === 'saving' || saveStatus === 'success'}
+                onClick={handleSubmitEnrollment}
+              >
+                {saveStatus === 'saving' ? (
+                  <>
+                    <RotateCw size={16} className="journey-spinner-rotating" />
+                    <span>Writing to SQLite WAL...</span>
+                  </>
+                ) : saveStatus === 'success' ? (
+                  <>
+                    <CheckCircle2 size={16} className="journey-success-check-pulse" />
+                    <span>Enrolled Successfully!</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck size={16} />
+                    <span>
+                      {editingEmployee
+                        ? 'Finish & Save Operator Changes'
+                        : 'Finish & Save: Enroll Operator'}
+                    </span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined'
+    ? createPortal(modalContent, document.body)
+    : modalContent;
 }
 

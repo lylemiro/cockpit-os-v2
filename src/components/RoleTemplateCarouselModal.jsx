@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   ChevronLeft,
@@ -141,7 +142,7 @@ export function RoleTemplateCarouselModal({
 
   if (!isOpen) return null;
 
-  return (
+  const modalContent = (
     <div className="carousel-journey-backdrop" onClick={onClose}>
       <div
         className="carousel-journey-modal"
@@ -552,7 +553,7 @@ export function RoleTemplateCarouselModal({
           )}
         </div>
 
-        {/* 3. Navigation Footer Bar (Direct Submit - No Next Button) */}
+        {/* 3. Navigation Footer Bar with Multi-Stage Navigation */}
         <div className="journey-nav-footer">
           <div className="journey-footer-left">
             <span className="journey-active-summary">
@@ -565,25 +566,51 @@ export function RoleTemplateCarouselModal({
               Cancel
             </button>
 
-            <button
-              type="button"
-              className="btn-primary-emerald is-submit-btn"
-              disabled={submitting}
-              onClick={handleSubmitRole}
-            >
-              <ShieldCheck size={16} />
-              <span>
-                {submitting
-                  ? 'Publishing to SQLite Master...'
-                  : editingRole
-                  ? 'Save Role Template Changes'
-                  : 'Publish Role Template to Catalog'}
-              </span>
-            </button>
+            {currentStage > 1 && (
+              <button
+                type="button"
+                className="btn-secondary-gold"
+                onClick={handlePrev}
+              >
+                <ChevronLeft size={15} />
+                <span>Previous Stage</span>
+              </button>
+            )}
+
+            {currentStage < 3 ? (
+              <button
+                type="button"
+                className="btn-primary-emerald"
+                onClick={handleNext}
+              >
+                <span>Continue to Stage {currentStage + 1}</span>
+                <ChevronRight size={15} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn-primary-emerald is-submit-btn"
+                disabled={submitting}
+                onClick={handleSubmitRole}
+              >
+                <ShieldCheck size={16} />
+                <span>
+                  {submitting
+                    ? 'Publishing to SQLite Master...'
+                    : editingRole
+                    ? 'Save Role Template Changes'
+                    : 'Publish Role Template to Catalog'}
+                </span>
+              </button>
+            )}
           </div>
         </div>
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined'
+    ? createPortal(modalContent, document.body)
+    : modalContent;
 }
 

@@ -100,9 +100,8 @@ export function ArbacManager() {
           'Operator Updated',
           `Successfully saved changes for "${formData.full_name}" with ${formData.permissions.length}/${ALL_PERMISSION_KEYS.length} active permissions.`
         );
-        setIsUserCarouselOpen(false);
-        setEditingEmployee(null);
       }
+      return res;
     } else {
       const res = await mutateApi('/api/employees', 'POST', formData);
       if (res.ok) {
@@ -110,9 +109,8 @@ export function ArbacManager() {
           'Operator Enrolled',
           `Enrolled operator "${formData.full_name}" (${formData.role}) in active database.`
         );
-        setIsUserCarouselOpen(false);
-        setEditingEmployee(null);
       }
+      return res;
     }
   };
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   ChevronLeft,
@@ -81,7 +82,7 @@ export function TenantProvisionCarouselModal({
 
   if (!isOpen) return null;
 
-  return (
+  const modalContent = (
     <div className="carousel-journey-backdrop" onClick={onClose}>
       <div
         className="carousel-journey-modal is-fullscreen"
@@ -372,7 +373,7 @@ export function TenantProvisionCarouselModal({
           )}
         </div>
 
-        {/* Navigation Footer Bar (Direct Submit - No Next Button) */}
+        {/* Navigation Footer Bar with Multi-Stage Controls */}
         <div className="journey-nav-footer">
           <div className="journey-footer-left">
             <span className="journey-active-summary">
@@ -385,23 +386,49 @@ export function TenantProvisionCarouselModal({
               Cancel
             </button>
 
-            <button
-              type="button"
-              className="btn-primary-emerald is-submit-btn"
-              disabled={submitting}
-              onClick={handleSubmit}
-            >
-              <ShieldCheck size={16} />
-              <span>
-                {submitting
-                  ? 'Provisioning Physical SQLite File...'
-                  : 'Provision Physical Tenant Database'}
-              </span>
-            </button>
+            {currentStage > 1 && (
+              <button
+                type="button"
+                className="btn-secondary-gold"
+                onClick={handlePrev}
+              >
+                <ChevronLeft size={15} />
+                <span>Previous Stage</span>
+              </button>
+            )}
+
+            {currentStage < 4 ? (
+              <button
+                type="button"
+                className="btn-primary-emerald"
+                onClick={handleNext}
+              >
+                <span>Continue to Stage {currentStage + 1}</span>
+                <ChevronRight size={15} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn-primary-emerald is-submit-btn"
+                disabled={submitting}
+                onClick={handleSubmit}
+              >
+                <ShieldCheck size={16} />
+                <span>
+                  {submitting
+                    ? 'Provisioning Physical SQLite File...'
+                    : 'Provision Physical Tenant Database'}
+                </span>
+              </button>
+            )}
           </div>
         </div>
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined'
+    ? createPortal(modalContent, document.body)
+    : modalContent;
 }
 
