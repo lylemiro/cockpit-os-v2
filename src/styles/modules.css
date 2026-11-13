@@ -269,13 +269,15 @@
 .form-row-2col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 16px;
+  align-items: start;
 }
 
 .form-row-3col {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  grid-template-columns: 1.35fr 0.75fr 1.2fr;
+  gap: 16px;
+  align-items: start;
 }
 
 .field-hint {
@@ -324,12 +326,14 @@
 
 .form-input,
 .form-select {
-  padding: 8px 11px;
+  padding: 9px 12px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border-subtle);
+  border: 1.5px solid var(--border-subtle);
   background: var(--bg-card-solid);
   color: var(--text-primary);
-  font-size: 12.5px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
   outline: none;
 }
 
@@ -3219,30 +3223,45 @@
 .stage-input-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
+  gap: 16px 20px;
 }
 
 .stage-form-group {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
+}
+
+.stage-form-group.full-row {
+  grid-column: span 2;
 }
 
 .stage-form-group label {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   color: var(--text-secondary);
 }
 
 .input-stage {
-  padding: 8px 12px;
-  font-size: 12px;
+  width: 100%;
+  padding: 10px 14px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.4;
   background: var(--bg-card-solid);
-  border: 1px solid var(--border-card);
+  border: 1.5px solid var(--border-card);
   border-radius: 8px;
   color: var(--text-primary);
   outline: none;
   transition: all 0.15s ease;
+}
+
+.input-stage::placeholder {
+  color: var(--text-muted);
+  font-weight: 500;
 }
 
 .input-stage:focus {
@@ -3333,12 +3352,12 @@
 .roles-quick-checklist-strip {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px 14px;
+  gap: 14px;
+  padding: 18px 20px;
   background: var(--bg-card-subtle);
   border: 1px solid var(--border-card);
-  border-radius: var(--radius-md);
-  margin-bottom: 12px;
+  border-radius: 12px;
+  margin-bottom: 0;
 }
 
 .checklist-strip-header {
@@ -3346,14 +3365,18 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .checklist-strip-title {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: 8px;
+  font-size: 12.5px;
   font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
   color: var(--text-primary);
 }
 
@@ -4103,7 +4126,7 @@
   border-radius: 12px;
   background: linear-gradient(135deg, var(--bg-card-subtle) 0%, var(--emerald-50) 100%);
   border: 1px solid var(--border-card);
-  margin-bottom: 20px;
+  margin-bottom: 0;
 }
 
 [data-theme='dark'] .slide-intro-banner {
@@ -4111,15 +4134,16 @@
 }
 
 .slide-intro-title {
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 800;
   color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
 .slide-intro-desc {
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: 1.45;
 }
 
 /* Role Archetype Cards (Stage 1) */
@@ -5698,10 +5722,10 @@
 /* Dynamic Multi-Stage Flowchart Strip */
 .derby-stages-flow-strip {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 18px;
-  background: var(--bg-card-subtle);
+  align-items: stretch;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--bg-card-solid);
   border: 1px solid var(--border-card);
   border-radius: 10px;
   flex-wrap: wrap;
@@ -5710,13 +5734,16 @@
 .derby-flow-step-box {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 8px 14px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  padding: 14px 16px;
   border-radius: 8px;
-  background: var(--bg-card-solid);
+  background: var(--bg-card-subtle);
   border: 1px solid var(--border-card);
   flex: 1;
-  min-width: 140px;
+  min-width: 160px;
 }
 
 .derby-flow-step-name {
@@ -6108,14 +6135,16 @@
 
 /* Stage Flow & Stepper Numbers */
 .input-stage-number {
-  width: 72px;
+  width: 82px;
   text-align: center;
   font-weight: 800;
-  font-size: 14px;
+  font-size: 15px;
+  font-family: var(--font-mono);
+  padding: 7px 10px;
 }
 
 .step-tag {
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -6131,15 +6160,18 @@
 
 .step-sub {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--emerald-500);
 }
 
 .step-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 16px;
   font-weight: 800;
-  color: var(--text-secondary);
-  opacity: 0.6;
+  color: var(--emerald-500);
+  opacity: 0.8;
 }
 
 /* Scale Visualizer Envelope */
@@ -6251,17 +6283,39 @@
   color: var(--text-primary);
 }
 
-/* Free-Type Category Quick Presets */
+/* Free-Type Category Quick Presets Bar */
+.category-preset-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.category-preset-label {
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
 .category-quick-pills {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 6px;
+  gap: 6px;
+  align-items: center;
 }
 
 .category-pill-btn {
-  padding: 3px 9px;
-  font-size: 10.5px;
+  padding: 4px 12px;
+  font-family: inherit;
+  font-size: 11.5px;
   font-weight: 700;
   border-radius: var(--radius-pill, 999px);
   border: 1px solid var(--border-card);
@@ -6277,9 +6331,129 @@
 }
 
 .category-pill-btn.is-active {
-  background: rgba(16, 185, 129, 0.12);
+  background: rgba(16, 185, 129, 0.14);
   border-color: var(--emerald-500);
-  color: var(--emerald-500);
+  color: var(--emerald-600);
+  font-weight: 800;
+}
+
+[data-theme='dark'] .category-pill-btn.is-active {
+  color: #34d399;
+}
+
+/* Operator Security PIN Confirmation Box (Stage 5 & CRUD Modals) */
+.derby-security-pin-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  background: var(--bg-card-subtle);
+  border: 1.5px solid var(--gold-400, rgba(217, 119, 6, 0.45));
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+
+.derby-security-pin-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 240px;
+}
+
+.derby-security-pin-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+}
+
+.derby-security-pin-sub {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.derby-security-pin-input-wrap {
+  width: 240px;
+  flex-shrink: 0;
+}
+
+/* CRUD Security PIN Verification Modal */
+.crud-pin-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 13000;
+  background: rgba(3, 16, 9, 0.65);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.crud-pin-modal {
+  width: 100%;
+  max-width: 440px;
+  background: var(--bg-card-solid);
+  border: 1.5px solid var(--border-card);
+  border-radius: 14px;
+  padding: 22px 24px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.crud-pin-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.crud-pin-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.crud-pin-modal-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.crud-pin-modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.table-promoter-sub {
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.table-date-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-right: 6px;
 }
 
 .derby-launch-badge.is-amber {

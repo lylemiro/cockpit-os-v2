@@ -56,7 +56,11 @@ export function SubsystemWorkspace({ moduleId }) {
   const [isDerbyCarouselOpen, setIsDerbyCarouselOpen] = useState(false);
   const [showEnrollDrawer, setShowEnrollDrawer] = useState(false);
   const [derbyCarouselConfig, setDerbyCarouselConfig] = useState(null);
+  const [editingDerbyEvent, setEditingDerbyEvent] = useState(null);
   const [selectedEventDetail, setSelectedEventDetail] = useState(null);
+  const [crudPinModal, setCrudPinModal] = useState(null);
+  const [crudPinInput, setCrudPinInput] = useState('');
+  const [crudPinError, setCrudPinError] = useState('');
 
   // Form states for dynamic creation across modules
   const [arenaForm, setArenaForm] = useState({
@@ -1621,7 +1625,10 @@ export function SubsystemWorkspace({ moduleId }) {
                             >
                               <strong>{ev.title}</strong>
                             </button>
-                            <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{ev.promoter}</div>
+                            <div className="table-promoter-sub">
+                              <span className="table-date-badge">{ev.event_date}</span>
+                              <span>{ev.promoter}</span>
+                            </div>
                           </td>
                           <td>{ev.format}</td>
                           <td>
@@ -1635,20 +1642,92 @@ export function SubsystemWorkspace({ moduleId }) {
                             </span>
                           </td>
                           <td>
-                            {ev.status !== 'ACTIVE' ? (
+                            <div className="table-actions-cell">
                               <button
                                 type="button"
-                                className="btn-secondary-gold"
-                                style={{ padding: '3px 8px', fontSize: '11px' }}
-                                onClick={() =>
-                                  handleAction(`/api/events/${ev.event_id}`, 'PATCH', {})
-                                }
+                                className="btn-table-edit"
+                                onClick={() => setSelectedEventDetail(ev)}
                               >
-                                Make Active
+                                View
                               </button>
-                            ) : (
-                              <span style={{ fontSize: '11px', fontWeight: '700', color: '#10b981' }}>Current Live</span>
-                            )}
+                              <button
+                                type="button"
+                                className="btn-table-edit"
+                                onClick={() => {
+                                  setEditingDerbyEvent(ev);
+                                  setDerbyCarouselConfig(null);
+                                  setIsDerbyCarouselOpen(true);
+                                }}
+                              >
+                                Edit
+                              </button>
+                              {ev.status !== 'ACTIVE' ? (
+                                <button
+                                  type="button"
+                                  className="btn-table-shift"
+                                  onClick={() => {
+                                    setCrudPinInput('');
+                                    setCrudPinError('');
+                                    setCrudPinModal({
+                                      title: `Activate "${ev.title}" Live`,
+                                      description:
+                                        'Requires Operator Security PIN / Password. Note: Future-dated events stay SCHEDULED until their event date arrives.',
+                                      confirmLabel: 'Set Live',
+                                      isDanger: false,
+                                      endpoint: `/api/events/${ev.event_id}`,
+                                      method: 'PATCH',
+                                      payload: { status: 'ACTIVE' },
+                                      successMessage: `Activated tournament "${ev.title}".`
+                                    });
+                                  }}
+                                >
+                                  Set Live
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="btn-table-shift"
+                                  onClick={() => {
+                                    setCrudPinInput('');
+                                    setCrudPinError('');
+                                    setCrudPinModal({
+                                      title: `Set "${ev.title}" to Scheduled Standby`,
+                                      description:
+                                        'Requires Operator Security PIN / Password to move this live tournament back to SCHEDULED standby.',
+                                      confirmLabel: 'Set Standby',
+                                      isDanger: false,
+                                      endpoint: `/api/events/${ev.event_id}`,
+                                      method: 'PATCH',
+                                      payload: { status: 'SCHEDULED' },
+                                      successMessage: `Moved tournament "${ev.title}" to SCHEDULED standby.`
+                                    });
+                                  }}
+                                >
+                                  Standby
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                className="btn-table-del"
+                                onClick={() => {
+                                  setCrudPinInput('');
+                                  setCrudPinError('');
+                                  setCrudPinModal({
+                                    title: `Delete "${ev.title}"`,
+                                    description:
+                                      'Requires Operator Security PIN / Password to permanently delete this tournament from the calendar.',
+                                    confirmLabel: 'Delete Event',
+                                    isDanger: true,
+                                    endpoint: `/api/events/${ev.event_id}`,
+                                    method: 'DELETE',
+                                    payload: {},
+                                    successMessage: `Deleted tournament "${ev.title}".`
+                                  });
+                                }}
+                              >
+                                Delete
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -1962,11 +2041,11 @@ export function SubsystemWorkspace({ moduleId }) {
                   </div>
                 ) : (
                   <div className="data-table-wrap">
-                    <table className="data-table" style={{ fontSize: '11px' }}>
+                    <table className="data-table">
                       <thead>
                         <tr>
                           <th>Event</th>
-                          <th>Format</th>
+                          <th>Status</th>
                           <th>Action</th>
                         </tr>
                       </thead>
@@ -1981,22 +2060,103 @@ export function SubsystemWorkspace({ moduleId }) {
                               >
                                 <strong>{ev.title}</strong>
                               </button>
-                              <div style={{ fontSize: '9.5px', color: 'var(--text-muted)' }}>{ev.promoter}</div>
+                              <div className="table-promoter-sub">
+                                <span className="table-date-badge">{ev.event_date}</span>
+                                <span>{ev.format}</span>
+                              </div>
                             </td>
-                            <td>{ev.format}</td>
                             <td>
-                              {ev.status !== 'ACTIVE' ? (
+                              <span className={`status-badge ${ev.status === 'ACTIVE' ? 'is-passed' : 'is-pending'}`}>
+                                {ev.status}
+                              </span>
+                            </td>
+                            <td>
+                              <div className="table-actions-cell">
                                 <button
                                   type="button"
-                                  className="btn-secondary-gold"
-                                  style={{ padding: '2px 6px', fontSize: '10px' }}
-                                  onClick={() => handleAction(`/api/events/${ev.event_id}`, 'PATCH', {})}
+                                  className="btn-table-edit"
+                                  onClick={() => setSelectedEventDetail(ev)}
                                 >
-                                  Make Active
+                                  View
                                 </button>
-                              ) : (
-                                <span style={{ fontSize: '10px', fontWeight: '800', color: '#10b981' }}>Live</span>
-                              )}
+                                <button
+                                  type="button"
+                                  className="btn-table-edit"
+                                  onClick={() => {
+                                    setEditingDerbyEvent(ev);
+                                    setDerbyCarouselConfig(null);
+                                    setIsDerbyCarouselOpen(true);
+                                  }}
+                                >
+                                  Edit
+                                </button>
+                                {ev.status !== 'ACTIVE' ? (
+                                  <button
+                                    type="button"
+                                    className="btn-table-shift"
+                                    onClick={() => {
+                                      setCrudPinInput('');
+                                      setCrudPinError('');
+                                      setCrudPinModal({
+                                        title: `Activate "${ev.title}" Live`,
+                                        description:
+                                          'Requires Operator Security PIN / Password. Note: Future-dated events stay SCHEDULED until their event date arrives.',
+                                        confirmLabel: 'Set Live',
+                                        isDanger: false,
+                                        endpoint: `/api/events/${ev.event_id}`,
+                                        method: 'PATCH',
+                                        payload: { status: 'ACTIVE' },
+                                        successMessage: `Activated tournament "${ev.title}".`
+                                      });
+                                    }}
+                                  >
+                                    Set Live
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    className="btn-table-shift"
+                                    onClick={() => {
+                                      setCrudPinInput('');
+                                      setCrudPinError('');
+                                      setCrudPinModal({
+                                        title: `Set "${ev.title}" to Scheduled Standby`,
+                                        description:
+                                          'Requires Operator Security PIN / Password to move this live tournament back to SCHEDULED standby.',
+                                        confirmLabel: 'Set Standby',
+                                        isDanger: false,
+                                        endpoint: `/api/events/${ev.event_id}`,
+                                        method: 'PATCH',
+                                        payload: { status: 'SCHEDULED' },
+                                        successMessage: `Moved tournament "${ev.title}" to SCHEDULED standby.`
+                                      });
+                                    }}
+                                  >
+                                    Standby
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  className="btn-table-del"
+                                  onClick={() => {
+                                    setCrudPinInput('');
+                                    setCrudPinError('');
+                                    setCrudPinModal({
+                                      title: `Delete "${ev.title}"`,
+                                      description:
+                                        'Requires Operator Security PIN / Password to permanently delete this tournament from the calendar.',
+                                      confirmLabel: 'Delete Event',
+                                      isDanger: true,
+                                      endpoint: `/api/events/${ev.event_id}`,
+                                      method: 'DELETE',
+                                      payload: {},
+                                      successMessage: `Deleted tournament "${ev.title}".`
+                                    });
+                                  }}
+                                >
+                                  Delete
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -2015,20 +2175,112 @@ export function SubsystemWorkspace({ moduleId }) {
           onClose={() => {
             setIsDerbyCarouselOpen(false);
             setDerbyCarouselConfig(null);
+            setEditingDerbyEvent(null);
           }}
           initialConfig={derbyCarouselConfig}
+          editingEvent={editingDerbyEvent}
           onSubmit={async (payload) => {
-            const res = await handleAction(
-              '/api/events',
-              'POST',
-              payload,
-              `Created & launched tournament "${payload.title}".`
-            );
+            const isEditing = Boolean(editingDerbyEvent?.event_id);
+            const endpoint = isEditing
+              ? `/api/events/${editingDerbyEvent.event_id}`
+              : '/api/events';
+            const method = isEditing ? 'PUT' : 'POST';
+            const msg = isEditing
+              ? `Updated tournament "${payload.title}".`
+              : `Created tournament "${payload.title}".`;
+            const res = await handleAction(endpoint, method, payload, msg);
             return res;
           }}
           submitting={submitting}
           activeTenant={arenaState.tenant}
         />
+
+        {/* CRUD Operator Security PIN Confirmation Modal */}
+        {crudPinModal && (
+          <div className="crud-pin-backdrop" onClick={() => !submitting && setCrudPinModal(null)}>
+            <form
+              className="crud-pin-modal"
+              onClick={(e) => e.stopPropagation()}
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!crudPinInput.trim() || crudPinInput.trim().length < 4) {
+                  setCrudPinError('Please enter your 4-digit Operator Security PIN or password.');
+                  return;
+                }
+                setCrudPinError('');
+                const res = await handleAction(
+                  crudPinModal.endpoint,
+                  crudPinModal.method,
+                  { ...crudPinModal.payload, security_pin: crudPinInput.trim() },
+                  crudPinModal.successMessage
+                );
+                if (res && res.ok) {
+                  setCrudPinModal(null);
+                  setCrudPinInput('');
+                } else {
+                  setCrudPinError(res?.error || 'Security PIN verification failed.');
+                }
+              }}
+            >
+              <div className="crud-pin-modal-header">
+                <div className="crud-pin-modal-title">
+                  <Lock size={16} className="card-title-icon-gold" />
+                  <span>{crudPinModal.title}</span>
+                </div>
+                <button
+                  type="button"
+                  className="journey-close-btn"
+                  onClick={() => !submitting && setCrudPinModal(null)}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="crud-pin-modal-desc">{crudPinModal.description}</div>
+              <div className="stage-form-group">
+                <label>Operator Security PIN / Password *</label>
+                <input
+                  type="password"
+                  className="input-stage"
+                  placeholder="Enter Security PIN (default: 1234)..."
+                  value={crudPinInput}
+                  onChange={(e) => setCrudPinInput(e.target.value)}
+                  autoFocus
+                  required
+                />
+              </div>
+              {crudPinError && (
+                <div className="stage4-error-banner">
+                  <AlertTriangle size={15} />
+                  <span>{crudPinError}</span>
+                </div>
+              )}
+              <div className="crud-pin-modal-actions">
+                <button
+                  type="button"
+                  className="btn-cancel-flat"
+                  disabled={submitting}
+                  onClick={() => setCrudPinModal(null)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className={crudPinModal.isDanger ? 'btn-table-del' : 'btn-primary-emerald'}
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    <>
+                      <RotateCw size={14} className="spin" />
+                      <span>Verifying &amp; Saving...</span>
+                    </>
+                  ) : (
+                    <span>{crudPinModal.confirmLabel}</span>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
 
         <EventDetailFullscreenModal
           isOpen={Boolean(selectedEventDetail)}

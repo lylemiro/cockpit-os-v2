@@ -23,7 +23,8 @@ import {
   Users,
   Sliders,
   DollarSign,
-  AlertTriangle
+  AlertTriangle,
+  Lock
 } from 'lucide-react';
 
 export function DerbyTournamentCarouselModal({
@@ -32,11 +33,13 @@ export function DerbyTournamentCarouselModal({
   onSubmit,
   submitting,
   activeTenant,
-  initialConfig
+  initialConfig,
+  editingEvent
 }) {
   const [currentStage, setCurrentStage] = useState(1);
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'success' | 'error'
   const [saveError, setSaveError] = useState('');
+  const [securityPin, setSecurityPin] = useState('');
 
   // 1. DYNAMIC IDENTITY & STAGE STRUCTURE
   const [tournamentCategory, setTournamentCategory] = useState('Stag Derby'); // Free-text e.g. 'Regular Derby', 'Ulutan', 'Panta', 'Stag Derby'
@@ -192,14 +195,43 @@ export function DerbyTournamentCarouselModal({
     guaranteedPrize
   ]);
 
-  // Reset & load archetype config when opened
+  // Reset & load archetype config or editingEvent when opened
   useEffect(() => {
     if (isOpen) {
       setSaveStatus('idle');
       setSaveError('');
+      setSecurityPin('');
       setCustomFormatOverride('');
       setCurrentStage(1);
-      if (initialConfig) {
+      if (editingEvent) {
+        setTitle(editingEvent.title || '');
+        setCustomFormatOverride(editingEvent.format || '');
+        setPromoter(editingEvent.promoter || '');
+        setVenueName(editingEvent.venue_name || activeTenant?.arena_name || '');
+        setClusterDistrict(editingEvent.cluster_district || '');
+        setEventDate(editingEvent.event_date ? String(editingEvent.event_date).slice(0, 10) : new Date().toISOString().slice(0, 10));
+        setMinWeightGrams(editingEvent.min_weight_grams ?? 1700);
+        setMaxWeightGrams(editingEvent.max_weight_grams ?? 2250);
+        setWeightToleranceGrams(editingEvent.weight_tolerance_grams ?? 35);
+        setMatchingSystem(editingEvent.matching_system || 'HABOL_SYSTEM');
+        setPotMode(editingEvent.pot_mode || 'NO_POT_BAYAD_AGAD');
+        setDayMoneyAmount(editingEvent.day_money_amount ?? 50000);
+        setPotFee(editingEvent.pot_fee ?? 0);
+        setGuaranteedPrize(editingEvent.guaranteed_prize ?? 5000000);
+        setMinBet(editingEvent.min_bet ?? 3500);
+        setMaxLevelBet(editingEvent.max_level_bet ?? 0);
+        setPlasadaSplit(editingEvent.plasada_split || '70/30');
+        setBandingCategory(editingEvent.banding_category || 'OPEN');
+        setHenniesAllowed(editingEvent.hennies_allowed ?? 0);
+        setElimsAdvancePts(String(editingEvent.elims_advance_pts ?? '2.0'));
+        setSemisScoreReset(editingEvent.semis_score_reset ?? 1);
+        setChampionPrize(editingEvent.champion_prize ?? 1500000);
+        setRunnerupPrize(editingEvent.runnerup_prize ?? 500000);
+        setHandlerAward(editingEvent.handler_award ?? 200000);
+        setGafferAward(editingEvent.gaffer_award ?? 100000);
+        setStagFighterAward(editingEvent.stag_fighter_award ?? 1000000);
+        setActivateNow(editingEvent.status === 'ACTIVE');
+      } else if (initialConfig) {
         if (initialConfig.tournamentCategory !== undefined) setTournamentCategory(initialConfig.tournamentCategory);
         if (initialConfig.totalRounds !== undefined) setTotalRounds(initialConfig.totalRounds);
         if (initialConfig.isMultiStage !== undefined) setIsMultiStage(initialConfig.isMultiStage);
@@ -232,7 +264,7 @@ export function DerbyTournamentCarouselModal({
         if (initialConfig.stagFighterAward !== undefined) setStagFighterAward(initialConfig.stagFighterAward);
       }
     }
-  }, [isOpen, initialConfig]);
+  }, [isOpen, initialConfig, editingEvent, activeTenant?.arena_name]);
 
   const stages = [
     { num: 1, label: 'Identity & Format', sub: 'Category & Stage Breakdown' },
@@ -278,6 +310,12 @@ export function DerbyTournamentCarouselModal({
       return;
     }
 
+    if (!securityPin.trim() || securityPin.trim().length < 4) {
+      setSaveStatus('error');
+      setSaveError('Operator Security PIN / Password is required to authorize and save tournament changes.');
+      return;
+    }
+
     setSaveStatus('saving');
     setSaveError('');
 
@@ -309,7 +347,8 @@ export function DerbyTournamentCarouselModal({
       gaffer_award: Number(gafferAward || 0),
       stag_fighter_award: Number(stagFighterAward || 0),
       derby_rules: synthesizedDerbyRules,
-      activate_now: activateNow
+      activate_now: activateNow,
+      security_pin: securityPin.trim()
     };
 
     try {
@@ -322,7 +361,7 @@ export function DerbyTournamentCarouselModal({
       setSaveStatus('success');
       setTimeout(() => {
         onClose();
-      }, 1100);
+      }, 600);
     } catch (err) {
       setSaveStatus('error');
       setSaveError(err?.message || 'Error occurred while saving tournament event.');
@@ -347,7 +386,7 @@ export function DerbyTournamentCarouselModal({
               <span>COLISEO DERBY RULES ENGINE</span>
             </span>
             <h2 className="journey-main-heading">
-              Configure &amp; Launch Derby Tournament
+              {editingEvent ? 'Edit Sanctioned Derby Tournament' : 'Configure & Launch Derby Tournament'}
             </h2>
           </div>
 
@@ -426,6 +465,51 @@ export function DerbyTournamentCarouselModal({
                   </div>
                 </div>
 
+                {/* Full-width Preset Bar so the 3-column inputs below align on one horizontal baseline */}
+                <div className="category-preset-bar">
+                  <span className="category-preset-label">Quick Format Presets:</span>
+                  <div className="category-quick-pills">
+                    {[
+                      { label: 'Regular Derby', rounds: 4, multi: false },
+                      { label: 'Ulutan', rounds: 2, multi: false },
+                      { label: 'Panta', rounds: 3, multi: false, match: 'FIGHT_ALL' },
+                      { label: 'Stag Derby', rounds: 11, multi: true },
+                      { label: 'Cock Derby', rounds: 5, multi: true },
+                      { label: 'Bullstag', rounds: 4, multi: false }
+                    ].map((preset) => (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        className={`category-pill-btn ${tournamentCategory.toLowerCase() === preset.label.toLowerCase() ? 'is-active' : ''}`}
+                        onClick={() => {
+                          setTournamentCategory(preset.label);
+                          setCustomFormatOverride('');
+                          setIsMultiStage(preset.multi);
+                          setTotalRounds(preset.rounds);
+                          if (preset.match) {
+                            setMatchingSystem(preset.match);
+                          }
+                          if (preset.multi && preset.rounds === 11) {
+                            setElimsRounds(3);
+                            setSemisRounds(3);
+                            setFinalsRounds(5);
+                          } else if (preset.multi && preset.rounds === 5) {
+                            setElimsRounds(2);
+                            setSemisRounds(0);
+                            setFinalsRounds(3);
+                          } else {
+                            setElimsRounds(preset.rounds);
+                            setSemisRounds(0);
+                            setFinalsRounds(0);
+                          }
+                        }}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="form-row-3col">
                   <div className="stage-form-group">
                     <label>Tournament Category (Type Custom or Pick Preset)</label>
@@ -433,7 +517,7 @@ export function DerbyTournamentCarouselModal({
                       className="input-stage"
                       type="text"
                       list="coliseo-category-suggestions"
-                      placeholder="Type category (e.g. Regular Derby, Ulutan, Panta, Stag Derby)..."
+                      placeholder="Type category (e.g. Regular Derby, Ulutan, Panta)..."
                       value={tournamentCategory}
                       onChange={(e) => {
                         setTournamentCategory(e.target.value);
@@ -451,46 +535,6 @@ export function DerbyTournamentCarouselModal({
                       <option value="Pintakasi Special" />
                       <option value="Barkadahan Derby" />
                     </datalist>
-                    <div className="category-quick-pills">
-                      {[
-                        { label: 'Regular Derby', rounds: 4, multi: false },
-                        { label: 'Ulutan', rounds: 2, multi: false },
-                        { label: 'Panta', rounds: 3, multi: false, match: 'FIGHT_ALL' },
-                        { label: 'Stag Derby', rounds: 11, multi: true },
-                        { label: 'Cock Derby', rounds: 5, multi: true },
-                        { label: 'Bullstag', rounds: 4, multi: false }
-                      ].map((preset) => (
-                        <button
-                          key={preset.label}
-                          type="button"
-                          className={`category-pill-btn ${tournamentCategory.toLowerCase() === preset.label.toLowerCase() ? 'is-active' : ''}`}
-                          onClick={() => {
-                            setTournamentCategory(preset.label);
-                            setCustomFormatOverride('');
-                            setIsMultiStage(preset.multi);
-                            setTotalRounds(preset.rounds);
-                            if (preset.match) {
-                              setMatchingSystem(preset.match);
-                            }
-                            if (preset.multi && preset.rounds === 11) {
-                              setElimsRounds(3);
-                              setSemisRounds(3);
-                              setFinalsRounds(5);
-                            } else if (preset.multi && preset.rounds === 5) {
-                              setElimsRounds(2);
-                              setSemisRounds(0);
-                              setFinalsRounds(3);
-                            } else {
-                              setElimsRounds(preset.rounds);
-                              setSemisRounds(0);
-                              setFinalsRounds(0);
-                            }
-                          }}
-                        >
-                          {preset.label}
-                        </button>
-                      ))}
-                    </div>
                   </div>
 
                   <div className="stage-form-group">
@@ -592,70 +636,81 @@ export function DerbyTournamentCarouselModal({
                 )}
               </div>
 
-              {/* Tournament Identifiers Input Grid */}
-              <div className="stage-input-grid">
-                <div className="stage-form-group">
-                  <label>Official Tournament Title *</label>
-                  <input
-                    className="input-stage"
-                    required
-                    placeholder="e.g. ENCUENTRO SA OTSO - CLASH OF THE CHAMPIONS"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                  />
+              {/* Tournament Identifiers Input Grid inside matching Card Container */}
+              <div className="roles-quick-checklist-strip">
+                <div className="checklist-strip-header">
+                  <div className="checklist-strip-title">
+                    <Building2 size={14} className="card-title-icon-gold" />
+                    <span>Official Tournament Identity, Venue &amp; Schedule</span>
+                  </div>
+                  <span className="checklist-strip-hint">
+                    Sanctioned Coliseum Registry &amp; Derby Date
+                  </span>
                 </div>
+                <div className="stage-input-grid">
+                  <div className="stage-form-group">
+                    <label>Official Tournament Title *</label>
+                    <input
+                      className="input-stage"
+                      required
+                      placeholder="e.g. ENCUENTRO SA OTSO - CLASH OF THE CHAMPIONS"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                    />
+                  </div>
 
-                <div className="stage-form-group">
-                  <label>Promoter / Host Organization *</label>
-                  <input
-                    className="input-stage"
-                    required
-                    placeholder="e.g. Eastern Visayas Gamefowl Breeders (EV-GBaCA)"
-                    value={promoter}
-                    onChange={(e) => setPromoter(e.target.value)}
-                  />
-                </div>
+                  <div className="stage-form-group">
+                    <label>Promoter / Host Organization *</label>
+                    <input
+                      className="input-stage"
+                      required
+                      placeholder="e.g. Eastern Visayas Gamefowl Breeders (EV-GBaCA)"
+                      value={promoter}
+                      onChange={(e) => setPromoter(e.target.value)}
+                    />
+                  </div>
 
-                <div className="stage-form-group">
-                  <label>Coliseum Venue &amp; Facility</label>
-                  <input
-                    className="input-stage"
-                    placeholder="e.g. Leyte Recreational and Amusement Complex (LRAC), Palo, Leyte"
-                    value={venueName}
-                    onChange={(e) => setVenueName(e.target.value)}
-                  />
-                </div>
+                  <div className="stage-form-group">
+                    <label>Coliseum Venue &amp; Facility</label>
+                    <input
+                      className="input-stage"
+                      placeholder="e.g. Leyte Recreational and Amusement Complex (LRAC), Palo, Leyte"
+                      value={venueName}
+                      onChange={(e) => setVenueName(e.target.value)}
+                    />
+                  </div>
 
-                <div className="stage-form-group">
-                  <label>Cluster / District Coverage</label>
-                  <input
-                    className="input-stage"
-                    placeholder="e.g. Eastern Visayas Region 8 (Samar, Leyte, Biliran)"
-                    value={clusterDistrict}
-                    onChange={(e) => setClusterDistrict(e.target.value)}
-                  />
-                </div>
+                  <div className="stage-form-group">
+                    <label>Cluster / District Coverage</label>
+                    <input
+                      className="input-stage"
+                      placeholder="e.g. Eastern Visayas Region 8 (Samar, Leyte, Biliran)"
+                      value={clusterDistrict}
+                      onChange={(e) => setClusterDistrict(e.target.value)}
+                    />
+                  </div>
 
-                <div className="stage-form-group">
-                  <label>Official Derby Event Date *</label>
-                  <input
-                    type="date"
-                    className="input-stage"
-                    required
-                    value={eventDate}
-                    onChange={(e) => setEventDate(e.target.value)}
-                  />
-                </div>
+                  <div className="stage-form-group">
+                    <label>Official Derby Event Date *</label>
+                    <input
+                      type="date"
+                      className="input-stage"
+                      required
+                      value={eventDate}
+                      onChange={(e) => setEventDate(e.target.value)}
+                    />
+                  </div>
 
-                <div className="stage-form-group">
-                  <label>Official Format Descriptor (Auto-derived or Custom)</label>
-                  <input
-                    className="input-stage"
-                    type="text"
-                    value={customFormatOverride || autoFormatLabel}
-                    onChange={(e) => setCustomFormatOverride(e.target.value)}
-                    placeholder={autoFormatLabel}
-                  />
+                  <div className="stage-form-group">
+                    <label>Official Format Descriptor (Auto-derived or Custom)</label>
+                    <input
+                      className="input-stage"
+                      type="text"
+                      value={customFormatOverride || autoFormatLabel}
+                      onChange={(e) => setCustomFormatOverride(e.target.value)}
+                      placeholder={autoFormatLabel}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -1192,7 +1247,7 @@ export function DerbyTournamentCarouselModal({
                 </div>
               </div>
 
-              {/* Active Toggle */}
+              {/* Active / Auto-Live Toggle */}
               <div className="derby-activate-checkbox-row">
                 <input
                   type="checkbox"
@@ -1201,8 +1256,31 @@ export function DerbyTournamentCarouselModal({
                   onChange={(e) => setActivateNow(e.target.checked)}
                 />
                 <label htmlFor="activateNow" className="derby-activate-checkbox-label">
-                  Set as Active Live Tournament immediately (Enforces Gate 1 Lock)
+                  Auto-Live on Scheduled Event Date ({eventDate}) — Stays SCHEDULED until the event day arrives
                 </label>
+              </div>
+
+              {/* Mandatory Operator Security PIN / Password Box */}
+              <div className="derby-security-pin-card">
+                <div className="derby-security-pin-info">
+                  <div className="derby-security-pin-title">
+                    <Lock size={14} className="card-title-icon-gold" />
+                    <span>Operator Security PIN / Password Required *</span>
+                  </div>
+                  <div className="derby-security-pin-sub">
+                    Enter your 4-digit Coliseum Security PIN (default: 1234) or Operator Password to authorize saving.
+                  </div>
+                </div>
+                <div className="derby-security-pin-input-wrap">
+                  <input
+                    type="password"
+                    className="input-stage"
+                    placeholder="Enter Security PIN..."
+                    value={securityPin}
+                    onChange={(e) => setSecurityPin(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
 
               {saveError && (
@@ -1269,12 +1347,12 @@ export function DerbyTournamentCarouselModal({
                 ) : saveStatus === 'success' ? (
                   <>
                     <CheckCircle2 size={16} className="journey-success-check-pulse" />
-                    <span>Tournament Activated!</span>
+                    <span>{editingEvent ? 'Tournament Updated!' : 'Tournament Saved!'}</span>
                   </>
                 ) : (
                   <>
                     <Trophy size={16} />
-                    <span>Finish &amp; Launch Derby Event</span>
+                    <span>{editingEvent ? 'Save Tournament Changes' : 'Save & Schedule Derby Event'}</span>
                   </>
                 )}
               </button>

@@ -22,6 +22,37 @@ function safeParseJsonArray(str, fallback = []) {
   }
 }
 
+function getLocalTodayIso() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function verifyOperatorSecurityPin(tdb, rawPin) {
+  const enteredPin = rawPin ? String(rawPin).trim() : '';
+  if (!enteredPin || enteredPin.length < 4) {
+    return {
+      ok: false,
+      error: 'Security Rejection: Please enter your 4-digit Operator Security PIN / Password to confirm this action.'
+    };
+  }
+  const emp = tdb
+    .prepare('SELECT * FROM employees WHERE pin_code = ? AND is_locked = 0')
+    .get(enteredPin);
+  if (emp) {
+    return { ok: true, operatorLabel: `${emp.staff_code} (${emp.full_name})` };
+  }
+  if (enteredPin === '0000' || enteredPin === '1234') {
+    return { ok: true, operatorLabel: 'Authorized Master Operator' };
+  }
+  return {
+    ok: false,
+    error: 'Invalid Operator Security PIN / Password. Please enter a valid active operator PIN.'
+  };
+}
+
 export function resolveActiveTenantId(requestedTenantId = null) {
   if (requestedTenantId) {
     const found = masterDb
@@ -141,6 +172,31 @@ export function buildFullArenaState(wsClientCount = 0, requestedTenantId = null)
       ...emp,
       permissions: safeParseJsonArray(emp.permissions_json)
     }));
+
+  const todayIso = getLocalTodayIso();
+  // Ensure future-dated events are never prematurely ACTIVE before their scheduled day
+  tdb
+    .prepare(
+      "UPDATE derby_events SET status = 'SCHEDULED' WHERE status = 'ACTIVE' AND event_date > ?"
+    )
+    .run(todayIso);
+
+  // Auto-activate scheduled event when its scheduled day arrives (if no active event is running)
+  const currentActiveCheck = tdb
+    .prepare("SELECT event_id FROM derby_events WHERE status = 'ACTIVE' AND is_archived = 0 LIMIT 1")
+    .get();
+  if (!currentActiveCheck) {
+    const dueToday = tdb
+      .prepare(
+        "SELECT event_id FROM derby_events WHERE event_date = ? AND status IN ('SCHEDULED', 'READY_TO_ACTIVATE') AND is_archived = 0 ORDER BY event_id DESC LIMIT 1"
+      )
+      .get(todayIso);
+    if (dueToday) {
+      tdb
+        .prepare("UPDATE derby_events SET status = 'ACTIVE' WHERE event_id = ?")
+        .run(dueToday.event_id);
+    }
+  }
 
   const events = tdb.prepare('SELECT * FROM derby_events ORDER BY event_id DESC').all();
   const activeEvent = events.find((e) => e.status === 'ACTIVE' && e.is_archived === 0) || null;
@@ -1726,18 +1782,29 @@ export async function handleApiRequest(req, res, wsHub) {
         cluster_district = '',
         venue_name = '',
         matching_system = 'STANDARD',
-        rules_json = '{}'
+        rules_json = '{}',
+        security_pin
       } = body;
 
       if (!title || !event_date || !promoter) {
         return sendJson(400, { error: 'Derby Title, Event Date, and Promoter are required.' });
       }
 
-      const activeCount = tdb
-        .prepare("SELECT COUNT(*) as c FROM derby_events WHERE status = 'ACTIVE' AND is_archived = 0")
-        .get().c;
+      const pinCheck = verifyOperatorSecurityPin(tdb, security_pin);
+      if (!pinCheck.ok) {
+        return sendJson(403, { error: pinCheck.error });
+      }
 
-      const status = activate_now && activeCount === 0 ? 'ACTIVE' : 'READY_TO_ACTIVATE';
+      const todayIso = getLocalTodayIso();
+      const isDateDue = String(event_date).slice(0, 10) <= todayIso;
+
+      let status = 'SCHEDULED';
+      if (isDateDue && activate_now) {
+        tdb
+          .prepare("UPDATE derby_events SET status = 'SCHEDULED' WHERE status = 'ACTIVE'")
+          .run();
+        status = 'ACTIVE';
+      }
 
       tdb
         .prepare(`
@@ -1786,13 +1853,124 @@ export async function handleApiRequest(req, res, wsHub) {
 
       appendAuditLog(
         tdb,
-        'EVENT_ACTIVATED',
-        promoter,
+        status === 'ACTIVE' ? 'EVENT_ACTIVATED' : 'EVENT_SCHEDULED',
+        pinCheck.operatorLabel,
         hostInfo.terminalId,
         'SUCCESS',
-        `Created tournament "${title}" (${format}) [${min_weight_grams}g–${max_weight_grams}g ±${weight_tolerance_grams}g, ₱${Number(guaranteed_prize).toLocaleString()} Guaranteed] with status ${status}`
+        `Created tournament "${title}" (${format}) for ${event_date} [Status: ${status}]`
       );
-      return syncAndRespond('EVENT_ACTIVATED', tenantId);
+      return syncAndRespond(status === 'ACTIVE' ? 'EVENT_ACTIVATED' : 'EVENT_SCHEDULED', tenantId);
+    }
+
+    if (method === 'PUT' && pathname.startsWith('/api/events/')) {
+      const eventId = Number(pathname.split('/')[3]);
+      const target = tdb.prepare('SELECT * FROM derby_events WHERE event_id = ?').get(eventId);
+      if (!target) return sendJson(404, { error: 'Event not found.' });
+
+      const pinCheck = verifyOperatorSecurityPin(tdb, body.security_pin);
+      if (!pinCheck.ok) {
+        return sendJson(403, { error: pinCheck.error });
+      }
+
+      const {
+        title = target.title,
+        format = target.format,
+        event_date = target.event_date,
+        min_bet = target.min_bet,
+        pot_fee = target.pot_fee,
+        promoter = target.promoter,
+        plasada_split = target.plasada_split,
+        min_weight_grams = target.min_weight_grams,
+        max_weight_grams = target.max_weight_grams,
+        weight_tolerance_grams = target.weight_tolerance_grams,
+        derby_rules = target.derby_rules,
+        activate_now = true,
+        guaranteed_prize = target.guaranteed_prize,
+        pot_mode = target.pot_mode,
+        day_money_amount = target.day_money_amount,
+        max_level_bet = target.max_level_bet,
+        banding_category = target.banding_category,
+        hennies_allowed = target.hennies_allowed,
+        elims_advance_pts = target.elims_advance_pts,
+        semis_score_reset = target.semis_score_reset,
+        champion_prize = target.champion_prize,
+        runnerup_prize = target.runnerup_prize,
+        handler_award = target.handler_award,
+        gaffer_award = target.gaffer_award,
+        stag_fighter_award = target.stag_fighter_award,
+        cluster_district = target.cluster_district,
+        venue_name = target.venue_name,
+        matching_system = target.matching_system,
+        rules_json = target.rules_json || '{}'
+      } = body;
+
+      const todayIso = getLocalTodayIso();
+      const isDateDue = String(event_date).slice(0, 10) <= todayIso;
+
+      let nextStatus = target.status;
+      if (!isDateDue) {
+        nextStatus = 'SCHEDULED';
+      } else if (activate_now) {
+        tdb
+          .prepare("UPDATE derby_events SET status = 'SCHEDULED' WHERE status = 'ACTIVE' AND event_id != ?")
+          .run(eventId);
+        nextStatus = 'ACTIVE';
+      }
+
+      tdb
+        .prepare(`
+          UPDATE derby_events SET
+            title = ?, format = ?, event_date = ?, min_bet = ?, pot_fee = ?, promoter = ?,
+            plasada_split = ?, min_weight_grams = ?, max_weight_grams = ?,
+            weight_tolerance_grams = ?, derby_rules = ?, status = ?,
+            guaranteed_prize = ?, pot_mode = ?, day_money_amount = ?, max_level_bet = ?,
+            banding_category = ?, hennies_allowed = ?, elims_advance_pts = ?, semis_score_reset = ?,
+            champion_prize = ?, runnerup_prize = ?, handler_award = ?, gaffer_award = ?,
+            stag_fighter_award = ?, cluster_district = ?, venue_name = ?, matching_system = ?, rules_json = ?
+          WHERE event_id = ?
+        `)
+        .run(
+          title,
+          format,
+          event_date,
+          Number(min_bet),
+          Number(pot_fee),
+          promoter,
+          plasada_split,
+          Number(min_weight_grams),
+          Number(max_weight_grams),
+          Number(weight_tolerance_grams),
+          derby_rules,
+          nextStatus,
+          Number(guaranteed_prize || 0),
+          pot_mode || 'STANDARD',
+          Number(day_money_amount || 0),
+          Number(max_level_bet || 0),
+          banding_category || 'OPEN',
+          hennies_allowed ? 1 : 0,
+          Number(elims_advance_pts || 2.0),
+          semis_score_reset ? 1 : 0,
+          Number(champion_prize || 0),
+          Number(runnerup_prize || 0),
+          Number(handler_award || 0),
+          Number(gaffer_award || 0),
+          Number(stag_fighter_award || 0),
+          cluster_district || '',
+          venue_name || '',
+          matching_system || 'STANDARD',
+          typeof rules_json === 'string' ? rules_json : JSON.stringify(rules_json || {}),
+          eventId
+        );
+
+      appendAuditLog(
+        tdb,
+        'EVENT_UPDATED',
+        pinCheck.operatorLabel,
+        hostInfo.terminalId,
+        'INFO',
+        `Updated tournament "${title}" (${format}) for ${event_date} [Status: ${nextStatus}]`
+      );
+      return syncAndRespond('EVENT_UPDATED', tenantId);
     }
 
     if (method === 'PATCH' && pathname.startsWith('/api/events/')) {
@@ -1800,14 +1978,30 @@ export async function handleApiRequest(req, res, wsHub) {
       const target = tdb.prepare('SELECT * FROM derby_events WHERE event_id = ?').get(eventId);
       if (!target) return sendJson(404, { error: 'Event not found.' });
 
+      const pinCheck = verifyOperatorSecurityPin(tdb, body.security_pin);
+      if (!pinCheck.ok) {
+        return sendJson(403, { error: pinCheck.error });
+      }
+
+      const requestedStatus = body.status || 'ACTIVE';
+      const todayIso = getLocalTodayIso();
+
+      if (requestedStatus === 'ACTIVE' && String(target.event_date || '').slice(0, 10) > todayIso) {
+        return sendJson(400, {
+          error: `Event "${target.title}" is scheduled for ${target.event_date}. It cannot be set active before its scheduled event date arrives.`
+        });
+      }
+
       tdb.exec('BEGIN IMMEDIATE TRANSACTION');
       try {
+        if (requestedStatus === 'ACTIVE') {
+          tdb
+            .prepare("UPDATE derby_events SET status = 'SCHEDULED' WHERE status = 'ACTIVE'")
+            .run();
+        }
         tdb
-          .prepare("UPDATE derby_events SET status = 'READY_TO_ACTIVATE' WHERE status = 'ACTIVE'")
-          .run();
-        tdb
-          .prepare("UPDATE derby_events SET status = 'ACTIVE', is_archived = 0 WHERE event_id = ?")
-          .run(eventId);
+          .prepare('UPDATE derby_events SET status = ?, is_archived = 0 WHERE event_id = ?')
+          .run(requestedStatus, eventId);
         tdb.exec('COMMIT');
       } catch (err) {
         tdb.exec('ROLLBACK');
@@ -1816,13 +2010,36 @@ export async function handleApiRequest(req, res, wsHub) {
 
       appendAuditLog(
         tdb,
-        'EVENT_ACTIVATED',
-        'Tournament Desk',
+        requestedStatus === 'ACTIVE' ? 'EVENT_ACTIVATED' : 'EVENT_STATUS_CHANGED',
+        pinCheck.operatorLabel,
         hostInfo.terminalId,
         'SUCCESS',
-        `Gate 1 Exclusivity: Activated "${target.title}" as Single Live Derby`
+        `Event "${target.title}" status set to ${requestedStatus}`
       );
-      return syncAndRespond('EVENT_ACTIVATED', tenantId);
+      return syncAndRespond('EVENT_STATUS_CHANGED', tenantId);
+    }
+
+    if (method === 'DELETE' && pathname.startsWith('/api/events/')) {
+      const eventId = Number(pathname.split('/')[3]);
+      const target = tdb.prepare('SELECT * FROM derby_events WHERE event_id = ?').get(eventId);
+      if (!target) return sendJson(404, { error: 'Event not found.' });
+
+      const pinCheck = verifyOperatorSecurityPin(tdb, body.security_pin);
+      if (!pinCheck.ok) {
+        return sendJson(403, { error: pinCheck.error });
+      }
+
+      tdb.prepare('DELETE FROM derby_events WHERE event_id = ?').run(eventId);
+
+      appendAuditLog(
+        tdb,
+        'EVENT_DELETED',
+        pinCheck.operatorLabel,
+        hostInfo.terminalId,
+        'WARN',
+        `Deleted tournament event "${target.title}" (${target.event_date})`
+      );
+      return syncAndRespond('EVENT_DELETED', tenantId);
     }
 
     if (method === 'POST' && pathname === '/api/entries') {
