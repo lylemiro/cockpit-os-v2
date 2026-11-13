@@ -11,7 +11,8 @@ import {
   FileText,
   KeyRound,
   Check,
-  Sparkles
+  Sparkles,
+  RotateCw
 } from 'lucide-react';
 import { ALL_PERMISSION_KEYS } from './arbacCatalog.js';
 
@@ -413,10 +414,10 @@ export function TenantProvisionCarouselModal({
                 disabled={submitting}
                 onClick={handleSubmit}
               >
-                <ShieldCheck size={16} />
+                {submitting ? <RotateCw size={16} className="spin" /> : <ShieldCheck size={16} />}
                 <span>
                   {submitting
-                    ? 'Provisioning Physical SQLite File...'
+                    ? 'Saving Physical SQLite File...'
                     : 'Provision Physical Tenant Database'}
                 </span>
               </button>

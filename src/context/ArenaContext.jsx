@@ -275,6 +275,22 @@ export function ArenaProvider({ children }) {
     async (endpoint, method = 'POST', payload = {}, options = {}) => {
       setSubmitting(true);
       setError(null);
+      const startTime = Date.now();
+      const minSaveMs =
+        options.minSaveMs !== undefined
+          ? options.minSaveMs
+          : endpoint === '/api/auth/logout'
+          ? 0
+          : 2000;
+
+      const waitRemainingSaveDelay = async () => {
+        if (minSaveMs <= 0) return;
+        const elapsed = Date.now() - startTime;
+        if (elapsed < minSaveMs) {
+          await new Promise((resolve) => setTimeout(resolve, minSaveMs - elapsed));
+        }
+      };
+
       try {
         const headers = { 'Content-Type': 'application/json' };
         if (activeTenantId) headers['X-Tenant-Id'] = activeTenantId;
@@ -288,6 +304,9 @@ export function ArenaProvider({ children }) {
         if (!res.ok) {
           throw new Error(data.error || `Request failed (${res.status})`);
         }
+
+        await waitRemainingSaveDelay();
+
         if (data.state) {
           setArenaState(data.state);
           if (data.state.activeTenantId) {
@@ -295,14 +314,17 @@ export function ArenaProvider({ children }) {
             writeStorage('cockpit_active_tenant_id', data.state.activeTenantId);
           }
         }
-        if (options.successMessage || data.message) {
+        if (!options.silentSuccess) {
           notifySuccess(
-            options.successTitle || 'Action Completed',
-            options.successMessage || data.message
+            options.successTitle || 'Saved Successfully',
+            options.successMessage ||
+              data.message ||
+              'Operation committed and logged to activity log.'
           );
         }
         return { ok: true, data };
       } catch (err) {
+        await waitRemainingSaveDelay();
         const friendly = translateToFriendlyError(err);
         setError(friendly);
         if (!options.silentError) {

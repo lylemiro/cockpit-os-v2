@@ -32,6 +32,7 @@ import { useArena } from '../context/ArenaContext.jsx';
 import { DatabaseRelationshipGraph } from '../components/DatabaseRelationshipGraph.jsx';
 import { ArbacManager } from '../components/ArbacManager.jsx';
 import { DerbyTournamentCarouselModal } from '../components/DerbyTournamentCarouselModal.jsx';
+import { EventDetailFullscreenModal } from '../components/EventDetailFullscreenModal.jsx';
 
 export function SubsystemWorkspace({ moduleId }) {
   const {
@@ -55,6 +56,7 @@ export function SubsystemWorkspace({ moduleId }) {
   const [isDerbyCarouselOpen, setIsDerbyCarouselOpen] = useState(false);
   const [showEnrollDrawer, setShowEnrollDrawer] = useState(false);
   const [derbyCarouselConfig, setDerbyCarouselConfig] = useState(null);
+  const [selectedEventDetail, setSelectedEventDetail] = useState(null);
 
   // Form states for dynamic creation across modules
   const [arenaForm, setArenaForm] = useState({
@@ -557,7 +559,14 @@ export function SubsystemWorkspace({ moduleId }) {
 
             <div className="arena-form-actions-row">
               <button type="submit" className="btn-primary-emerald" disabled={submitting}>
-                {submitting ? 'Authenticating & Saving...' : current ? 'Update Arena Parameters' : 'Save Arena Setup'}
+                {submitting && <RotateCw size={14} className="spin" />}
+                <span>
+                  {submitting
+                    ? 'Saving Arena Setup...'
+                    : current
+                    ? 'Update Arena Parameters'
+                    : 'Save Arena Setup'}
+                </span>
               </button>
               {current && (
                 <button
@@ -1115,7 +1124,8 @@ export function SubsystemWorkspace({ moduleId }) {
             </div>
           </div>
           <button type="submit" className="btn-primary-emerald" disabled={submitting}>
-            {submitting ? 'Whitelisting...' : '+ Authorize Terminal'}
+            {submitting && <RotateCw size={14} className="spin" />}
+            <span>{submitting ? 'Saving Terminal...' : '+ Authorize Terminal'}</span>
           </button>
         </form>
 
@@ -1329,7 +1339,8 @@ export function SubsystemWorkspace({ moduleId }) {
                 Cancel
               </button>
               <button type="submit" className="btn-primary-emerald" disabled={submitting}>
-                {submitting ? 'Enrolling...' : '+ Submit & Enroll Entry'}
+                {submitting && <RotateCw size={14} className="spin" />}
+                <span>{submitting ? 'Saving Entry...' : '+ Submit & Enroll Entry'}</span>
               </button>
             </div>
           </form>
@@ -1555,7 +1566,13 @@ export function SubsystemWorkspace({ moduleId }) {
                       {events.map((ev) => (
                         <tr key={ev.event_id}>
                           <td>
-                            <strong>{ev.title}</strong>
+                            <button
+                              type="button"
+                              className="event-link-btn"
+                              onClick={() => setSelectedEventDetail(ev)}
+                            >
+                              <strong>{ev.title}</strong>
+                            </button>
                             <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{ev.promoter}</div>
                           </td>
                           <td>{ev.format}</td>
@@ -1909,7 +1926,13 @@ export function SubsystemWorkspace({ moduleId }) {
                         {events.map((ev) => (
                           <tr key={ev.event_id}>
                             <td>
-                              <strong>{ev.title}</strong>
+                              <button
+                                type="button"
+                                className="event-link-btn"
+                                onClick={() => setSelectedEventDetail(ev)}
+                              >
+                                <strong>{ev.title}</strong>
+                              </button>
                               <div style={{ fontSize: '9.5px', color: 'var(--text-muted)' }}>{ev.promoter}</div>
                             </td>
                             <td>{ev.format}</td>
@@ -1957,6 +1980,13 @@ export function SubsystemWorkspace({ moduleId }) {
           }}
           submitting={submitting}
           activeTenant={arenaState.tenant}
+        />
+
+        <EventDetailFullscreenModal
+          isOpen={Boolean(selectedEventDetail)}
+          events={selectedEventDetail ? [selectedEventDetail] : []}
+          initialIndex={0}
+          onClose={() => setSelectedEventDetail(null)}
         />
       </div>
     );
@@ -2067,7 +2097,8 @@ export function SubsystemWorkspace({ moduleId }) {
               </div>
             </div>
             <button type="submit" className="btn-primary-emerald" disabled={submitting}>
-              {submitting ? 'Logging Biometrics...' : '+ Log Calibrated Scale Weight'}
+              {submitting && <RotateCw size={14} className="spin" />}
+              <span>{submitting ? 'Saving Biometrics...' : '+ Log Calibrated Scale Weight'}</span>
             </button>
           </form>
 
@@ -2473,7 +2504,8 @@ export function SubsystemWorkspace({ moduleId }) {
             </div>
           </div>
           <button type="submit" className="btn-primary-emerald" disabled={submitting}>
-            {submitting ? 'Printing Ticket...' : '+ Issue Encrypted Bet Ticket'}
+            {submitting && <RotateCw size={14} className="spin" />}
+            <span>{submitting ? 'Saving Ticket...' : '+ Issue Encrypted Bet Ticket'}</span>
           </button>
         </form>
 
@@ -2594,7 +2626,8 @@ export function SubsystemWorkspace({ moduleId }) {
             />
           </div>
           <button type="submit" className="btn-primary-emerald" disabled={submitting}>
-            + Check In Cockhouse Bay
+            {submitting && <RotateCw size={14} className="spin" />}
+            <span>{submitting ? 'Saving Check-In...' : '+ Check In Cockhouse Bay'}</span>
           </button>
         </form>
 
@@ -2710,7 +2743,8 @@ export function SubsystemWorkspace({ moduleId }) {
             />
           </div>
           <button type="submit" className="btn-primary-emerald" disabled={submitting}>
-            + Record Vet Procedure
+            {submitting && <RotateCw size={14} className="spin" />}
+            <span>{submitting ? 'Saving Procedure...' : '+ Record Vet Procedure'}</span>
           </button>
         </form>
 
@@ -2834,7 +2868,8 @@ export function SubsystemWorkspace({ moduleId }) {
             />
           </div>
           <button type="submit" className="btn-primary-emerald" disabled={submitting}>
-            + Save Inventory Asset
+            {submitting && <RotateCw size={14} className="spin" />}
+            <span>{submitting ? 'Saving Asset...' : '+ Save Inventory Asset'}</span>
           </button>
         </form>
 

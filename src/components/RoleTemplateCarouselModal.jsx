@@ -12,7 +12,8 @@ import {
   BadgeDollarSign,
   Building2,
   Check,
-  RotateCcw
+  RotateCcw,
+  RotateCw
 } from 'lucide-react';
 import {
   ARBAC_PERMISSION_GROUPS,
@@ -593,10 +594,10 @@ export function RoleTemplateCarouselModal({
                 disabled={submitting}
                 onClick={handleSubmitRole}
               >
-                <ShieldCheck size={16} />
+                {submitting ? <RotateCw size={16} className="spin" /> : <ShieldCheck size={16} />}
                 <span>
                   {submitting
-                    ? 'Publishing to SQLite Master...'
+                    ? 'Saving to SQLite Master...'
                     : editingRole
                     ? 'Save Role Template Changes'
                     : 'Publish Role Template to Catalog'}

@@ -2,11 +2,20 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, Trophy } from 'lucide-react';
 import { useArena } from '../context/ArenaContext.jsx';
+import { EventDetailFullscreenModal } from './EventDetailFullscreenModal.jsx';
+
+function toLocalIsoDate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 
 export function WindowsCalendarFlyout({ isOpen, onClose }) {
   const { arenaState, setActiveModuleId } = useArena();
   const [currentViewDate, setCurrentViewDate] = useState(() => new Date());
   const [now, setNow] = useState(() => new Date());
+  const [eventDetailModal, setEventDetailModal] = useState(null); // { events: [], initialIndex: 0 }
   const flyoutRef = useRef(null);
 
   // Live ticking clock
@@ -15,11 +24,13 @@ export function WindowsCalendarFlyout({ isOpen, onClose }) {
     return () => clearInterval(timer);
   }, []);
 
-  // Close when clicking outside
+  // Close when clicking outside (unless event detail modal is open)
   useEffect(() => {
     if (!isOpen) return;
 
     const handlePointerDown = (e) => {
+      if (eventDetailModal) return;
+      if (e.target.closest('.event-detail-fullscreen-backdrop')) return;
       if (flyoutRef.current && !flyoutRef.current.contains(e.target)) {
         if (!e.target.closest('.tray-clock-stack')) {
           onClose();
@@ -28,6 +39,7 @@ export function WindowsCalendarFlyout({ isOpen, onClose }) {
     };
 
     const handleKeyDown = (e) => {
+      if (eventDetailModal) return;
       if (e.key === 'Escape') onClose();
     };
 
@@ -37,7 +49,7 @@ export function WindowsCalendarFlyout({ isOpen, onClose }) {
       window.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, eventDetailModal]);
 
   const year = currentViewDate.getFullYear();
   const month = currentViewDate.getMonth();
@@ -89,6 +101,19 @@ export function WindowsCalendarFlyout({ isOpen, onClose }) {
     return days;
   }, [year, month]);
 
+  const events = arenaState?.events || [];
+
+  const eventsByDate = useMemo(() => {
+    const map = {};
+    for (const evt of events) {
+      const key = String(evt.event_date || '').slice(0, 10);
+      if (!key) continue;
+      if (!map[key]) map[key] = [];
+      map[key].push(evt);
+    }
+    return map;
+  }, [events]);
+
   if (!isOpen) return null;
 
   const isToday = (d) =>
@@ -121,8 +146,6 @@ export function WindowsCalendarFlyout({ isOpen, onClose }) {
   const handleJumpToday = () => {
     setCurrentViewDate(new Date());
   };
-
-  const events = arenaState?.events || [];
 
   return createPortal(
     <>
@@ -187,20 +210,26 @@ export function WindowsCalendarFlyout({ isOpen, onClose }) {
       <div className="cal-days-grid">
         {calendarDays.map((item, idx) => {
           const today = isToday(item.dateObj);
+          const iso = toLocalIsoDate(item.dateObj);
+          const dayEvents = eventsByDate[iso] || [];
+          const hasEvent = dayEvents.length > 0;
           return (
             <button
               key={`${item.dayNum}-${idx}`}
               type="button"
+              title={hasEvent ? dayEvents.map((e) => e.title).join(' | ') : undefined}
+              onClick={() => {
+                if (hasEvent) {
+                  setEventDetailModal({ events: dayEvents, initialIndex: 0 });
+                }
+              }}
               className={`cal-day-cell ${
-                !item.isCurrentMonth
-                  ? 'is-other-month'
-                  : today
-                  ? 'is-today'
-                  : ''
-              }`}
+                !item.isCurrentMonth ? 'is-other-month' : ''
+              } ${today ? 'is-today' : ''} ${hasEvent ? 'has-event' : ''}`}
             >
               <span>{item.dayNum}</span>
-              {today && <span className="cal-today-dot" />}
+              {hasEvent && <span className="cal-event-dot" />}
+              {today && !hasEvent && <span className="cal-today-dot" />}
             </button>
           );
         })}
@@ -232,15 +261,14 @@ export function WindowsCalendarFlyout({ isOpen, onClose }) {
                 key={evt.event_id}
                 className="cal-event-card"
                 onClick={() => {
-                  onClose();
-                  setActiveModuleId('events-schedule');
+                  setEventDetailModal({ events: [evt], initialIndex: 0 });
                 }}
               >
                 <div className="cal-event-color-bar" />
                 <div className="cal-event-info">
                   <div className="cal-event-title">{evt.title}</div>
                   <div className="cal-event-sub">
-                    {evt.event_date || 'Today'} • {evt.game_type || 'Standard Derby'} • Pot: ₱{evt.pot_money?.toLocaleString() || '0'}
+                    {evt.event_date || 'Today'} • {evt.format || evt.game_type || 'Standard Derby'} • Purse: ₱{Number(evt.guaranteed_prize || evt.pot_money || 0).toLocaleString()}
                   </div>
                 </div>
               </div>
@@ -254,6 +282,18 @@ export function WindowsCalendarFlyout({ isOpen, onClose }) {
         </div>
       </div>
     </div>
+
+    <EventDetailFullscreenModal
+      isOpen={Boolean(eventDetailModal)}
+      events={eventDetailModal?.events || []}
+      initialIndex={eventDetailModal?.initialIndex || 0}
+      onClose={() => setEventDetailModal(null)}
+      onNavigateToWorkspace={() => {
+        setEventDetailModal(null);
+        onClose();
+        setActiveModuleId('events-schedule');
+      }}
+    />
   </>,
   document.body
 );

@@ -604,6 +604,32 @@ export async function handleApiRequest(req, res, wsHub) {
     });
 
   const sendJson = (status, payload) => {
+    if (method !== 'GET' && status >= 400) {
+      try {
+        const hdrTenant = req.headers['x-tenant-id'] || url.searchParams.get('tenantId') || null;
+        const resolvedTid = resolveActiveTenantId(hdrTenant);
+        const errTdb = getTenantDb(resolvedTid);
+        if (errTdb) {
+          const host = getLiveSystemMetrics();
+          appendAuditLog(
+            errTdb,
+            'FORM_ACTION_FAILED',
+            'Operator / Form',
+            host.terminalId,
+            'DANGER',
+            `[${method} ${pathname}] ${payload?.error || `HTTP ${status}`}`
+          );
+          const state = buildFullArenaState(wsHub.clients.size, resolvedTid);
+          wsHub.broadcast('LIVE_SYNC', {
+            trigger: 'FORM_ACTION_FAILED',
+            tenantId: resolvedTid,
+            state
+          });
+        }
+      } catch {
+        // Ignore audit logging errors on failure path
+      }
+    }
     res.writeHead(status);
     res.end(JSON.stringify(payload));
   };
@@ -1654,7 +1680,16 @@ export async function handleApiRequest(req, res, wsHub) {
 
     if (method === 'DELETE' && pathname.startsWith('/api/devices/')) {
       const deviceId = decodeURIComponent(pathname.split('/')[3]);
+      const dev = tdb.prepare('SELECT code, label FROM devices WHERE device_id = ?').get(deviceId);
       tdb.prepare('DELETE FROM devices WHERE device_id = ?').run(deviceId);
+      appendAuditLog(
+        tdb,
+        'DEVICE_REMOVED',
+        'System Admin',
+        hostInfo.terminalId,
+        'WARN',
+        `Removed hardware terminal ${dev ? `${dev.code} (${dev.label})` : deviceId}`
+      );
       return syncAndRespond('DEVICE_REMOVED', tenantId);
     }
 
