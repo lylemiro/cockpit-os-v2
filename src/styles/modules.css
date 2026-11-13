@@ -5087,22 +5087,6 @@
   pointer-events: none;
 }
 
-.paperwork-watermark {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(-25deg);
-  font-size: 44px;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: rgba(14, 138, 78, 0.05);
-  pointer-events: none;
-  white-space: nowrap;
-  user-select: none;
-  z-index: 0;
-}
-
 .paperwork-sheet-inner {
   position: relative;
   z-index: 1;
@@ -5112,7 +5096,7 @@
 .paperwork-letterhead {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 16px;
   padding-bottom: 12px;
 }
@@ -5135,17 +5119,6 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-}
-
-.paperwork-logo-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: #718096;
-  font-size: 9px;
-  font-weight: 800;
-  text-align: center;
 }
 
 .paperwork-gov-header {
@@ -5208,41 +5181,6 @@
 
 .paperwork-license-item strong {
   color: #1a202c;
-}
-
-.paperwork-seal-box {
-  width: 72px;
-  height: 72px;
-  border: 2px dashed #064e3b;
-  border-radius: 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 4px;
-  color: #064e3b;
-  background: rgba(6, 78, 59, 0.04);
-  flex-shrink: 0;
-}
-
-.paperwork-seal-text-top {
-  font-size: 7px;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.paperwork-seal-star {
-  font-size: 14px;
-  line-height: 1;
-}
-
-.paperwork-seal-text-bot {
-  font-size: 7px;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 .paperwork-double-divider {

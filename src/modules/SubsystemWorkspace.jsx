@@ -200,11 +200,11 @@ export function SubsystemWorkspace({ moduleId }) {
     const showForm = !current || isEditingArena;
     const activeLogo = arenaForm.logo_url || current?.logo_url || '';
     const previewConfig = {
-      arena_name: (showForm ? arenaForm.arena_name : current?.arena_name) || arenaForm.arena_name || current?.arena_name || 'Leyte Recreational & Amusement Complex (LRAC)',
-      gab_license: (showForm ? arenaForm.gab_license : current?.gab_license) || arenaForm.gab_license || current?.gab_license || 'GAB-COL-2026-0884',
-      mayors_permit: (showForm ? arenaForm.mayors_permit : current?.mayors_permit) || arenaForm.mayors_permit || current?.mayors_permit || 'LGU-MP-2026-89201',
-      bir_cas_min: (showForm ? arenaForm.bir_cas_min : current?.bir_cas_min) || arenaForm.bir_cas_min || current?.bir_cas_min || 'MIN-20260411-88392014',
-      plasada_rate: Number((showForm ? arenaForm.plasada_rate : current?.plasada_rate) || arenaForm.plasada_rate || current?.plasada_rate || 0.1),
+      arena_name: (showForm ? arenaForm.arena_name : current?.arena_name) || current?.arena_name || arenaForm.arena_name || '',
+      gab_license: (showForm ? arenaForm.gab_license : current?.gab_license) || current?.gab_license || arenaForm.gab_license || '',
+      mayors_permit: (showForm ? arenaForm.mayors_permit : current?.mayors_permit) || current?.mayors_permit || arenaForm.mayors_permit || '',
+      bir_cas_min: (showForm ? arenaForm.bir_cas_min : current?.bir_cas_min) || current?.bir_cas_min || arenaForm.bir_cas_min || '',
+      plasada_rate: (showForm ? arenaForm.plasada_rate : current?.plasada_rate) || current?.plasada_rate || arenaForm.plasada_rate || '',
       logo_url: activeLogo
     };
 
@@ -533,51 +533,47 @@ export function SubsystemWorkspace({ moduleId }) {
 
           {/* Printable Document Sheet Preview */}
           <div className="paperwork-sheet">
-            <div className="paperwork-watermark">GAB REGULATED • BIR CAS AUDITED</div>
             <div className="paperwork-sheet-inner">
               {/* Official Letterhead */}
               <div className="paperwork-letterhead">
-                <div className="paperwork-logo-box">
-                  {previewConfig.logo_url ? (
+                {previewConfig.logo_url ? (
+                  <div className="paperwork-logo-box">
                     <img
                       src={previewConfig.logo_url}
                       alt="Coliseum Crest"
                       className="paperwork-logo-img"
                     />
-                  ) : (
-                    <div className="paperwork-logo-placeholder">
-                      <ShieldCheck size={26} color="#064e3b" />
-                      <span>COLISEO CREST</span>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                ) : null}
 
                 <div className="paperwork-gov-header">
                   <span className="paperwork-gov-sup">Republic of the Philippines • Office of the President</span>
                   <span className="paperwork-gov-agency">GAMES AND AMUSEMENTS BOARD (GAB)</span>
-                  <h3 className="paperwork-coliseum-name">
-                    {previewConfig.arena_name || 'COLISEUM ARENA'}
-                  </h3>
+                  {previewConfig.arena_name ? (
+                    <h3 className="paperwork-coliseum-name">{previewConfig.arena_name}</h3>
+                  ) : null}
                   <div className="paperwork-license-strip">
-                    <span className="paperwork-license-item">
-                      GAB LIC: <strong>{previewConfig.gab_license || 'PENDING'}</strong>
-                    </span>
-                    <span className="paperwork-license-item">
-                      MAYOR&apos;S PERMIT: <strong>{previewConfig.mayors_permit || 'PENDING'}</strong>
-                    </span>
-                    <span className="paperwork-license-item">
-                      BIR CAS MIN: <strong>{previewConfig.bir_cas_min || 'PENDING'}</strong>
-                    </span>
-                    <span className="paperwork-license-item">
-                      PLASADA: <strong>{Math.round((previewConfig.plasada_rate || 0.1) * 100)}%</strong>
-                    </span>
+                    {previewConfig.gab_license ? (
+                      <span className="paperwork-license-item">
+                        GAB LIC: <strong>{previewConfig.gab_license}</strong>
+                      </span>
+                    ) : null}
+                    {previewConfig.mayors_permit ? (
+                      <span className="paperwork-license-item">
+                        MAYOR&apos;S PERMIT: <strong>{previewConfig.mayors_permit}</strong>
+                      </span>
+                    ) : null}
+                    {previewConfig.bir_cas_min ? (
+                      <span className="paperwork-license-item">
+                        BIR CAS MIN: <strong>{previewConfig.bir_cas_min}</strong>
+                      </span>
+                    ) : null}
+                    {previewConfig.plasada_rate ? (
+                      <span className="paperwork-license-item">
+                        PLASADA: <strong>{Math.round(Number(previewConfig.plasada_rate) * 100)}%</strong>
+                      </span>
+                    ) : null}
                   </div>
-                </div>
-
-                <div className="paperwork-seal-box">
-                  <span className="paperwork-seal-text-top">OFFICIAL SEAL</span>
-                  <span className="paperwork-seal-star">★ GAB ★</span>
-                  <span className="paperwork-seal-text-bot">PD 449 AUDITED</span>
                 </div>
               </div>
 
