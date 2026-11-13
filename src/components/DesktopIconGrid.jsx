@@ -33,7 +33,7 @@ export function DesktopIconGrid({ searchQuery }) {
               title={`${app.label} — ${app.subtitle}`}
             >
               <div className="app-icon-box">
-                <AppIconGlyph name={app.icon} size={22} />
+                <AppIconGlyph name={app.icon} size={40} />
                 {count > 0 && <span className="app-tile-badge">{count}</span>}
               </div>
               <span className="app-tile-label">{app.label}</span>
