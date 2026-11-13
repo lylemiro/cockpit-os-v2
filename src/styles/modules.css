@@ -3009,7 +3009,200 @@
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
 }
 
-/* Granular 23-Matrix Grid */
+/* Granular 23-Matrix Grid & User Creation Styles */
+.input-with-action-group {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 100%;
+}
+
+.input-with-action-group .form-input {
+  padding-right: 80px;
+}
+
+.input-inline-btn {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1px solid var(--border-card);
+  background: var(--bg-card-subtle);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.input-inline-btn:hover {
+  background: var(--emerald-50);
+  border-color: var(--emerald-400);
+  color: var(--emerald-800);
+}
+
+.field-hint-text {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.field-hint-text code {
+  font-family: var(--font-mono);
+  background: var(--bg-card-subtle);
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-size: 10px;
+}
+
+.quick-pin-presets-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.pin-preset-pill {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  border: 1px solid var(--border-card);
+  background: var(--bg-card-subtle);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.pin-preset-pill:hover {
+  background: var(--emerald-100);
+  border-color: var(--emerald-500);
+  color: var(--emerald-900);
+}
+
+/* Roles Quick-Select Checklist Strip */
+.roles-quick-checklist-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+}
+
+.checklist-strip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.checklist-strip-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.checklist-strip-hint {
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+.roles-checklist-pills-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.role-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border-card);
+  background: var(--bg-card-solid);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.role-pill-btn:hover {
+  background: var(--bg-card-subtle);
+  border-color: var(--emerald-500);
+  color: var(--text-primary);
+}
+
+.role-pill-btn.is-active {
+  background: var(--emerald-700);
+  border-color: var(--emerald-600);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+}
+
+.role-pill-badge {
+  font-size: 9.5px;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  opacity: 0.85;
+}
+
+/* Permissions Search Box in Matrix Toolbar */
+.matrix-search-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-card);
+  border-radius: 6px;
+  padding: 4px 10px;
+  flex: 1;
+  max-width: 380px;
+}
+
+.matrix-search-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 11.5px;
+  color: var(--text-primary);
+  width: 100%;
+}
+
+.search-clear-x {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.passport-username-tag {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
 .matrix-toolbar {
   display: flex;
   align-items: center;

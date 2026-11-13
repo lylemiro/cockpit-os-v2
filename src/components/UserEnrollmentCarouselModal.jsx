@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   X,
   ChevronLeft,
@@ -12,7 +12,12 @@ import {
   BadgeDollarSign,
   Monitor,
   Check,
-  RotateCcw
+  RotateCcw,
+  Search,
+  Eye,
+  EyeOff,
+  Hash,
+  Filter
 } from 'lucide-react';
 import {
   ARBAC_PERMISSION_GROUPS,
@@ -31,9 +36,13 @@ export function UserEnrollmentCarouselModal({
 }) {
   const [currentStage, setCurrentStage] = useState(1);
   const [selectedRolePreset, setSelectedRolePreset] = useState(null);
+  const [showPin, setShowPin] = useState(false);
+  const [permSearch, setPermSearch] = useState('');
+  const [autoStaffCode, setAutoStaffCode] = useState(true);
 
   const [form, setForm] = useState({
     full_name: '',
+    staff_code: '',
     role: 'Superadmin / Pangulo ng Sabungan',
     zone: 'Executive Command Console',
     bound_device_code: 'T01',
@@ -47,9 +56,10 @@ export function UserEnrollmentCarouselModal({
   useEffect(() => {
     if (editingEmployee) {
       setForm({
-        full_name: editingEmployee.full_name,
-        role: editingEmployee.role,
-        zone: editingEmployee.zone,
+        full_name: editingEmployee.full_name || '',
+        staff_code: editingEmployee.staff_code || '',
+        role: editingEmployee.role || 'Superadmin / Pangulo ng Sabungan',
+        zone: editingEmployee.zone || 'Executive Command Console',
         bound_device_code: editingEmployee.bound_device_code || '',
         pin_code: '',
         cash_float: String(editingEmployee.cash_float ?? 0),
@@ -58,12 +68,12 @@ export function UserEnrollmentCarouselModal({
           ? [...editingEmployee.permissions]
           : []
       });
+      setAutoStaffCode(false);
       // Find matching preset if any
       const matching = FILIPINO_SABONG_DEFAULT_ROLES.find(
         (r) => r.role_name === editingEmployee.role
       );
       setSelectedRolePreset(matching || null);
-      // If editing, start at stage 2 or 3
       setCurrentStage(2);
     } else {
       // Default to Superadmin
@@ -71,6 +81,7 @@ export function UserEnrollmentCarouselModal({
       setSelectedRolePreset(defaultPreset);
       setForm({
         full_name: '',
+        staff_code: '',
         role: defaultPreset.role_name,
         zone: defaultPreset.department_zone,
         bound_device_code: 'T01',
@@ -79,6 +90,7 @@ export function UserEnrollmentCarouselModal({
         commission_rate: '0.00',
         permissions: [...defaultPreset.permissions]
       });
+      setAutoStaffCode(true);
       setCurrentStage(1);
     }
   }, [editingEmployee, isOpen]);
@@ -87,6 +99,18 @@ export function UserEnrollmentCarouselModal({
 
   const totalPerms = form.permissions.length;
   const clearancePct = Math.round((totalPerms / 23) * 100);
+
+  const handleFullNameChange = (val) => {
+    const slug = val
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '');
+    setForm((prev) => ({
+      ...prev,
+      full_name: val,
+      staff_code: autoStaffCode ? slug : prev.staff_code
+    }));
+  };
 
   const togglePermission = (key) => {
     setForm((prev) => ({
@@ -117,14 +141,27 @@ export function UserEnrollmentCarouselModal({
       cash_float: String(preset.max_cash_float),
       permissions: [...preset.permissions]
     }));
-    // Smoothly progress to next slide in journey
-    setCurrentStage(2);
+  };
+
+  const handleRoleDropdownChange = (roleName) => {
+    const preset = FILIPINO_SABONG_DEFAULT_ROLES.find((r) => r.role_name === roleName);
+    if (preset) {
+      handleSelectRolePreset(preset);
+    } else {
+      setForm((prev) => ({ ...prev, role: roleName }));
+    }
   };
 
   const handleNext = () => {
-    if (currentStage === 2 && !form.full_name.trim()) {
-      alert('Please enter Operator Full Name before continuing.');
-      return;
+    if (currentStage === 2) {
+      if (!form.full_name.trim()) {
+        alert('Please enter Operator Full Name before continuing.');
+        return;
+      }
+      if (!form.staff_code.trim()) {
+        alert('Please enter Operator Username / Staff Code for sign-in identification.');
+        return;
+      }
     }
     setCurrentStage((s) => Math.min(4, s + 1));
   };
@@ -138,9 +175,28 @@ export function UserEnrollmentCarouselModal({
     onSubmit(form);
   };
 
+  const filteredPermissionGroups = useMemo(() => {
+    const q = permSearch.trim().toLowerCase();
+    if (!q) return ARBAC_PERMISSION_GROUPS;
+
+    return ARBAC_PERMISSION_GROUPS.map((grp) => {
+      const domainMatches = grp.domainTitle.toLowerCase().includes(q);
+      const matchingPerms = grp.permissions.filter(
+        (p) =>
+          domainMatches ||
+          p.label.toLowerCase().includes(q) ||
+          p.key.toLowerCase().includes(q)
+      );
+      return {
+        ...grp,
+        permissions: matchingPerms
+      };
+    }).filter((grp) => grp.permissions.length > 0);
+  }, [permSearch]);
+
   const stages = [
     { num: 1, label: 'Role Archetype', sub: 'Filipino Sabong Context' },
-    { num: 2, label: 'Operator Identity', sub: 'Profile & Device Binding' },
+    { num: 2, label: 'Operator Identity', sub: 'Profile, Username & PIN' },
     { num: 3, label: 'ARBAC Matrix', sub: '23-Checkbox Clearance' },
     { num: 4, label: 'Verification', sub: 'Physical DB Enrollment' }
   ];
@@ -162,7 +218,7 @@ export function UserEnrollmentCarouselModal({
             </span>
             <h2 className="journey-main-heading">
               {editingEmployee
-                ? `Update Operator: ${editingEmployee.staff_code}`
+                ? `Update Operator: ${editingEmployee.staff_code} (${editingEmployee.full_name})`
                 : 'Enroll New Coliseum Operator'}
             </h2>
           </div>
@@ -180,7 +236,6 @@ export function UserEnrollmentCarouselModal({
                     isCompleted ? 'is-completed' : ''
                   }`}
                   onClick={() => {
-                    // Only allow jumping back or jumping to completed steps
                     if (st.num < currentStage || (currentStage === 1 && form.full_name)) {
                       setCurrentStage(st.num);
                     }
@@ -226,7 +281,10 @@ export function UserEnrollmentCarouselModal({
                     <div
                       key={role.role_id}
                       className={`role-archetype-card ${isSelected ? 'is-selected' : ''}`}
-                      onClick={() => handleSelectRolePreset(role)}
+                      onClick={() => {
+                        handleSelectRolePreset(role);
+                        setCurrentStage(2);
+                      }}
                     >
                       <div className="role-card-top-row">
                         <span className="role-card-tag">{role.tag}</span>
@@ -263,16 +321,16 @@ export function UserEnrollmentCarouselModal({
           )}
 
           {/* =====================================================================
-             STAGE 2: OPERATOR PROFILE & HARDWARE DEVICE BINDING
+             STAGE 2: OPERATOR PROFILE, USERNAME & SECURITY PIN
              ===================================================================== */}
           {currentStage === 2 && (
             <div className="journey-slide slide-operator-identity">
               <div className="slide-intro-banner">
                 <div className="slide-intro-title">
-                  Stage 2: Operator Identification &amp; Hardware Device Binding
+                  Stage 2: Operator Identification, Username &amp; Hardware Device Binding
                 </div>
                 <div className="slide-intro-desc">
-                  Provide the operator's legal coliseum credentials, assign their physical security PIN, and bind them to an authorized hardware terminal for Gate 0 zero-trust enforcement.
+                  Provide the operator's legal credentials, assign their unique <strong>login username / staff code</strong> and security PIN, and bind them to an authorized hardware terminal for Gate 0 zero-trust security.
                 </div>
               </div>
 
@@ -289,37 +347,126 @@ export function UserEnrollmentCarouselModal({
                       placeholder="e.g. Victoriano S. Santos"
                       value={form.full_name}
                       autoFocus
-                      onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+                      onChange={(e) => handleFullNameChange(e.target.value)}
                     />
                   </div>
 
                   <div className="form-field">
                     <label className="form-label">
-                      <KeyRound size={13} className="card-title-icon-gold" />
-                      <span>Security PIN (4–6 Digits)</span>
+                      <Hash size={13} className="card-title-icon-emerald" />
+                      <span>Operator Username / Staff Code (Sign-In Identifier)</span>
                     </label>
-                    <input
-                      type="password"
-                      className="form-input is-lg"
-                      placeholder={editingEmployee ? 'Leave blank to preserve current PIN' : 'e.g. 1234'}
-                      required={!editingEmployee}
-                      value={form.pin_code}
-                      onChange={(e) => setForm({ ...form, pin_code: e.target.value })}
-                    />
+                    <div className="input-with-action-group">
+                      <input
+                        className="form-input is-lg is-mono"
+                        required
+                        placeholder="e.g. vsantos, EMP-02, lylemiro"
+                        value={form.staff_code}
+                        onChange={(e) => {
+                          setAutoStaffCode(false);
+                          setForm({ ...form, staff_code: e.target.value });
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="input-inline-btn"
+                        title="Auto-generate username slug from full name"
+                        onClick={() => {
+                          const slug = form.full_name.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+                          setForm((prev) => ({ ...prev, staff_code: slug || 'operator' }));
+                          setAutoStaffCode(true);
+                        }}
+                      >
+                        Auto Slug
+                      </button>
+                    </div>
+                    <span className="field-hint-text">
+                      Identifier used on the login screen (e.g. <code>lylemiro</code>, <code>EMP-02</code>, <code>teller01</code>).
+                    </span>
                   </div>
                 </div>
 
                 <div className="form-row-2col">
                   <div className="form-field">
-                    <label className="form-label">Assigned Filipino Role Title</label>
-                    <input
-                      className="form-input"
-                      required
-                      value={form.role}
-                      onChange={(e) => setForm({ ...form, role: e.target.value })}
-                    />
+                    <label className="form-label">
+                      <KeyRound size={13} className="card-title-icon-gold" />
+                      <span>Security PIN (4–8 Digits)</span>
+                    </label>
+                    <div className="input-with-action-group">
+                      <input
+                        type={showPin ? 'text' : 'password'}
+                        className="form-input is-lg is-mono"
+                        placeholder={editingEmployee ? 'Leave blank to preserve current PIN' : 'e.g. 1234'}
+                        required={!editingEmployee}
+                        value={form.pin_code}
+                        onChange={(e) => setForm({ ...form, pin_code: e.target.value })}
+                      />
+                      <button
+                        type="button"
+                        className="input-inline-btn"
+                        onClick={() => setShowPin(!showPin)}
+                        title={showPin ? 'Hide PIN' : 'Reveal PIN'}
+                      >
+                        {showPin ? <EyeOff size={15} /> : <Eye size={15} />}
+                      </button>
+                    </div>
+                    <div className="quick-pin-presets-row">
+                      <span>Presets:</span>
+                      <button
+                        type="button"
+                        className="pin-preset-pill"
+                        onClick={() => setForm((p) => ({ ...p, pin_code: '1234' }))}
+                      >
+                        1234
+                      </button>
+                      <button
+                        type="button"
+                        className="pin-preset-pill"
+                        onClick={() => setForm((p) => ({ ...p, pin_code: '0000' }))}
+                      >
+                        0000
+                      </button>
+                      <button
+                        type="button"
+                        className="pin-preset-pill"
+                        onClick={() => setForm((p) => ({ ...p, pin_code: '9999' }))}
+                      >
+                        9999
+                      </button>
+                      <button
+                        type="button"
+                        className="pin-preset-pill"
+                        onClick={() => {
+                          const rnd = Math.floor(1000 + Math.random() * 9000).toString();
+                          setForm((p) => ({ ...p, pin_code: rnd }));
+                          setShowPin(true);
+                        }}
+                      >
+                        Random
+                      </button>
+                    </div>
                   </div>
 
+                  <div className="form-field">
+                    <label className="form-label">Assigned Filipino Role Archetype</label>
+                    <select
+                      className="form-select is-lg"
+                      value={form.role}
+                      onChange={(e) => handleRoleDropdownChange(e.target.value)}
+                    >
+                      {FILIPINO_SABONG_DEFAULT_ROLES.map((r) => (
+                        <option key={r.role_id} value={r.role_name}>
+                          {r.role_name} ({r.permissions.length}/23 Perms)
+                        </option>
+                      ))}
+                    </select>
+                    <span className="field-hint-text">
+                      Selecting a role automatically synchronizes its zone, float, and 23-permission checklist.
+                    </span>
+                  </div>
+                </div>
+
+                <div className="form-row-2col">
                   <div className="form-field">
                     <label className="form-label">Department / Arena Zone</label>
                     <input
@@ -329,9 +476,7 @@ export function UserEnrollmentCarouselModal({
                       onChange={(e) => setForm({ ...form, zone: e.target.value })}
                     />
                   </div>
-                </div>
 
-                <div className="form-row-2col">
                   <div className="form-field">
                     <label className="form-label">
                       <Monitor size={13} className="card-title-icon-emerald" />
@@ -350,7 +495,9 @@ export function UserEnrollmentCarouselModal({
                       ))}
                     </select>
                   </div>
+                </div>
 
+                <div className="form-row-2col">
                   <div className="form-field">
                     <label className="form-label">
                       <BadgeDollarSign size={13} className="card-title-icon-gold" />
@@ -363,30 +510,91 @@ export function UserEnrollmentCarouselModal({
                       onChange={(e) => setForm({ ...form, cash_float: e.target.value })}
                     />
                   </div>
+
+                  <div className="form-field">
+                    <label className="form-label">Commission Rate (%)</label>
+                    <input
+                      type="number"
+                      step="0.001"
+                      className="form-input is-lg"
+                      value={form.commission_rate}
+                      onChange={(e) => setForm({ ...form, commission_rate: e.target.value })}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
           {/* =====================================================================
-             STAGE 3: GRANULAR 23-PERMISSION ARBAC MATRIX FINE-TUNING
+             STAGE 3: GRANULAR 23-PERMISSION ARBAC MATRIX & ROLES CHECKLIST
              ===================================================================== */}
           {currentStage === 3 && (
             <div className="journey-slide slide-arbac-matrix">
               <div className="slide-intro-banner">
                 <div className="slide-intro-title">
-                  Stage 3: Granular 23-Checkbox ARBAC Clearance Matrix
+                  Stage 3: Granular 23-Checkbox ARBAC Clearance Matrix &amp; Roles Checklist
                 </div>
                 <div className="slide-intro-desc">
-                  Permissions are pre-selected based on the <strong>{form.role}</strong> archetype. You can toggle individual checkboxes or domains to customize this operator's zero-trust clearance.
+                  Permissions are pre-selected based on the <strong>{form.role}</strong> archetype. Use the role checklist chips below to quick-apply any archetype, search permissions, or toggle individual checkboxes.
                 </div>
               </div>
 
-              {/* Clearance Stats & Bulk Action Bar */}
+              {/* Roles Quick-Select Checklist Ribbon */}
+              <div className="roles-quick-checklist-strip">
+                <div className="checklist-strip-header">
+                  <span className="checklist-strip-title">
+                    <Filter size={13} className="card-title-icon-emerald" />
+                    <span>Quick Role Checklist Selector:</span>
+                  </span>
+                  <span className="checklist-strip-hint">
+                    Click any role pill to immediately check its official regulatory permissions.
+                  </span>
+                </div>
+                <div className="roles-checklist-pills-row">
+                  {FILIPINO_SABONG_DEFAULT_ROLES.map((r) => {
+                    const isSelected = form.role === r.role_name;
+                    return (
+                      <button
+                        key={r.role_id}
+                        type="button"
+                        className={`role-pill-btn ${isSelected ? 'is-active' : ''}`}
+                        onClick={() => handleSelectRolePreset(r)}
+                        title={`${r.filipino_title}: ${r.description}`}
+                      >
+                        <span>{r.role_name.split(' / ')[0]}</span>
+                        <span className="role-pill-badge">{r.permissions.length}/23</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Clearance Stats & Search & Bulk Action Bar */}
               <div className="journey-matrix-actions-bar">
                 <div className="matrix-stat-pill">
                   <span>Activated Clearance:</span>
                   <strong>{totalPerms} / 23 Permissions ({clearancePct}%)</strong>
+                </div>
+
+                <div className="matrix-search-box">
+                  <Search size={14} className="card-title-icon-emerald" />
+                  <input
+                    type="text"
+                    className="matrix-search-input"
+                    placeholder="Search permissions (e.g. weigh, payout, tari, verdict, void)..."
+                    value={permSearch}
+                    onChange={(e) => setPermSearch(e.target.value)}
+                  />
+                  {permSearch && (
+                    <button
+                      type="button"
+                      className="search-clear-x"
+                      onClick={() => setPermSearch('')}
+                    >
+                      ×
+                    </button>
+                  )}
                 </div>
 
                 <div className="matrix-quick-btns">
@@ -427,10 +635,10 @@ export function UserEnrollmentCarouselModal({
 
               {/* Expansive 3-Column Domain Matrix */}
               <div className="journey-domains-matrix-grid">
-                {ARBAC_PERMISSION_GROUPS.map((grp) => {
+                {filteredPermissionGroups.map((grp) => {
                   const grpKeys = grp.permissions.map((p) => p.key);
                   const checkedInGrp = grpKeys.filter((k) => form.permissions.includes(k)).length;
-                  const isAllChecked = checkedInGrp === grpKeys.length;
+                  const isAllChecked = grpKeys.length > 0 && checkedInGrp === grpKeys.length;
 
                   return (
                     <div key={grp.domainId} className="journey-domain-card">
@@ -496,6 +704,9 @@ export function UserEnrollmentCarouselModal({
                     <div className="passport-operator-name">
                       {form.full_name || 'Unnamed Operator'}
                     </div>
+                    <div className="passport-username-tag">
+                      Sign-In Username: <strong>{form.staff_code || 'Unassigned'}</strong>
+                    </div>
                     <div className="passport-role-tag">{form.role}</div>
                   </div>
                   <div className="passport-status-stamp">
@@ -505,6 +716,12 @@ export function UserEnrollmentCarouselModal({
                 </div>
 
                 <div className="passport-details-grid">
+                  <div className="passport-field">
+                    <span className="passport-label">Username / Staff Code</span>
+                    <span className="passport-value is-mono is-emerald">
+                      {form.staff_code || 'Auto-generated'}
+                    </span>
+                  </div>
                   <div className="passport-field">
                     <span className="passport-label">Assigned Department</span>
                     <span className="passport-value">{form.zone}</span>
@@ -524,7 +741,7 @@ export function UserEnrollmentCarouselModal({
                   <div className="passport-field">
                     <span className="passport-label">Security PIN</span>
                     <span className="passport-value is-mono">
-                      {form.pin_code ? '•••••• (Set)' : '(Preserved)'}
+                      {form.pin_code ? `${form.pin_code} (Active)` : '(Preserved Current PIN)'}
                     </span>
                   </div>
                   <div className="passport-field">
@@ -536,7 +753,7 @@ export function UserEnrollmentCarouselModal({
                   <div className="passport-field">
                     <span className="passport-label">Target SQLite WAL DB</span>
                     <span className="passport-value is-mono">
-                      {activeTenant?.db_file_name || 'tenant_sjc_01_mwdb7iq3.db'}
+                      {activeTenant?.db_file_name || 'Physical SQLite DB'}
                     </span>
                   </div>
                 </div>

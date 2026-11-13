@@ -1178,6 +1178,8 @@ export async function handleApiRequest(req, res, wsHub) {
     if (method === 'POST' && pathname === '/api/employees') {
       const {
         full_name,
+        staff_code,
+        username,
         role = 'Kristo Roving Teller',
         zone = 'Center Cashier Cage',
         bound_device_code = '',
@@ -1192,8 +1194,23 @@ export async function handleApiRequest(req, res, wsHub) {
       }
 
       const existingCount = tdb.prepare('SELECT COUNT(*) as c FROM employees').get().c;
-      const staffCode = `EMP-${String(existingCount + 1).padStart(2, '0')}`;
-      const empId = `${staffCode}-${Date.now().toString(36).toUpperCase()}`;
+      let cleanStaffCode = (staff_code || username || '').trim();
+      if (!cleanStaffCode) {
+        cleanStaffCode = `EMP-${String(existingCount + 1).padStart(2, '0')}`;
+      }
+
+      // Check for duplicate username / staff_code in this tenant database
+      const duplicate = tdb
+        .prepare('SELECT employee_id FROM employees WHERE LOWER(staff_code) = LOWER(?)')
+        .get(cleanStaffCode);
+      if (duplicate) {
+        return sendJson(409, {
+          error: `Username or Staff Code "${cleanStaffCode}" is already taken in this arena database. Please choose a unique username.`
+        });
+      }
+
+      const staffCode = cleanStaffCode;
+      const empId = `${staffCode.toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
       const perms = Array.isArray(permissions) ? permissions : [];
 
       tdb
@@ -1250,6 +1267,8 @@ export async function handleApiRequest(req, res, wsHub) {
 
       const {
         full_name = emp.full_name,
+        staff_code = emp.staff_code,
+        username,
         role = emp.role,
         zone = emp.zone,
         bound_device_code = emp.bound_device_code,
@@ -1260,19 +1279,36 @@ export async function handleApiRequest(req, res, wsHub) {
         permissions = safeParseJsonArray(emp.permissions_json)
       } = body;
 
+      let nextStaffCode = (staff_code || username || emp.staff_code).trim();
+      if (nextStaffCode && nextStaffCode.toLowerCase() !== emp.staff_code.toLowerCase()) {
+        const clash = tdb
+          .prepare(
+            'SELECT employee_id FROM employees WHERE LOWER(staff_code) = LOWER(?) AND employee_id != ?'
+          )
+          .get(nextStaffCode, empId);
+        if (clash) {
+          return sendJson(409, {
+            error: `Username or Staff Code "${nextStaffCode}" is already taken.`
+          });
+        }
+      } else {
+        nextStaffCode = emp.staff_code;
+      }
+
       const perms = Array.isArray(permissions) ? permissions : [];
       const nextPin = pin_code && String(pin_code).length >= 4 ? String(pin_code) : emp.pin_code;
 
       tdb
         .prepare(`
           UPDATE employees
-          SET full_name = ?, role = ?, zone = ?, bound_device_code = ?, pin_code = ?,
+          SET staff_code = ?, full_name = ?, role = ?, zone = ?, bound_device_code = ?, pin_code = ?,
               cash_float = ?, commission_rate = ?, status = ?,
               pin_strikes = 0, is_locked = 0,
               permissions_json = ?, permissions_count = ?
           WHERE employee_id = ?
         `)
         .run(
+          nextStaffCode,
           full_name.trim(),
           role,
           zone,
@@ -1288,16 +1324,20 @@ export async function handleApiRequest(req, res, wsHub) {
 
       masterDb
         .prepare(
-          'UPDATE tenant_db_users SET full_name = ?, role_name = ? WHERE tenant_id = ? AND staff_code = ?'
+          'UPDATE tenant_db_users SET staff_code = ?, full_name = ?, role_name = ? WHERE tenant_id = ? AND staff_code = ?'
         )
-        .run(full_name.trim(), role, tenantId, emp.staff_code);
+        .run(nextStaffCode, full_name.trim(), role, tenantId, emp.staff_code);
 
       appendAuditLog(
         tdb,
         'ARBAC_STAFF_UPDATED',
-        `${emp.staff_code} (${full_name.trim()})`,
+        `${nextStaffCode} (${full_name.trim()})`,
         hostInfo.terminalId,
         'INFO',
+        `Updated DB operator ${nextStaffCode} (${perms.length}/23 permissions)`
+      );
+      return syncAndRespond('ARBAC_STAFF_UPDATED', tenantId);
+    }
         `Updated ARBAC matrix for ${emp.staff_code}: ${perms.length}/23 permissions, Zone=${zone}`
       );
       return syncAndRespond('ARBAC_STAFF_UPDATED', tenantId);
