@@ -118,9 +118,9 @@ export function SubsystemWorkspace({ moduleId }) {
     custodian: ''
   });
 
-  // Pre-fill arenaForm whenever current config is loaded from SQLite SSOT
+  // Pre-fill arenaForm whenever current config is loaded from SQLite SSOT (only if not actively editing)
   useEffect(() => {
-    if (arenaState?.arenaConfig) {
+    if (arenaState?.arenaConfig && !isEditingArena) {
       const c = arenaState.arenaConfig;
       setArenaForm((prev) => ({
         ...prev,
@@ -138,7 +138,7 @@ export function SubsystemWorkspace({ moduleId }) {
         total_cockhouse_bays: String(c.total_cockhouse_bays || 120)
       }));
     }
-  }, [arenaState?.arenaConfig]);
+  }, [arenaState?.arenaConfig, isEditingArena]);
 
   if (loading || !arenaState) {
     return (
@@ -198,13 +198,14 @@ export function SubsystemWorkspace({ moduleId }) {
   if (moduleId === 'arena-setup') {
     const current = arenaState.arenaConfig;
     const showForm = !current || isEditingArena;
-    const previewConfig = current || {
-      arena_name: arenaForm.arena_name || 'Leyte Recreational & Amusement Complex (LRAC)',
-      gab_license: arenaForm.gab_license || 'GAB-COL-2026-0884',
-      mayors_permit: arenaForm.mayors_permit || 'LGU-MP-2026-89201',
-      bir_cas_min: arenaForm.bir_cas_min || 'MIN-20260411-88392014',
-      plasada_rate: Number(arenaForm.plasada_rate || 0.1),
-      logo_url: arenaForm.logo_url || ''
+    const activeLogo = arenaForm.logo_url || current?.logo_url || '';
+    const previewConfig = {
+      arena_name: (showForm ? arenaForm.arena_name : current?.arena_name) || arenaForm.arena_name || current?.arena_name || 'Leyte Recreational & Amusement Complex (LRAC)',
+      gab_license: (showForm ? arenaForm.gab_license : current?.gab_license) || arenaForm.gab_license || current?.gab_license || 'GAB-COL-2026-0884',
+      mayors_permit: (showForm ? arenaForm.mayors_permit : current?.mayors_permit) || arenaForm.mayors_permit || current?.mayors_permit || 'LGU-MP-2026-89201',
+      bir_cas_min: (showForm ? arenaForm.bir_cas_min : current?.bir_cas_min) || arenaForm.bir_cas_min || current?.bir_cas_min || 'MIN-20260411-88392014',
+      plasada_rate: Number((showForm ? arenaForm.plasada_rate : current?.plasada_rate) || arenaForm.plasada_rate || current?.plasada_rate || 0.1),
+      logo_url: activeLogo
     };
 
     return (
@@ -335,7 +336,38 @@ export function SubsystemWorkspace({ moduleId }) {
                         if (file) {
                           const reader = new FileReader();
                           reader.onload = (rev) => {
-                            setArenaForm((prev) => ({ ...prev, logo_url: rev.target.result }));
+                            const raw = rev.target?.result;
+                            if (typeof raw !== 'string') return;
+                            const img = new Image();
+                            img.onload = () => {
+                              try {
+                                const maxDim = 400;
+                                let w = img.width;
+                                let h = img.height;
+                                if (w > maxDim || h > maxDim) {
+                                  if (w > h) {
+                                    h = Math.round((h * maxDim) / w);
+                                    w = maxDim;
+                                  } else {
+                                    w = Math.round((w * maxDim) / h);
+                                    h = maxDim;
+                                  }
+                                }
+                                const canvas = document.createElement('canvas');
+                                canvas.width = w;
+                                canvas.height = h;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(img, 0, 0, w, h);
+                                const optimized = canvas.toDataURL('image/png', 0.92);
+                                setArenaForm((prev) => ({ ...prev, logo_url: optimized }));
+                              } catch {
+                                setArenaForm((prev) => ({ ...prev, logo_url: raw }));
+                              }
+                            };
+                            img.onerror = () => {
+                              setArenaForm((prev) => ({ ...prev, logo_url: raw }));
+                            };
+                            img.src = raw;
                           };
                           reader.readAsDataURL(file);
                         }
@@ -391,7 +423,25 @@ export function SubsystemWorkspace({ moduleId }) {
               <button
                 type="button"
                 className="btn-secondary-gold"
-                onClick={() => setIsEditingArena(true)}
+                onClick={() => {
+                  setIsEditingArena(true);
+                  if (current) {
+                    setArenaForm({
+                      arena_name: current.arena_name || '',
+                      gab_license: current.gab_license || '',
+                      mayors_permit: current.mayors_permit || '',
+                      bir_cas_min: current.bir_cas_min || '',
+                      plasada_rate: current.plasada_rate != null ? String(current.plasada_rate) : '0.10',
+                      logo_url: current.logo_url || '',
+                      security_pin: '',
+                      min_rest_gap: String(current.min_rest_gap || 4),
+                      vip_seats: String(current.vip_seats || 320),
+                      lower_box_seats: String(current.lower_box_seats || 1450),
+                      upper_grandstand_seats: String(current.upper_grandstand_seats || 3200),
+                      total_cockhouse_bays: String(current.total_cockhouse_bays || 120)
+                    });
+                  }
+                }}
               >
                 <Edit3 size={14} />
                 <span>Edit Arena Parameters</span>

@@ -1508,7 +1508,7 @@ export async function handleApiRequest(req, res, wsHub) {
             mayors_permit = excluded.mayors_permit,
             bir_cas_min = excluded.bir_cas_min,
             plasada_rate = excluded.plasada_rate,
-            logo_url = CASE WHEN excluded.logo_url != '' THEN excluded.logo_url ELSE arena_config.logo_url END,
+            logo_url = excluded.logo_url,
             min_rest_gap = excluded.min_rest_gap,
             vip_seats = excluded.vip_seats,
             lower_box_seats = excluded.lower_box_seats,
@@ -1522,7 +1522,7 @@ export async function handleApiRequest(req, res, wsHub) {
           mayors_permit,
           bir_cas_min,
           Number(plasada_rate),
-          logo_url,
+          logo_url || '',
           Number(min_rest_gap),
           Number(vip_seats),
           Number(lower_box_seats),
@@ -1530,19 +1530,11 @@ export async function handleApiRequest(req, res, wsHub) {
           Number(total_cockhouse_bays)
         );
 
-      if (logo_url) {
-        masterDb
-          .prepare(
-            'UPDATE tenants SET arena_name = ?, gab_license = ?, mayors_permit = ?, bir_cas_min = ?, logo_url = ? WHERE tenant_id = ?'
-          )
-          .run(arena_name, gab_license, mayors_permit, bir_cas_min, logo_url, tenantId);
-      } else {
-        masterDb
-          .prepare(
-            'UPDATE tenants SET arena_name = ?, gab_license = ?, mayors_permit = ?, bir_cas_min = ? WHERE tenant_id = ?'
-          )
-          .run(arena_name, gab_license, mayors_permit, bir_cas_min, tenantId);
-      }
+      masterDb
+        .prepare(
+          'UPDATE tenants SET arena_name = ?, gab_license = ?, mayors_permit = ?, bir_cas_min = ?, logo_url = ? WHERE tenant_id = ?'
+        )
+        .run(arena_name, gab_license, mayors_permit, bir_cas_min, logo_url || '', tenantId);
 
       const operatorLabel = authorizedEmployee
         ? `${authorizedEmployee.staff_code} (${authorizedEmployee.full_name})`
