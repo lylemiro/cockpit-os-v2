@@ -50,9 +50,13 @@ export function ArenaProvider({ children }) {
   );
 
   const [theme, setTheme] = useState(() => readStorage('cockpit_theme', 'light'));
-  const [wallpaper, setWallpaperState] = useState(
-    () => readStorage('cockpit_wallpaper', 'luxury_wavy')
-  );
+  const [wallpaper, setWallpaperState] = useState(() => {
+    const saved = readStorage('cockpit_wallpaper', null);
+    if (!saved || saved === 'wallpaper_v2' || saved === 'default') {
+      return 'luxury_wavy';
+    }
+    return saved;
+  });
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -330,6 +334,20 @@ export function ArenaProvider({ children }) {
     writeStorage('cockpit_wallpaper', val);
   }, []);
 
+  const cycleWallpaper = useCallback(() => {
+    const sequence = ['luxury_wavy', 'wallpaper_v2', 'wallpaper_v3'];
+    setWallpaperState((prev) => {
+      const nextIdx = (sequence.indexOf(prev) + 1) % sequence.length;
+      const nextWp = sequence[nextIdx];
+      writeStorage('cockpit_wallpaper', nextWp);
+      notifySuccess(
+        'Wallpaper Changed',
+        `Switched to ${nextWp.replace('_', ' ').toUpperCase()}`
+      );
+      return nextWp;
+    });
+  }, [notifySuccess]);
+
   return (
     <ArenaContext.Provider
       value={{
@@ -362,6 +380,7 @@ export function ArenaProvider({ children }) {
         toggleTheme,
         wallpaper,
         setWallpaper,
+        cycleWallpaper,
         soundEnabled,
         toggleSound
       }}

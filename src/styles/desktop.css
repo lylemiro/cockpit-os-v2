@@ -224,27 +224,39 @@
   position: relative;
   z-index: 5;
   display: grid;
-  grid-template-columns: 278px 1fr 336px;
-  gap: 16px;
+  grid-template-columns: 290px 1fr 340px;
+  gap: 18px;
   padding: 10px 20px 12px 20px;
   height: 100%;
   min-height: 0;
   align-items: stretch;
 }
 
-/* Left Column: 16-App Grid + Footer Notice */
+/* Left Column: 16-App Grid + Footer Notice (Frosted Glass Dock) */
 .desktop-left-column {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   min-height: 0;
-  padding-right: 4px;
+  padding: 12px 10px;
+  background: rgba(255, 255, 255, 0.44);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.68);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 10px 32px -8px rgba(6, 26, 17, 0.08);
+}
+
+[data-theme='dark'] .desktop-left-column {
+  background: rgba(8, 26, 17, 0.65);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
 }
 
 .desktop-icon-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  column-gap: 10px;
+  column-gap: 8px;
   row-gap: 8px;
 }
 
@@ -256,20 +268,25 @@
   align-items: center;
   text-align: center;
   cursor: pointer;
-  padding: 2px;
+  padding: 5px 3px;
   border-radius: var(--radius-md);
-  transition: transform 0.14s ease;
+  transition: all 0.15s ease;
 }
 
 .desktop-app-tile:hover {
+  background: rgba(14, 138, 78, 0.1);
   transform: translateY(-2px);
+}
+
+.desktop-app-tile:active {
+  transform: translateY(0);
 }
 
 .app-icon-box {
   position: relative;
-  width: 52px;
-  height: 52px;
-  border-radius: 15px;
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
   background: var(--bg-card-solid);
   border: 1px solid var(--border-card);
   box-shadow: var(--shadow-icon);
@@ -283,7 +300,7 @@
 
 .desktop-app-tile:hover .app-icon-box {
   border-color: var(--emerald-500);
-  box-shadow: 0 10px 20px -6px rgba(14, 138, 78, 0.24);
+  box-shadow: 0 10px 22px -6px rgba(14, 138, 78, 0.28);
 }
 
 .app-tile-badge {
@@ -307,17 +324,31 @@
 .app-tile-label {
   font-size: 10.5px;
   font-weight: 700;
-  line-height: 1.18;
+  line-height: 1.22;
   color: var(--text-primary);
-  max-width: 82px;
+  max-width: 84px;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+
+[data-theme='dark'] .app-tile-label {
+  color: #ecfdf5;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
 }
 
 .offline-footer-tag {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 4px 6px;
-  margin-top: 4px;
+  padding: 6px 10px;
+  margin-top: 6px;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+[data-theme='dark'] .offline-footer-tag {
+  background: rgba(5, 18, 12, 0.7);
+  border-color: rgba(52, 211, 153, 0.15);
 }
 
 .offline-gold-bar {

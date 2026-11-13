@@ -19,6 +19,7 @@ export function DesktopContextMenu() {
     fetchState,
     wallpaper,
     setWallpaper,
+    cycleWallpaper,
     theme,
     toggleTheme,
     setActiveModuleId,
@@ -92,13 +93,9 @@ export function DesktopContextMenu() {
 
   if (!visible) return null;
 
-  const cycleWallpaper = () => {
-    const sequence = ['luxury_wavy', 'wallpaper_v2', 'wallpaper_v3'];
-    const nextIdx = (sequence.indexOf(wallpaper) + 1) % sequence.length;
-    const nextWp = sequence[nextIdx];
-    setWallpaper(nextWp);
-    notifySuccess('Wallpaper Changed', `Switched to ${nextWp.replace('_', ' ').toUpperCase()}`);
+  const handleCycleWallpaper = () => {
     closeMenu();
+    cycleWallpaper();
   };
 
   const handleRefresh = async () => {
@@ -188,7 +185,7 @@ export function DesktopContextMenu() {
 
           <div className="ctx-menu-divider" />
 
-          <button type="button" className="ctx-menu-item" onClick={cycleWallpaper}>
+          <button type="button" className="ctx-menu-item" onClick={handleCycleWallpaper}>
             <Image size={14} className="ctx-item-icon" />
             <span>Change Wallpaper</span>
           </button>

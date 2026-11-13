@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { LayoutGrid, Search, Volume2, VolumeX, Sun, Moon } from 'lucide-react';
+import { LayoutGrid, Search, Volume2, VolumeX, Sun, Moon, Image as ImageIcon } from 'lucide-react';
 import { DESKTOP_APPS } from './desktopAppsConfig.js';
 import { AppIconGlyph } from './AppIconGlyph.jsx';
 import { useArena } from '../context/ArenaContext.jsx';
@@ -11,6 +11,8 @@ export function BottomTaskbar({ searchQuery, onSearchChange }) {
     setActiveModuleId,
     theme,
     toggleTheme,
+    wallpaper,
+    cycleWallpaper,
     soundEnabled,
     toggleSound
   } = useArena();
@@ -115,6 +117,15 @@ export function BottomTaskbar({ searchQuery, onSearchChange }) {
           onClick={toggleSound}
         >
           {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+        </button>
+
+        <button
+          type="button"
+          className="tray-icon-btn"
+          title={`Cycle Wallpaper (Active: ${(wallpaper || 'luxury_wavy').replace('_', ' ').toUpperCase()})`}
+          onClick={cycleWallpaper}
+        >
+          <ImageIcon size={16} />
         </button>
 
         <button

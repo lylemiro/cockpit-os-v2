@@ -899,9 +899,9 @@
    Windows 11 File Explorer Style Shell (Tabs, Address Bar, Left Tree, Drives)
    ========================================================================== */
 .win-explorer-window {
-  width: 94vw;
-  max-width: 1380px;
-  height: 86vh;
+  width: 95vw;
+  max-width: 1540px;
+  height: 88vh;
   background: var(--bg-card-solid);
   border: 1px solid var(--border-subtle);
   border-radius: 14px;
