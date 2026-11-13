@@ -113,16 +113,16 @@ export function BootAndLoginScreen() {
   // Zero-Trust Rule: An active superadmin and database must exist for normal OS sign-in
   const hasConfiguredSuperadmin = !loading && tenants.length > 0 && employees.length > 0;
 
-  // Match active operator from username input
-  const currentOperator =
-    employees.find(
-      (e) =>
-        e.staff_code?.toLowerCase() === usernameInput.trim().toLowerCase() ||
-        e.employee_id?.toLowerCase() === usernameInput.trim().toLowerCase() ||
-        e.full_name?.toLowerCase() === usernameInput.trim().toLowerCase()
-    ) ||
-    employees[0] ||
-    null;
+  // Dynamic matched operator based strictly on what is typed in username input (no hardcoded fallback)
+  const trimmedUser = usernameInput.trim().toLowerCase();
+  const matchedOperator = trimmedUser
+    ? employees.find(
+        (e) =>
+          e.staff_code?.toLowerCase() === trimmedUser ||
+          e.employee_id?.toLowerCase() === trimmedUser ||
+          e.full_name?.toLowerCase() === trimmedUser
+      ) || null
+    : null;
 
   // OS Boot Sequence progression (only on initial load)
   useEffect(() => {
@@ -542,13 +542,13 @@ export function BootAndLoginScreen() {
           </div>
 
           <div className="real-os-user-card">
-            {/* Operator Avatar with Glowing Halo */}
+            {/* Operator Avatar with Dynamic Initials / Status Halo */}
             <div className="real-os-avatar-cluster">
               <div className="real-os-avatar-ring">
                 <div className="real-os-avatar-inner">
-                  {currentOperator ? (
+                  {matchedOperator ? (
                     <span className="avatar-initials-text">
-                      {currentOperator.full_name
+                      {matchedOperator.full_name
                         .split(' ')
                         .map((n) => n[0])
                         .slice(0, 2)
@@ -559,24 +559,39 @@ export function BootAndLoginScreen() {
                   )}
                 </div>
               </div>
-              <div className="real-os-avatar-status-dot" />
+              <div className={`real-os-avatar-status-dot ${matchedOperator ? 'is-matched' : 'is-unmatched'}`} />
             </div>
 
-            {/* Operator Identification */}
+            {/* Dynamic Operator Identification (Updates live with entered username) */}
             <div className="real-os-identity-stack">
               <h1 className="real-os-operator-name">
-                {currentOperator ? currentOperator.full_name : (usernameInput || 'Coliseum Operator')}
+                {matchedOperator
+                  ? matchedOperator.full_name
+                  : usernameInput.trim()
+                  ? usernameInput.trim()
+                  : 'Coliseum Sign-In'}
               </h1>
               <div className="real-os-role-badge">
-                <span className="role-code-tag">
-                  {currentOperator ? currentOperator.staff_code : (usernameInput ? `@${usernameInput}` : 'OPERATOR')}
-                </span>
-                <span className="role-name-text">
-                  {currentOperator ? currentOperator.role : 'Authorized Arena Personnel'}
-                </span>
+                {matchedOperator ? (
+                  <>
+                    <span className="role-code-tag">{matchedOperator.staff_code}</span>
+                    <span className="role-name-text">{matchedOperator.role}</span>
+                  </>
+                ) : usernameInput.trim() ? (
+                  <>
+                    <span className="role-code-tag">@{usernameInput.trim()}</span>
+                    <span className="role-name-text">Unverified Operator</span>
+                  </>
+                ) : (
+                  <span className="role-name-text">Gate 0 Operator Authentication</span>
+                )}
               </div>
               <div className="real-os-zone-sub">
-                {currentOperator?.zone || 'Executive Command Console'}
+                {matchedOperator
+                  ? matchedOperator.zone
+                  : usernameInput.trim()
+                  ? 'Enter Security PIN to unlock session'
+                  : 'Enter operator credentials to unlock terminal'}
               </div>
             </div>
 

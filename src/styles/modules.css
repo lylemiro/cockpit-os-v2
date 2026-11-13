@@ -3919,6 +3919,12 @@
   background: #10b981;
   border: 3px solid #061c11;
   box-shadow: 0 0 8px #10b981;
+  transition: all 0.2s ease;
+}
+
+.real-os-avatar-status-dot.is-unmatched {
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: none;
 }
 
 /* Identity Stack */
