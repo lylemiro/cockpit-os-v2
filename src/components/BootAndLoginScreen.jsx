@@ -108,11 +108,11 @@ export function BootAndLoginScreen() {
   // OS Boot Sequence progression (only on initial load)
   useEffect(() => {
     if (bootCompleted) return undefined;
-    const t1 = setTimeout(() => setBootStep(1), 350);
-    const t2 = setTimeout(() => setBootStep(2), 700);
-    const t3 = setTimeout(() => setBootStep(3), 1050);
-    const t4 = setTimeout(() => setBootStep(4), 1400);
-    const t5 = setTimeout(() => setBootCompleted(true), 1800);
+    const t1 = setTimeout(() => setBootStep(1), 500);
+    const t2 = setTimeout(() => setBootStep(2), 1000);
+    const t3 = setTimeout(() => setBootStep(3), 1500);
+    const t4 = setTimeout(() => setBootStep(4), 2000);
+    const t5 = setTimeout(() => setBootCompleted(true), 2600);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
@@ -120,6 +120,20 @@ export function BootAndLoginScreen() {
       clearTimeout(t4);
       clearTimeout(t5);
     };
+  }, [bootCompleted, setBootCompleted]);
+
+  // Keyboard shortcut during bootloader: F2 or Del enters Coliseum Server & Database Setup
+  useEffect(() => {
+    if (bootCompleted) return undefined;
+    const handleBootKey = (e) => {
+      if (e.key === 'F2' || e.key === 'Delete') {
+        e.preventDefault();
+        setSetupMode(true);
+        setBootCompleted(true);
+      }
+    };
+    window.addEventListener('keydown', handleBootKey);
+    return () => window.removeEventListener('keydown', handleBootKey);
   }, [bootCompleted, setBootCompleted]);
 
   const tenants = arenaState?.tenants || [];
@@ -194,15 +208,25 @@ export function BootAndLoginScreen() {
           </div>
 
           <div className="os-boot-footer">
-            <span className="activity-time-tag">
-              PRECISION | CONTROL | FAIR PLAY • OFFLINE-FIRST LAN OS
-            </span>
+            <button
+              type="button"
+              className="btn-boot-setup"
+              onClick={() => {
+                setSetupMode(true);
+                setBootCompleted(true);
+              }}
+              title="Open Coliseum Server & Tenant Database Setup (F2 or Del)"
+            >
+              <Settings2 size={13} />
+              <span>Configure Server &amp; Database (F2)</span>
+            </button>
+
             <button
               type="button"
               className="btn-secondary-gold"
               onClick={() => setBootCompleted(true)}
             >
-              Skip Boot &rarr;
+              Proceed to Sign-In &rarr;
             </button>
           </div>
         </div>
@@ -603,18 +627,7 @@ export function BootAndLoginScreen() {
               </div>
             )}
 
-            {/* Dedicated Arena & Server Setup Link INSIDE User Card */}
-            <div className="real-os-card-setup-link-wrap">
-              <button
-                type="button"
-                className="btn-card-setup-link"
-                onClick={() => setSetupMode(true)}
-                title="Open Server & Coliseum Database Setup"
-              >
-                <Settings2 size={13} />
-                <span>Database &amp; Server Setup</span>
-              </button>
-            </div>
+            {/* End of User Card */}
           </div>
 
           {/* Unified Bottom-Right System Tray (The ONLY dock on the lock screen) */}
