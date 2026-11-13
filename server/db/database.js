@@ -127,6 +127,18 @@ export function initializeDatabase() {
   try {
     masterDb.exec("ALTER TABLE tenants ADD COLUMN logo_url TEXT DEFAULT ''");
   } catch {}
+  try {
+    masterDb.exec("ALTER TABLE tenants ADD COLUMN address TEXT DEFAULT ''");
+  } catch {}
+  try {
+    masterDb.exec("ALTER TABLE tenants ADD COLUMN phone TEXT DEFAULT ''");
+  } catch {}
+  try {
+    masterDb.exec("ALTER TABLE tenants ADD COLUMN email TEXT DEFAULT ''");
+  } catch {}
+  try {
+    masterDb.exec("ALTER TABLE tenants ADD COLUMN website TEXT DEFAULT ''");
+  } catch {}
 }
 
 /**
@@ -420,6 +432,30 @@ export function initializeTenantSchema(tdb) {
 
   try {
     tdb.exec("ALTER TABLE arena_config ADD COLUMN logo_url TEXT DEFAULT ''");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE arena_config ADD COLUMN address TEXT DEFAULT ''");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE arena_config ADD COLUMN phone TEXT DEFAULT ''");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE arena_config ADD COLUMN email TEXT DEFAULT ''");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE arena_config ADD COLUMN website TEXT DEFAULT ''");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE arena_config ADD COLUMN show_gov_header INTEGER DEFAULT 1");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE arena_config ADD COLUMN show_logo_on_paperwork INTEGER DEFAULT 1");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE arena_config ADD COLUMN show_regulatory_strip INTEGER DEFAULT 1");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE arena_config ADD COLUMN show_contact_info INTEGER DEFAULT 1");
   } catch {}
   try {
     tdb.exec("ALTER TABLE derby_events ADD COLUMN min_weight_grams INTEGER NOT NULL DEFAULT 1800");

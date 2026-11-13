@@ -1,5 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, X, Trophy, Edit3, Lock, FileText, CheckCircle2, ShieldCheck, AlertTriangle } from 'lucide-react';
+import {
+  Upload,
+  X,
+  Trophy,
+  Edit3,
+  Lock,
+  FileText,
+  CheckCircle2,
+  ShieldCheck,
+  AlertTriangle,
+  MapPin,
+  Phone,
+  Mail,
+  Globe,
+  Eye,
+  EyeOff
+} from 'lucide-react';
 import { useArena } from '../context/ArenaContext.jsx';
 import { DatabaseRelationshipGraph } from '../components/DatabaseRelationshipGraph.jsx';
 import { ArbacManager } from '../components/ArbacManager.jsx';
@@ -32,6 +48,11 @@ export function SubsystemWorkspace({ moduleId }) {
     bir_cas_min: '',
     plasada_rate: '0.10',
     logo_url: '',
+    address: '',
+    phone: '',
+    email: '',
+    website: '',
+    show_logo_on_paperwork: true,
     security_pin: '',
     min_rest_gap: '4',
     vip_seats: '320',
@@ -130,6 +151,11 @@ export function SubsystemWorkspace({ moduleId }) {
         bir_cas_min: c.bir_cas_min || '',
         plasada_rate: c.plasada_rate != null ? String(c.plasada_rate) : '0.10',
         logo_url: c.logo_url || '',
+        address: c.address || '',
+        phone: c.phone || '',
+        email: c.email || '',
+        website: c.website || '',
+        show_logo_on_paperwork: c.show_logo_on_paperwork !== 0,
         security_pin: '',
         min_rest_gap: String(c.min_rest_gap || 4),
         vip_seats: String(c.vip_seats || 320),
@@ -199,13 +225,15 @@ export function SubsystemWorkspace({ moduleId }) {
     const current = arenaState.arenaConfig;
     const showForm = !current || isEditingArena;
     const activeLogo = arenaForm.logo_url || current?.logo_url || '';
+    const showLogo = arenaForm.show_logo_on_paperwork ?? (current?.show_logo_on_paperwork !== 0);
     const previewConfig = {
       arena_name: (showForm ? arenaForm.arena_name : current?.arena_name) || current?.arena_name || arenaForm.arena_name || '',
-      gab_license: (showForm ? arenaForm.gab_license : current?.gab_license) || current?.gab_license || arenaForm.gab_license || '',
-      mayors_permit: (showForm ? arenaForm.mayors_permit : current?.mayors_permit) || current?.mayors_permit || arenaForm.mayors_permit || '',
-      bir_cas_min: (showForm ? arenaForm.bir_cas_min : current?.bir_cas_min) || current?.bir_cas_min || arenaForm.bir_cas_min || '',
-      plasada_rate: (showForm ? arenaForm.plasada_rate : current?.plasada_rate) || current?.plasada_rate || arenaForm.plasada_rate || '',
-      logo_url: activeLogo
+      logo_url: activeLogo,
+      show_logo_on_paperwork: showLogo,
+      address: (showForm ? arenaForm.address : current?.address) || current?.address || arenaForm.address || '',
+      phone: (showForm ? arenaForm.phone : current?.phone) || current?.phone || arenaForm.phone || '',
+      email: (showForm ? arenaForm.email : current?.email) || current?.email || arenaForm.email || '',
+      website: (showForm ? arenaForm.website : current?.website) || current?.website || arenaForm.website || ''
     };
 
     return (
@@ -298,6 +326,62 @@ export function SubsystemWorkspace({ moduleId }) {
                   className="form-input"
                   value={arenaForm.plasada_rate}
                   onChange={(e) => setArenaForm({ ...arenaForm, plasada_rate: e.target.value })}
+                />
+              </div>
+            </div>
+
+            {/* Business Contact Information */}
+            <div className="form-divider-label">Coliseum Business &amp; Contact Details</div>
+            <div className="form-row-2col">
+              <div className="form-field">
+                <label className="form-label">
+                  <MapPin size={12} className="card-title-icon-emerald" />
+                  <span>Physical Address / Venue Location</span>
+                </label>
+                <input
+                  className="form-input"
+                  placeholder="e.g. Brgy. San Jose, Tacloban City, Leyte"
+                  value={arenaForm.address}
+                  onChange={(e) => setArenaForm({ ...arenaForm, address: e.target.value })}
+                />
+              </div>
+              <div className="form-field">
+                <label className="form-label">
+                  <Phone size={12} className="card-title-icon-emerald" />
+                  <span>Hotline / Contact Phone</span>
+                </label>
+                <input
+                  className="form-input"
+                  placeholder="e.g. +63 (053) 888-2026 / 0917-123-4567"
+                  value={arenaForm.phone}
+                  onChange={(e) => setArenaForm({ ...arenaForm, phone: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="form-row-2col">
+              <div className="form-field">
+                <label className="form-label">
+                  <Mail size={12} className="card-title-icon-emerald" />
+                  <span>Official Email Address</span>
+                </label>
+                <input
+                  type="email"
+                  className="form-input"
+                  placeholder="e.g. operations@leytecoliseum.ph"
+                  value={arenaForm.email}
+                  onChange={(e) => setArenaForm({ ...arenaForm, email: e.target.value })}
+                />
+              </div>
+              <div className="form-field">
+                <label className="form-label">
+                  <Globe size={12} className="card-title-icon-emerald" />
+                  <span>Official Website / Portal</span>
+                </label>
+                <input
+                  className="form-input"
+                  placeholder="e.g. www.leytecoliseum.ph"
+                  value={arenaForm.website}
+                  onChange={(e) => setArenaForm({ ...arenaForm, website: e.target.value })}
                 />
               </div>
             </div>
@@ -433,6 +517,11 @@ export function SubsystemWorkspace({ moduleId }) {
                       bir_cas_min: current.bir_cas_min || '',
                       plasada_rate: current.plasada_rate != null ? String(current.plasada_rate) : '0.10',
                       logo_url: current.logo_url || '',
+                      address: current.address || '',
+                      phone: current.phone || '',
+                      email: current.email || '',
+                      website: current.website || '',
+                      show_logo_on_paperwork: current.show_logo_on_paperwork !== 0,
                       security_pin: '',
                       min_rest_gap: String(current.min_rest_gap || 4),
                       vip_seats: String(current.vip_seats || 320),
@@ -491,6 +580,30 @@ export function SubsystemWorkspace({ moduleId }) {
                       </span>
                     </td>
                   </tr>
+                  {current.address && (
+                    <tr>
+                      <th>Address</th>
+                      <td>{current.address}</td>
+                    </tr>
+                  )}
+                  {current.phone && (
+                    <tr>
+                      <th>Hotline / Phone</th>
+                      <td>{current.phone}</td>
+                    </tr>
+                  )}
+                  {current.email && (
+                    <tr>
+                      <th>Email</th>
+                      <td>{current.email}</td>
+                    </tr>
+                  )}
+                  {current.website && (
+                    <tr>
+                      <th>Website</th>
+                      <td>{current.website}</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -507,36 +620,57 @@ export function SubsystemWorkspace({ moduleId }) {
             <span className="top-mono-item">Printable 300-DPI Layout</span>
           </div>
 
-          <div className="paperwork-tabs-bar">
-            <button
-              type="button"
-              className={`paperwork-tab-btn ${paperworkDocType === 'bout_sheet' ? 'is-active' : ''}`}
-              onClick={() => setPaperworkDocType('bout_sheet')}
-            >
-              <span>GAB Soltada Bout Sheet</span>
-            </button>
-            <button
-              type="button"
-              className={`paperwork-tab-btn ${paperworkDocType === 'tari_clearance' ? 'is-active' : ''}`}
-              onClick={() => setPaperworkDocType('tari_clearance')}
-            >
-              <span>Tari Armorer Clearance</span>
-            </button>
-            <button
-              type="button"
-              className={`paperwork-tab-btn ${paperworkDocType === 'plasada_voucher' ? 'is-active' : ''}`}
-              onClick={() => setPaperworkDocType('plasada_voucher')}
-            >
-              <span>BIR Plasada Voucher</span>
-            </button>
+          <div className="paperwork-header-control-bar">
+            <div className="paperwork-tabs-bar">
+              <button
+                type="button"
+                className={`paperwork-tab-btn ${paperworkDocType === 'bout_sheet' ? 'is-active' : ''}`}
+                onClick={() => setPaperworkDocType('bout_sheet')}
+              >
+                <span>GAB Soltada Bout Sheet</span>
+              </button>
+              <button
+                type="button"
+                className={`paperwork-tab-btn ${paperworkDocType === 'tari_clearance' ? 'is-active' : ''}`}
+                onClick={() => setPaperworkDocType('tari_clearance')}
+              >
+                <span>Tari Armorer Clearance</span>
+              </button>
+              <button
+                type="button"
+                className={`paperwork-tab-btn ${paperworkDocType === 'plasada_voucher' ? 'is-active' : ''}`}
+                onClick={() => setPaperworkDocType('plasada_voucher')}
+              >
+                <span>BIR Plasada Voucher</span>
+              </button>
+            </div>
+
+            {previewConfig.logo_url ? (
+              <div className="paperwork-logo-toggle-wrap">
+                <button
+                  type="button"
+                  className={`paperwork-logo-toggle-btn ${previewConfig.show_logo_on_paperwork ? 'is-shown' : 'is-removed'}`}
+                  onClick={() =>
+                    setArenaForm((prev) => ({
+                      ...prev,
+                      show_logo_on_paperwork: !previewConfig.show_logo_on_paperwork
+                    }))
+                  }
+                  title={previewConfig.show_logo_on_paperwork ? 'Click to Remove Logo from Header' : 'Click to Show Logo in Header'}
+                >
+                  {previewConfig.show_logo_on_paperwork ? <Eye size={13} /> : <EyeOff size={13} />}
+                  <span>{previewConfig.show_logo_on_paperwork ? 'Logo: Shown in Header' : 'Logo: Removed from Header'}</span>
+                </button>
+              </div>
+            ) : null}
           </div>
 
           {/* Printable Document Sheet Preview */}
           <div className="paperwork-sheet">
             <div className="paperwork-sheet-inner">
-              {/* Official Letterhead */}
+              {/* Official Letterhead: Arena Name + Business Contact Details (Clean, Professional & Free of Regulatory Clutter) */}
               <div className="paperwork-letterhead">
-                {previewConfig.logo_url ? (
+                {previewConfig.show_logo_on_paperwork && previewConfig.logo_url ? (
                   <div className="paperwork-logo-box">
                     <img
                       src={previewConfig.logo_url}
@@ -547,33 +681,38 @@ export function SubsystemWorkspace({ moduleId }) {
                 ) : null}
 
                 <div className="paperwork-gov-header">
-                  <span className="paperwork-gov-sup">Republic of the Philippines • Office of the President</span>
-                  <span className="paperwork-gov-agency">GAMES AND AMUSEMENTS BOARD (GAB)</span>
                   {previewConfig.arena_name ? (
                     <h3 className="paperwork-coliseum-name">{previewConfig.arena_name}</h3>
                   ) : null}
-                  <div className="paperwork-license-strip">
-                    {previewConfig.gab_license ? (
-                      <span className="paperwork-license-item">
-                        GAB LIC: <strong>{previewConfig.gab_license}</strong>
-                      </span>
-                    ) : null}
-                    {previewConfig.mayors_permit ? (
-                      <span className="paperwork-license-item">
-                        MAYOR&apos;S PERMIT: <strong>{previewConfig.mayors_permit}</strong>
-                      </span>
-                    ) : null}
-                    {previewConfig.bir_cas_min ? (
-                      <span className="paperwork-license-item">
-                        BIR CAS MIN: <strong>{previewConfig.bir_cas_min}</strong>
-                      </span>
-                    ) : null}
-                    {previewConfig.plasada_rate ? (
-                      <span className="paperwork-license-item">
-                        PLASADA: <strong>{Math.round(Number(previewConfig.plasada_rate) * 100)}%</strong>
-                      </span>
-                    ) : null}
-                  </div>
+
+                  {(previewConfig.address || previewConfig.phone || previewConfig.email || previewConfig.website) && (
+                    <div className="paperwork-contact-strip">
+                      {previewConfig.address && (
+                        <span className="paperwork-contact-item">
+                          <MapPin size={10} />
+                          <span>{previewConfig.address}</span>
+                        </span>
+                      )}
+                      {previewConfig.phone && (
+                        <span className="paperwork-contact-item">
+                          <Phone size={10} />
+                          <span>{previewConfig.phone}</span>
+                        </span>
+                      )}
+                      {previewConfig.email && (
+                        <span className="paperwork-contact-item">
+                          <Mail size={10} />
+                          <span>{previewConfig.email}</span>
+                        </span>
+                      )}
+                      {previewConfig.website && (
+                        <span className="paperwork-contact-item">
+                          <Globe size={10} />
+                          <span>{previewConfig.website}</span>
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
