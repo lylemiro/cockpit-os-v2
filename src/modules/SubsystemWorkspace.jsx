@@ -24,7 +24,9 @@ import {
   Clock,
   RotateCw,
   Users,
-  Calendar
+  Calendar,
+  ArrowRight,
+  ChevronRight
 } from 'lucide-react';
 import { useArena } from '../context/ArenaContext.jsx';
 import { DatabaseRelationshipGraph } from '../components/DatabaseRelationshipGraph.jsx';
@@ -52,6 +54,7 @@ export function SubsystemWorkspace({ moduleId }) {
   const [paperworkDocType, setPaperworkDocType] = useState('bout_sheet'); // 'bout_sheet' | 'tari_clearance' | 'plasada_voucher'
   const [isDerbyCarouselOpen, setIsDerbyCarouselOpen] = useState(false);
   const [showEnrollDrawer, setShowEnrollDrawer] = useState(false);
+  const [derbyCarouselConfig, setDerbyCarouselConfig] = useState(null);
 
   // Form states for dynamic creation across modules
   const [arenaForm, setArenaForm] = useState({
@@ -1187,7 +1190,12 @@ export function SubsystemWorkspace({ moduleId }) {
   if (moduleId === 'events-schedule') {
     const events = arenaState.events || [];
     const entries = arenaState.entries || [];
-    const activeEv = arenaState.activeEvent || events.find((e) => e.status === 'ACTIVE') || events[0];
+    const activeEv = arenaState.activeEvent || events.find((e) => e.status === 'ACTIVE');
+
+    const openWithArchetype = (config) => {
+      setDerbyCarouselConfig(config);
+      setIsDerbyCarouselOpen(true);
+    };
 
     return (
       <div className="derby-workspace-stack">
@@ -1210,25 +1218,34 @@ export function SubsystemWorkspace({ moduleId }) {
             <button
               type="button"
               className="btn-primary-emerald"
-              onClick={() => setIsDerbyCarouselOpen(true)}
+              onClick={() => {
+                setDerbyCarouselConfig(null);
+                setIsDerbyCarouselOpen(true);
+              }}
             >
               <Sparkles size={15} />
               <span>+ Configure &amp; Launch Tournament (Carousel Journey)</span>
             </button>
 
-            <button
-              type="button"
-              className="btn-secondary-gold"
-              onClick={() => setShowEnrollDrawer(!showEnrollDrawer)}
-            >
-              <Users size={15} />
-              <span>{showEnrollDrawer ? 'Close Enrollment Panel' : '+ Enroll Syndicate Entry'}</span>
-            </button>
+            {activeEv ? (
+              <button
+                type="button"
+                className="btn-secondary-gold"
+                onClick={() => setShowEnrollDrawer(!showEnrollDrawer)}
+              >
+                <Users size={15} />
+                <span>{showEnrollDrawer ? 'Close Enrollment Panel' : '+ Enroll Syndicate Entry'}</span>
+              </button>
+            ) : (
+              <span className="balance-check-pill" style={{ color: '#d97706', borderColor: 'rgba(217, 119, 6, 0.35)' }}>
+                <span>Standby for Gate 1 Sanction</span>
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Quick Inline Entry Enrollment Drawer */}
-        {showEnrollDrawer && (
+        {/* Quick Inline Entry Enrollment Drawer (Active when opened) */}
+        {showEnrollDrawer && activeEv && (
           <form
             className="workspace-panel form-stack animate-fadeIn"
             onSubmit={async (e) => {
@@ -1314,293 +1331,650 @@ export function SubsystemWorkspace({ moduleId }) {
           </form>
         )}
 
-        {/* Active Tournament Showcase Hero Card */}
+        {/* Dynamic Display: Active Tournament Hero vs 2-Column Launchpad */}
         {activeEv ? (
-          <div className="derby-active-hero-card">
-            <div className="hero-top-row">
-              <div className="hero-identity-cluster">
-                <div className="hero-badges-strip">
-                  <span className="derby-format-badge">
-                    <Trophy size={13} />
-                    <span>{activeEv.format || 'Coliseum Derby'}</span>
-                  </span>
-                  <span className="balance-check-pill is-balanced">
-                    <CheckCircle2 size={12} />
-                    <span>ACTIVE LIVE DERBY</span>
-                  </span>
-                  {activeEv.pot_mode && (
-                    <span className="balance-check-pill">
-                      <span>{activeEv.pot_mode === 'NO_POT_BAYAD_AGAD' ? 'No Pot Money (Bayad Agad)' : 'Standard Pot Escrow'}</span>
+          <>
+            {/* Active Tournament Showcase Hero Card */}
+            <div className="derby-active-hero-card">
+              <div className="hero-top-row">
+                <div className="hero-identity-cluster">
+                  <div className="hero-badges-strip">
+                    <span className="derby-format-badge">
+                      <Trophy size={13} />
+                      <span>{activeEv.format || 'Coliseum Derby'}</span>
                     </span>
-                  )}
-                </div>
-                <h2 className="hero-tournament-title">{activeEv.title}</h2>
-                <div className="hero-venue-meta">
-                  <span><strong>Host:</strong> {activeEv.promoter}</span>
-                  <span>&bull;</span>
-                  <span><strong>Venue:</strong> {activeEv.venue_name || arenaState?.tenant?.arena_name || 'Leyte Recreational & Amusement Complex (LRAC)'}</span>
-                  {activeEv.cluster_district && (
-                    <>
-                      <span>&bull;</span>
-                      <span><strong>Cluster:</strong> {activeEv.cluster_district}</span>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <div className="hero-prize-stat-box">
-                <div className="prize-stat-label">TOTAL GUARANTEED PURSE</div>
-                <div className="prize-stat-val">
-                  ₱{Number(activeEv.guaranteed_prize || activeEv.pot_fee || 0).toLocaleString()}
-                </div>
-                <div className="prize-stat-sub">
-                  Min Bet: ₱{Number(activeEv.min_bet || 3500).toLocaleString()} &bull; Date: {activeEv.event_date || 'Derby Day'}
-                </div>
-              </div>
-            </div>
-
-            {/* Multi-Stage Journey Strip */}
-            <div className="derby-stages-flow-strip">
-              <div className="derby-flow-step-box">
-                <div className="step-tag">STAGE 1: ELIMINATIONS</div>
-                <div className="step-stags">
-                  {activeEv.format?.includes('3-3-5') ? '3 Stags' : activeEv.format?.includes('4-Stag') ? '2 Stags' : 'Elims'}
-                </div>
-                <div className="step-sub">
-                  Advance Cutoff: <strong>&ge; {activeEv.elims_advance_pts || '2.0'} Pts</strong>
-                </div>
-              </div>
-
-              <div className="step-arrow">&rarr;</div>
-
-              <div className="derby-flow-step-box">
-                <div className="step-tag">STAGE 2: SEMI-FINALS</div>
-                <div className="step-stags">
-                  {activeEv.format?.includes('3-3-5') ? '3 Stags' : activeEv.format?.includes('4-Stag') ? '1 Stag' : 'Semis'}
-                </div>
-                <div className="step-sub">
-                  Scores Back to Zero: <strong>{activeEv.semis_score_reset !== 0 ? 'YES (EV-GBaCA)' : 'NO'}</strong>
-                </div>
-              </div>
-
-              <div className="step-arrow">&rarr;</div>
-
-              <div className="derby-flow-step-box is-final">
-                <div className="step-tag">STAGE 3: CHAMPIONSHIP FINALS</div>
-                <div className="step-stags">
-                  {activeEv.format?.includes('3-3-5') ? '5 Stags' : activeEv.format?.includes('4-Stag') ? '2 Stags' : 'Finals'}
-                </div>
-                <div className="step-sub">
-                  Purse Contest: <strong>₱{Number(activeEv.guaranteed_prize || 0).toLocaleString()}</strong>
-                </div>
-              </div>
-            </div>
-
-            {/* 4 Pillars Grid */}
-            <div className="derby-pillars-grid">
-              <div className="derby-pillar-box">
-                <div className="pillar-header">
-                  <Scale size={14} className="pillar-icon" />
-                  <span className="pillar-title">Pillar 1: Kasahan &amp; Scale Rules</span>
-                </div>
-                <div className="pillar-content">
-                  <div><strong>Scale Bracket:</strong> {activeEv.min_weight_grams || 1700}g &ndash; {activeEv.max_weight_grams || 2250}g</div>
-                  <div><strong>Kasahan Variance:</strong> &plusmn;{activeEv.weight_tolerance_grams || 35}g Give &amp; Take</div>
-                  <div><strong>Pairing System:</strong> {activeEv.matching_system === 'HABOL_SYSTEM' ? 'Habol System' : 'Standard Fair Match'}</div>
-                  <div><strong>Hennies Policy:</strong> {activeEv.hennies_allowed ? 'Allowed by Exemption' : 'Strictly No Hennies'}</div>
-                </div>
-              </div>
-
-              <div className="derby-pillar-box">
-                <div className="pillar-header">
-                  <BadgeDollarSign size={14} className="pillar-icon" />
-                  <span className="pillar-title">Pillar 2: Pot &amp; Match Bets</span>
-                </div>
-                <div className="pillar-content">
-                  <div>
-                    <strong>Pot Structure:</strong> {activeEv.pot_mode === 'NO_POT_BAYAD_AGAD' ? 'No Pot (Bayad Agad)' : 'Upfront Escrow'}
+                    <span className="balance-check-pill is-balanced">
+                      <CheckCircle2 size={12} />
+                      <span>ACTIVE LIVE DERBY</span>
+                    </span>
+                    {activeEv.pot_mode && (
+                      <span className="balance-check-pill">
+                        <span>{activeEv.pot_mode === 'NO_POT_BAYAD_AGAD' ? 'No Pot Money (Bayad Agad)' : 'Standard Pot Escrow'}</span>
+                      </span>
+                    )}
                   </div>
-                  <div>
-                    <strong>Day Money / Fee:</strong> ₱{Number(activeEv.day_money_amount || activeEv.pot_fee || 0).toLocaleString()}
+                  <h2 className="hero-tournament-title">{activeEv.title}</h2>
+                  <div className="hero-venue-meta">
+                    <span><strong>Host:</strong> {activeEv.promoter}</span>
+                    <span>&bull;</span>
+                    <span><strong>Venue:</strong> {activeEv.venue_name || arenaState?.tenant?.arena_name || 'Leyte Recreational & Amusement Complex (LRAC)'}</span>
+                    {activeEv.cluster_district && (
+                      <>
+                        <span>&bull;</span>
+                        <span><strong>Cluster:</strong> {activeEv.cluster_district}</span>
+                      </>
+                    )}
                   </div>
-                  <div><strong>Minimum Bet:</strong> ₱{Number(activeEv.min_bet || 3500).toLocaleString()} per Sultada</div>
-                  <div><strong>Plasada Split:</strong> {activeEv.plasada_split || '70/30'}</div>
+                </div>
+
+                <div className="hero-prize-stat-box">
+                  <div className="prize-stat-label">TOTAL GUARANTEED PURSE</div>
+                  <div className="prize-stat-val">
+                    ₱{Number(activeEv.guaranteed_prize || activeEv.pot_fee || 0).toLocaleString()}
+                  </div>
+                  <div className="prize-stat-sub">
+                    Min Bet: ₱{Number(activeEv.min_bet || 3500).toLocaleString()} &bull; Date: {activeEv.event_date || 'Derby Day'}
+                  </div>
                 </div>
               </div>
 
-              <div className="derby-pillar-box">
-                <div className="pillar-header">
-                  <Layers size={14} className="pillar-icon" />
-                  <span className="pillar-title">Pillar 3: Qualification &amp; Scoring</span>
+              {/* Multi-Stage Journey Strip */}
+              <div className="derby-stages-flow-strip">
+                <div className="derby-flow-step-box">
+                  <div className="step-tag">STAGE 1: ELIMINATIONS</div>
+                  <div className="step-stags">
+                    {activeEv.format?.includes('3-3-5') ? '3 Stags' : activeEv.format?.includes('4-Stag') ? '2 Stags' : 'Elims'}
+                  </div>
+                  <div className="step-sub">
+                    Advance Cutoff: <strong>&ge; {activeEv.elims_advance_pts || '2.0'} Pts</strong>
+                  </div>
                 </div>
-                <div className="pillar-content">
-                  <div><strong>Elims Cutoff:</strong> {activeEv.elims_advance_pts || '2.0'} pts to advance</div>
-                  <div><strong>Semi-Finals Reset:</strong> {activeEv.semis_score_reset !== 0 ? 'Scores Reset to 0' : 'Cumulative'}</div>
-                  <div><strong>Banding Eligibility:</strong> {activeEv.banding_category || 'Open Banded'}</div>
-                  <div><strong>Scoring System:</strong> Win = 1.0 pt, Draw = 0.5 pt, Loss = 0 pt</div>
+
+                <div className="step-arrow">&rarr;</div>
+
+                <div className="derby-flow-step-box">
+                  <div className="step-tag">STAGE 2: SEMI-FINALS</div>
+                  <div className="step-stags">
+                    {activeEv.format?.includes('3-3-5') ? '3 Stags' : activeEv.format?.includes('4-Stag') ? '1 Stag' : 'Semis'}
+                  </div>
+                  <div className="step-sub">
+                    Scores Back to Zero: <strong>{activeEv.semis_score_reset !== 0 ? 'YES (EV-GBaCA)' : 'NO'}</strong>
+                  </div>
+                </div>
+
+                <div className="step-arrow">&rarr;</div>
+
+                <div className="derby-flow-step-box is-final">
+                  <div className="step-tag">STAGE 3: CHAMPIONSHIP FINALS</div>
+                  <div className="step-stags">
+                    {activeEv.format?.includes('3-3-5') ? '5 Stags' : activeEv.format?.includes('4-Stag') ? '2 Stags' : 'Finals'}
+                  </div>
+                  <div className="step-sub">
+                    Purse Contest: <strong>₱{Number(activeEv.guaranteed_prize || 0).toLocaleString()}</strong>
+                  </div>
                 </div>
               </div>
 
-              <div className="derby-pillar-box">
-                <div className="pillar-header">
-                  <Award size={14} className="pillar-icon" />
-                  <span className="pillar-title">Pillar 4: Purse &amp; Awards</span>
+              {/* 4 Pillars Grid */}
+              <div className="derby-pillars-grid">
+                <div className="derby-pillar-box">
+                  <div className="pillar-header">
+                    <Scale size={14} className="pillar-icon" />
+                    <span className="pillar-title">Pillar 1: Kasahan &amp; Scale Rules</span>
+                  </div>
+                  <div className="pillar-content">
+                    <div><strong>Scale Bracket:</strong> {activeEv.min_weight_grams || 1700}g &ndash; {activeEv.max_weight_grams || 2250}g</div>
+                    <div><strong>Kasahan Variance:</strong> &plusmn;{activeEv.weight_tolerance_grams || 35}g Give &amp; Take</div>
+                    <div><strong>Pairing System:</strong> {activeEv.matching_system === 'HABOL_SYSTEM' ? 'Habol System' : 'Standard Fair Match'}</div>
+                    <div><strong>Hennies Policy:</strong> {activeEv.hennies_allowed ? 'Allowed by Exemption' : 'Strictly No Hennies'}</div>
+                  </div>
                 </div>
-                <div className="pillar-content">
-                  <div><strong>Champion Purse:</strong> ₱{Number(activeEv.champion_prize || 1500000).toLocaleString()}</div>
-                  <div><strong>Runner-Up:</strong> ₱{Number(activeEv.runnerup_prize || 500000).toLocaleString()}</div>
-                  <div><strong>Stag Fighter / Kill:</strong> ₱{Number(activeEv.stag_fighter_award || 1000000).toLocaleString()}</div>
-                  <div><strong>Best Handler / Gaffer:</strong> ₱{Number(activeEv.handler_award || 200000).toLocaleString()} / ₱{Number(activeEv.gaffer_award || 100000).toLocaleString()}</div>
+
+                <div className="derby-pillar-box">
+                  <div className="pillar-header">
+                    <BadgeDollarSign size={14} className="pillar-icon" />
+                    <span className="pillar-title">Pillar 2: Pot &amp; Match Bets</span>
+                  </div>
+                  <div className="pillar-content">
+                    <div>
+                      <strong>Pot Structure:</strong> {activeEv.pot_mode === 'NO_POT_BAYAD_AGAD' ? 'No Pot (Bayad Agad)' : 'Upfront Escrow'}
+                    </div>
+                    <div>
+                      <strong>Day Money / Fee:</strong> ₱{Number(activeEv.day_money_amount || activeEv.pot_fee || 0).toLocaleString()}
+                    </div>
+                    <div><strong>Minimum Bet:</strong> ₱{Number(activeEv.min_bet || 3500).toLocaleString()} per Sultada</div>
+                    <div><strong>Plasada Split:</strong> {activeEv.plasada_split || '70/30'}</div>
+                  </div>
+                </div>
+
+                <div className="derby-pillar-box">
+                  <div className="pillar-header">
+                    <Layers size={14} className="pillar-icon" />
+                    <span className="pillar-title">Pillar 3: Qualification &amp; Scoring</span>
+                  </div>
+                  <div className="pillar-content">
+                    <div><strong>Elims Cutoff:</strong> {activeEv.elims_advance_pts || '2.0'} pts to advance</div>
+                    <div><strong>Semi-Finals Reset:</strong> {activeEv.semis_score_reset !== 0 ? 'Scores Reset to 0' : 'Cumulative'}</div>
+                    <div><strong>Banding Eligibility:</strong> {activeEv.banding_category || 'Open Banded'}</div>
+                    <div><strong>Scoring System:</strong> Win = 1.0 pt, Draw = 0.5 pt, Loss = 0 pt</div>
+                  </div>
+                </div>
+
+                <div className="derby-pillar-box">
+                  <div className="pillar-header">
+                    <Award size={14} className="pillar-icon" />
+                    <span className="pillar-title">Pillar 4: Purse &amp; Awards</span>
+                  </div>
+                  <div className="pillar-content">
+                    <div><strong>Champion Purse:</strong> ₱{Number(activeEv.champion_prize || 1500000).toLocaleString()}</div>
+                    <div><strong>Runner-Up:</strong> ₱{Number(activeEv.runnerup_prize || 500000).toLocaleString()}</div>
+                    <div><strong>Stag Fighter / Kill:</strong> ₱{Number(activeEv.stag_fighter_award || 1000000).toLocaleString()}</div>
+                    <div><strong>Best Handler / Gaffer:</strong> ₱{Number(activeEv.handler_award || 200000).toLocaleString()} / ₱{Number(activeEv.gaffer_award || 100000).toLocaleString()}</div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+
+            {/* Dual Tables Grid: Syndicate Standings & Tournament Archive */}
+            <div className="workspace-split-grid">
+              {/* Enrolled Syndicate Entries Table */}
+              <div className="workspace-panel">
+                <div className="workspace-panel-title">
+                  <Users size={16} className="card-title-icon-gold" />
+                  <span>Enrolled Syndicate Entries &amp; Standings ({entries.length})</span>
+                </div>
+                {entries.length === 0 ? (
+                  <div className="module-empty-state">
+                    <div className="module-empty-title">No Entries Registered Yet</div>
+                    <div className="module-empty-desc">
+                      Click "+ Enroll Syndicate Entry" above to add participants and unlock Gate 2.
+                    </div>
+                  </div>
+                ) : (
+                  <div className="data-table-wrap">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>Syndicate Team</th>
+                          <th>Owner / Gallero</th>
+                          <th>Pot Escrow</th>
+                          <th>Tier</th>
+                          <th>W-D-L</th>
+                          <th>Points</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {entries.map((en) => (
+                          <tr key={en.entry_id}>
+                            <td>
+                              <strong>{en.entry_name}</strong>
+                            </td>
+                            <td>{en.owner_gallero}</td>
+                            <td>
+                              <span className={`status-badge ${en.pot_payment_status === 'PAID' ? 'is-passed' : 'is-pending'}`}>
+                                {en.pot_payment_status}
+                              </span>
+                            </td>
+                            <td>{en.syndicate_tier || 'VIP'}</td>
+                            <td>
+                              {en.wins || 0}-{en.draws || 0}-{en.losses || 0}
+                            </td>
+                            <td>
+                              <strong style={{ color: '#10b981' }}>{(en.points || 0).toFixed(1)} pts</strong>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* Tournament Calendar & Archive Table */}
+              <div className="workspace-panel">
+                <div className="workspace-panel-title">
+                  <Calendar size={16} className="card-title-icon-gold" />
+                  <span>Tournament Calendar &amp; History ({events.length})</span>
+                </div>
+                <div className="data-table-wrap">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Title</th>
+                        <th>Format</th>
+                        <th>Weight Window</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {events.map((ev) => (
+                        <tr key={ev.event_id}>
+                          <td>
+                            <strong>{ev.title}</strong>
+                            <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{ev.promoter}</div>
+                          </td>
+                          <td>{ev.format}</td>
+                          <td>
+                            <span className="top-mono-item">
+                              {ev.min_weight_grams || 1700}g &ndash; {ev.max_weight_grams || 2250}g (&plusmn;{ev.weight_tolerance_grams || 35}g)
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`status-badge ${ev.status === 'ACTIVE' ? 'is-passed' : 'is-pending'}`}>
+                              {ev.status}
+                            </span>
+                          </td>
+                          <td>
+                            {ev.status !== 'ACTIVE' ? (
+                              <button
+                                type="button"
+                                className="btn-secondary-gold"
+                                style={{ padding: '3px 8px', fontSize: '11px' }}
+                                onClick={() =>
+                                  handleAction(`/api/events/${ev.event_id}`, 'PATCH', {})
+                                }
+                              >
+                                Make Active
+                              </button>
+                            ) : (
+                              <span style={{ fontSize: '11px', fontWeight: '700', color: '#10b981' }}>Current Live</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </>
         ) : (
-          <div className="workspace-panel module-empty-state">
-            <Trophy size={48} className="card-title-icon-gold" style={{ marginBottom: '12px' }} />
-            <div className="module-empty-title">No Active Tournament Provisioned</div>
-            <div className="module-empty-desc">
-              Launch the Philippine Coliseo Tournament Carousel Journey to configure multi-stage rules, kasahan tolerance, and physical SQLite WAL storage.
+          /* HIGH-END 2-COLUMN TOURNAMENT LAUNCHPAD EMPTY STATE */
+          <div className="derby-empty-split-grid">
+            {/* Left Column: Master Launchpad with 4-Gate Workflow Pipeline & 4 Archetype Cards */}
+            <div className="derby-launchpad-card">
+              <div className="derby-launchpad-header">
+                <div className="derby-launchpad-crest">
+                  <Trophy size={28} className="card-title-icon-gold" />
+                </div>
+                <div className="derby-launchpad-titles">
+                  <div className="derby-launchpad-tag">
+                    <Sparkles size={13} />
+                    <span>GATE 1 STANDBY &bull; DERBY SANCTION REQUIRED</span>
+                  </div>
+                  <div className="derby-launchpad-main-title">
+                    Initialize Coliseum Derby Tournament
+                  </div>
+                  <div className="derby-launchpad-desc">
+                    No active tournament is currently provisioned for this arena tenant. Launch the Carousel Journey below to dynamically configure multi-stage fight progression, Kasahan Habol tolerances, and physical SQLite WAL prize distribution.
+                  </div>
+                </div>
+              </div>
+
+              {/* 4-Gate Operational Pipeline */}
+              <div className="derby-pipeline-visualizer">
+                <div className="derby-pipeline-step is-active">
+                  <span className="derby-pipeline-gate">GATE 1 &bull; FOCUS</span>
+                  <span className="derby-pipeline-name">Sanction &amp; Rules</span>
+                  <span className="derby-pipeline-status" style={{ color: '#10b981' }}>Active Setup</span>
+                </div>
+                <div className="derby-pipeline-step is-locked">
+                  <span className="derby-pipeline-gate">GATE 2</span>
+                  <span className="derby-pipeline-name">Pot Escrow &amp; Teams</span>
+                  <span className="derby-pipeline-status">Locked (Needs Gate 1)</span>
+                </div>
+                <div className="derby-pipeline-step is-locked">
+                  <span className="derby-pipeline-gate">GATE 3 &amp; 4</span>
+                  <span className="derby-pipeline-name">Timbangan &amp; Pairing</span>
+                  <span className="derby-pipeline-status">Locked (Needs Teams)</span>
+                </div>
+                <div className="derby-pipeline-step is-locked">
+                  <span className="derby-pipeline-gate">GATE 5</span>
+                  <span className="derby-pipeline-name">Ruedo Soltada Arena</span>
+                  <span className="derby-pipeline-status">Locked (Fight Card)</span>
+                </div>
+              </div>
+
+              {/* 4 Quick Archetype Launch Cards */}
+              <div className="derby-archetypes-matrix">
+                {/* Card 1: 11-Stag Championship (3-3-5) */}
+                <div
+                  className="derby-launch-card"
+                  onClick={() =>
+                    openWithArchetype({
+                      tournamentCategory: 'Stag Derby',
+                      totalRounds: 11,
+                      isMultiStage: true,
+                      elimsRounds: 3,
+                      semisRounds: 3,
+                      finalsRounds: 5,
+                      title: 'ENCUENTRO SA OTSO - CLASH OF THE CHAMPIONS',
+                      promoter: 'Eastern Visayas Gamefowl Breeders (EV-GBaCA)',
+                      clusterDistrict: 'Eastern Visayas Region 8 (Samar, Leyte, Biliran)',
+                      minWeightGrams: 1700,
+                      maxWeightGrams: 2250,
+                      weightToleranceGrams: 35,
+                      matchingSystem: 'HABOL_SYSTEM',
+                      potMode: 'NO_POT_BAYAD_AGAD',
+                      dayMoneyAmount: 50000,
+                      potFee: 0,
+                      guaranteedPrize: 5000000,
+                      minBet: 3500,
+                      maxLevelBet: 0,
+                      plasadaSplit: '70/30',
+                      bandingCategory: 'OPEN',
+                      henniesAllowed: 0,
+                      elimsAdvancePts: '2.0',
+                      semisScoreReset: 1,
+                      championPrize: 1500000,
+                      runnerupPrize: 500000,
+                      handlerAward: 200000,
+                      gafferAward: 100000,
+                      stagFighterAward: 1000000
+                    })
+                  }
+                >
+                  <div>
+                    <div className="derby-launch-card-header">
+                      <span className="derby-launch-badge">EV-GBaCA / LRAC FORMAT</span>
+                      <span style={{ fontSize: '11px', fontWeight: '800', color: '#10b981' }}>11 STAGS</span>
+                    </div>
+                    <div className="derby-launch-card-title">11-Stag Championship (3-3-5)</div>
+                    <div className="derby-launch-meta-row" style={{ marginTop: '8px' }}>
+                      <span className="derby-launch-meta-tag is-prize">₱5,000,000 Guaranteed</span>
+                      <span className="derby-launch-meta-tag">No Pot Bayad Agad</span>
+                      <span className="derby-launch-meta-tag">1,700–2,250g (±35g Habol)</span>
+                    </div>
+                  </div>
+                  <div className="derby-launch-flow-desc">
+                    <strong>3-3-5 Multi-Stage:</strong> 3 Elims (Open Band) ➔ 3 Semis (Scores back to 0) ➔ 5 Championship Finals.
+                  </div>
+                  <div className="derby-launch-action-link">
+                    <span>Configure 11-Stag Carousel</span>
+                    <ChevronRight size={14} />
+                  </div>
+                </div>
+
+                {/* Card 2: 4-Stag Challenge (Hybrid) */}
+                <div
+                  className="derby-launch-card"
+                  onClick={() =>
+                    openWithArchetype({
+                      tournamentCategory: 'Stag Derby',
+                      totalRounds: 4,
+                      isMultiStage: true,
+                      elimsRounds: 2,
+                      semisRounds: 0,
+                      finalsRounds: 2,
+                      title: 'Christmas 4-Stag Derby Challenge (Hybrid)',
+                      promoter: 'Leyte Invitational Promoters Syndicate',
+                      clusterDistrict: 'Leyte Central Invitational',
+                      minWeightGrams: 1700,
+                      maxWeightGrams: 2200,
+                      weightToleranceGrams: 35,
+                      matchingSystem: 'HABOL_SYSTEM',
+                      potMode: 'NO_POT_BAYAD_AGAD',
+                      dayMoneyAmount: 150000,
+                      potFee: 0,
+                      guaranteedPrize: 150000,
+                      minBet: 4400,
+                      maxLevelBet: 11000,
+                      plasadaSplit: '70/30',
+                      bandingCategory: 'NATIONAL_ONLY',
+                      henniesAllowed: 0,
+                      elimsAdvancePts: '2.0',
+                      semisScoreReset: 0,
+                      championPrize: 150000,
+                      runnerupPrize: 25000,
+                      handlerAward: 15000,
+                      gafferAward: 10000,
+                      stagFighterAward: 0
+                    })
+                  }
+                >
+                  <div>
+                    <div className="derby-launch-card-header">
+                      <span className="derby-launch-badge">BAYAD AGAD CHALLENGE</span>
+                      <span style={{ fontSize: '11px', fontWeight: '800', color: '#10b981' }}>4 STAGS</span>
+                    </div>
+                    <div className="derby-launch-card-title">4-Stag Derby Challenge (Hybrid)</div>
+                    <div className="derby-launch-meta-row" style={{ marginTop: '8px' }}>
+                      <span className="derby-launch-meta-tag is-prize">₱150,000 Bayad Agad</span>
+                      <span className="derby-launch-meta-tag">Min Bet ₱4,400</span>
+                      <span className="derby-launch-meta-tag">Max Level ₱11,000</span>
+                    </div>
+                  </div>
+                  <div className="derby-launch-flow-desc">
+                    <strong>2-2 Fast Hybrid:</strong> 2 Elims ➔ 2 Finals. Includes Any 3 Pts (₱25k) and Last Win (₱10k) shared pools.
+                  </div>
+                  <div className="derby-launch-action-link">
+                    <span>Configure 4-Stag Carousel</span>
+                    <ChevronRight size={14} />
+                  </div>
+                </div>
+
+                {/* Card 3: 3-Stag Panta Elims (Fight All) */}
+                <div
+                  className="derby-launch-card"
+                  onClick={() =>
+                    openWithArchetype({
+                      tournamentCategory: 'Stag Derby',
+                      totalRounds: 3,
+                      isMultiStage: false,
+                      elimsRounds: 3,
+                      semisRounds: 0,
+                      finalsRounds: 0,
+                      title: 'Leyte 1st District 3-Stag Panta Elims (Fight All)',
+                      promoter: 'Leyte 1st District Cluster Aficionados',
+                      clusterDistrict: 'Leyte 1st District (Tacloban - Palo - Tanauan)',
+                      minWeightGrams: 1700,
+                      maxWeightGrams: 2250,
+                      weightToleranceGrams: 35,
+                      matchingSystem: 'FIGHT_ALL',
+                      potMode: 'NO_POT_BAYAD_AGAD',
+                      dayMoneyAmount: 20000,
+                      potFee: 0,
+                      guaranteedPrize: 5000000,
+                      minBet: 3300,
+                      maxLevelBet: 0,
+                      plasadaSplit: '70/30',
+                      bandingCategory: 'OPEN',
+                      henniesAllowed: 0,
+                      elimsAdvancePts: '2.0',
+                      semisScoreReset: 1,
+                      championPrize: 1000000,
+                      runnerupPrize: 250000,
+                      handlerAward: 50000,
+                      gafferAward: 25000,
+                      stagFighterAward: 1000000
+                    })
+                  }
+                >
+                  <div>
+                    <div className="derby-launch-card-header">
+                      <span className="derby-launch-badge">CLUSTER ELIMS</span>
+                      <span style={{ fontSize: '11px', fontWeight: '800', color: '#10b981' }}>3 STAGS</span>
+                    </div>
+                    <div className="derby-launch-card-title">3-Stag Panta Elims (Fight All)</div>
+                    <div className="derby-launch-meta-row" style={{ marginTop: '8px' }}>
+                      <span className="derby-launch-meta-tag is-prize">₱20k–₱50k Day Money</span>
+                      <span className="derby-launch-meta-tag">Open Banded</span>
+                      <span className="derby-launch-meta-tag">Min Bet ₱3,300</span>
+                    </div>
+                  </div>
+                  <div className="derby-launch-flow-desc">
+                    <strong>Fight All (Walang Iwanan):</strong> 3 Sultadas single stage. Top 2.0+ pointer qualifiers advance to regionals.
+                  </div>
+                  <div className="derby-launch-action-link">
+                    <span>Configure 3-Stag Carousel</span>
+                    <ChevronRight size={14} />
+                  </div>
+                </div>
+
+                {/* Card 4: Custom Sanction Engine */}
+                <div
+                  className="derby-launch-card"
+                  onClick={() =>
+                    openWithArchetype({
+                      tournamentCategory: 'Cock Derby',
+                      totalRounds: 5,
+                      isMultiStage: true,
+                      elimsRounds: 2,
+                      semisRounds: 0,
+                      finalsRounds: 3,
+                      title: 'Coliseum Sanctioned Master Derby',
+                      promoter: 'Arena Operations & Promoters Council',
+                      clusterDistrict: 'Regional Open',
+                      minWeightGrams: 1800,
+                      maxWeightGrams: 2450,
+                      weightToleranceGrams: 30,
+                      matchingSystem: 'STANDARD',
+                      potMode: 'UPFRONT_POT_ESCROW',
+                      dayMoneyAmount: 0,
+                      potFee: 55000,
+                      guaranteedPrize: 1000000,
+                      minBet: 5500,
+                      maxLevelBet: 0,
+                      plasadaSplit: '70/30',
+                      bandingCategory: 'OPEN',
+                      henniesAllowed: 0,
+                      elimsAdvancePts: '2.0',
+                      semisScoreReset: 0,
+                      championPrize: 700000,
+                      runnerupPrize: 200000,
+                      handlerAward: 50000,
+                      gafferAward: 25000,
+                      stagFighterAward: 0
+                    })
+                  }
+                >
+                  <div>
+                    <div className="derby-launch-card-header">
+                      <span className="derby-launch-badge" style={{ color: '#d97706', borderColor: 'rgba(217,119,6,0.3)', background: 'rgba(217,119,6,0.08)' }}>FLEXIBLE ENGINE</span>
+                      <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-secondary)' }}>CUSTOM</span>
+                    </div>
+                    <div className="derby-launch-card-title">Custom Sanctioned Format</div>
+                    <div className="derby-launch-meta-row" style={{ marginTop: '8px' }}>
+                      <span className="derby-launch-meta-tag">Custom Purse &amp; Pots</span>
+                      <span className="derby-launch-meta-tag">N-Cock Fights</span>
+                      <span className="derby-launch-meta-tag">GAB Audited</span>
+                    </div>
+                  </div>
+                  <div className="derby-launch-flow-desc">
+                    <strong>Full Rule Customization:</strong> Define custom fight stages, pot escrow, Kasahan tolerances, and awards.
+                  </div>
+                  <div className="derby-launch-action-link">
+                    <span>Open Custom Rule Builder</span>
+                    <ChevronRight size={14} />
+                  </div>
+                </div>
+              </div>
             </div>
-            <button
-              type="button"
-              className="btn-primary-emerald"
-              style={{ marginTop: '16px' }}
-              onClick={() => setIsDerbyCarouselOpen(true)}
-            >
-              <Sparkles size={16} />
-              <span>Launch Tournament Carousel Journey</span>
-            </button>
+
+            {/* Right Column: Regulatory Passport & Archive */}
+            <div className="derby-sidebar-stack">
+              {/* Coliseum Regulatory Credentials Card */}
+              <div className="derby-regulatory-card">
+                <div className="derby-regulatory-header">
+                  <ShieldCheck size={16} style={{ color: '#10b981' }} />
+                  <span>Coliseum Regulatory Sanction</span>
+                </div>
+                <div className="derby-reg-row">
+                  <span className="derby-reg-label">Coliseum Arena</span>
+                  <span className="derby-reg-val">{arenaState?.tenant?.arena_name || 'Leyte Rec. Complex (LRAC)'}</span>
+                </div>
+                <div className="derby-reg-row">
+                  <span className="derby-reg-label">GAB License Status</span>
+                  <span className="status-badge is-passed" style={{ fontSize: '10px' }}>PD 449 / GAB Certified</span>
+                </div>
+                <div className="derby-reg-row">
+                  <span className="derby-reg-label">Mayor's Permit</span>
+                  <span className="derby-reg-val is-mono">{arenaState?.tenant?.mayors_permit || 'LGU-MP-2026-89701'}</span>
+                </div>
+                <div className="derby-reg-row">
+                  <span className="derby-reg-label">BIR CAS MIN</span>
+                  <span className="derby-reg-val is-mono">{arenaState?.tenant?.bir_cas_min || 'MIN-20260411-88392014'}</span>
+                </div>
+                <div className="derby-reg-row">
+                  <span className="derby-reg-label">Coliseum Plasada</span>
+                  <span className="derby-reg-val" style={{ color: '#10b981' }}>10% House Plasada</span>
+                </div>
+                <div className="derby-reg-row">
+                  <span className="derby-reg-label">Scale Standard</span>
+                  <span className="derby-reg-val">1,700–2,250g (&plusmn;35g)</span>
+                </div>
+                <div className="derby-reg-row">
+                  <span className="derby-reg-label">Hennies Rule</span>
+                  <span className="derby-reg-val" style={{ color: '#ef4444' }}>Strictly Prohibited</span>
+                </div>
+              </div>
+
+              {/* Tournament Calendar & Archive */}
+              <div className="derby-regulatory-card">
+                <div className="derby-regulatory-header">
+                  <Calendar size={16} className="card-title-icon-gold" />
+                  <span>Tournament Calendar ({events.length})</span>
+                </div>
+                {events.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '16px 8px', color: 'var(--text-secondary)' }}>
+                    <Calendar size={28} style={{ opacity: 0.3, marginBottom: '6px' }} />
+                    <div style={{ fontSize: '12px', fontWeight: '800', color: 'var(--text-primary)' }}>0 Historical Tournaments</div>
+                    <div style={{ fontSize: '10.5px', marginTop: '3px', lineHeight: '1.4' }}>
+                      All created derby events will be securely logged here for physical SQLite WAL audit.
+                    </div>
+                  </div>
+                ) : (
+                  <div className="data-table-wrap">
+                    <table className="data-table" style={{ fontSize: '11px' }}>
+                      <thead>
+                        <tr>
+                          <th>Event</th>
+                          <th>Format</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {events.map((ev) => (
+                          <tr key={ev.event_id}>
+                            <td>
+                              <strong>{ev.title}</strong>
+                              <div style={{ fontSize: '9.5px', color: 'var(--text-muted)' }}>{ev.promoter}</div>
+                            </td>
+                            <td>{ev.format}</td>
+                            <td>
+                              {ev.status !== 'ACTIVE' ? (
+                                <button
+                                  type="button"
+                                  className="btn-secondary-gold"
+                                  style={{ padding: '2px 6px', fontSize: '10px' }}
+                                  onClick={() => handleAction(`/api/events/${ev.event_id}`, 'PATCH', {})}
+                                >
+                                  Make Active
+                                </button>
+                              ) : (
+                                <span style={{ fontSize: '10px', fontWeight: '800', color: '#10b981' }}>Live</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
-
-        {/* Dual Tables Grid: Syndicate Standings & Tournament Archive */}
-        <div className="workspace-split-grid">
-          {/* Enrolled Syndicate Entries Table */}
-          <div className="workspace-panel">
-            <div className="workspace-panel-title">
-              <Users size={16} className="card-title-icon-gold" />
-              <span>Enrolled Syndicate Entries &amp; Standings ({entries.length})</span>
-            </div>
-            {entries.length === 0 ? (
-              <div className="module-empty-state">
-                <div className="module-empty-title">No Entries Registered Yet</div>
-                <div className="module-empty-desc">
-                  Click "+ Enroll Syndicate Entry" above to add participants and unlock Gate 2.
-                </div>
-              </div>
-            ) : (
-              <div className="data-table-wrap">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Syndicate Team</th>
-                      <th>Owner / Gallero</th>
-                      <th>Pot Escrow</th>
-                      <th>Tier</th>
-                      <th>W-D-L</th>
-                      <th>Points</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {entries.map((en) => (
-                      <tr key={en.entry_id}>
-                        <td>
-                          <strong>{en.entry_name}</strong>
-                        </td>
-                        <td>{en.owner_gallero}</td>
-                        <td>
-                          <span className={`status-badge ${en.pot_payment_status === 'PAID' ? 'is-passed' : 'is-pending'}`}>
-                            {en.pot_payment_status}
-                          </span>
-                        </td>
-                        <td>{en.syndicate_tier || 'VIP'}</td>
-                        <td>
-                          {en.wins || 0}-{en.draws || 0}-{en.losses || 0}
-                        </td>
-                        <td>
-                          <strong style={{ color: '#10b981' }}>{(en.points || 0).toFixed(1)} pts</strong>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          {/* Tournament Calendar & Archive Table */}
-          <div className="workspace-panel">
-            <div className="workspace-panel-title">
-              <Calendar size={16} className="card-title-icon-gold" />
-              <span>Tournament Calendar &amp; History ({events.length})</span>
-            </div>
-            {events.length === 0 ? (
-              <div className="module-empty-state">
-                <div className="module-empty-title">No Historical Events</div>
-                <div className="module-empty-desc">
-                  All created tournaments will be listed here with single active derby switching.
-                </div>
-              </div>
-            ) : (
-              <div className="data-table-wrap">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Title</th>
-                      <th>Format</th>
-                      <th>Weight Window</th>
-                      <th>Status</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {events.map((ev) => (
-                      <tr key={ev.event_id}>
-                        <td>
-                          <strong>{ev.title}</strong>
-                          <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{ev.promoter}</div>
-                        </td>
-                        <td>{ev.format}</td>
-                        <td>
-                          <span className="top-mono-item">
-                            {ev.min_weight_grams || 1700}g &ndash; {ev.max_weight_grams || 2250}g (&plusmn;{ev.weight_tolerance_grams || 35}g)
-                          </span>
-                        </td>
-                        <td>
-                          <span className={`status-badge ${ev.status === 'ACTIVE' ? 'is-passed' : 'is-pending'}`}>
-                            {ev.status}
-                          </span>
-                        </td>
-                        <td>
-                          {ev.status !== 'ACTIVE' ? (
-                            <button
-                              type="button"
-                              className="btn-secondary-gold"
-                              style={{ padding: '3px 8px', fontSize: '11px' }}
-                              onClick={() =>
-                                handleAction(`/api/events/${ev.event_id}`, 'PATCH', {})
-                              }
-                            >
-                              Make Active
-                            </button>
-                          ) : (
-                            <span style={{ fontSize: '11px', fontWeight: '700', color: '#10b981' }}>Current Live</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
 
         {/* Carousel Journey Modal */}
         <DerbyTournamentCarouselModal
           isOpen={isDerbyCarouselOpen}
-          onClose={() => setIsDerbyCarouselOpen(false)}
+          onClose={() => {
+            setIsDerbyCarouselOpen(false);
+            setDerbyCarouselConfig(null);
+          }}
+          initialConfig={derbyCarouselConfig}
           onSubmit={async (payload) => {
             const res = await handleAction(
               '/api/events',

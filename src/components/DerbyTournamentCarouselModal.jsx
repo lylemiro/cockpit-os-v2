@@ -31,7 +31,8 @@ export function DerbyTournamentCarouselModal({
   onClose,
   onSubmit,
   submitting,
-  activeTenant
+  activeTenant,
+  initialConfig
 }) {
   const [currentStage, setCurrentStage] = useState(1);
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'success' | 'error'
@@ -177,14 +178,46 @@ export function DerbyTournamentCarouselModal({
     guaranteedPrize
   ]);
 
-  // Reset when opened
+  // Reset & load archetype config when opened
   useEffect(() => {
     if (isOpen) {
       setSaveStatus('idle');
       setSaveError('');
       setCurrentStage(1);
+      if (initialConfig) {
+        if (initialConfig.tournamentCategory !== undefined) setTournamentCategory(initialConfig.tournamentCategory);
+        if (initialConfig.totalRounds !== undefined) setTotalRounds(initialConfig.totalRounds);
+        if (initialConfig.isMultiStage !== undefined) setIsMultiStage(initialConfig.isMultiStage);
+        if (initialConfig.elimsRounds !== undefined) setElimsRounds(initialConfig.elimsRounds);
+        if (initialConfig.semisRounds !== undefined) setSemisRounds(initialConfig.semisRounds);
+        if (initialConfig.finalsRounds !== undefined) setFinalsRounds(initialConfig.finalsRounds);
+        if (initialConfig.title !== undefined) setTitle(initialConfig.title);
+        if (initialConfig.promoter !== undefined) setPromoter(initialConfig.promoter);
+        if (initialConfig.venueName !== undefined) setVenueName(initialConfig.venueName);
+        if (initialConfig.clusterDistrict !== undefined) setClusterDistrict(initialConfig.clusterDistrict);
+        if (initialConfig.minWeightGrams !== undefined) setMinWeightGrams(initialConfig.minWeightGrams);
+        if (initialConfig.maxWeightGrams !== undefined) setMaxWeightGrams(initialConfig.maxWeightGrams);
+        if (initialConfig.weightToleranceGrams !== undefined) setWeightToleranceGrams(initialConfig.weightToleranceGrams);
+        if (initialConfig.matchingSystem !== undefined) setMatchingSystem(initialConfig.matchingSystem);
+        if (initialConfig.potMode !== undefined) setPotMode(initialConfig.potMode);
+        if (initialConfig.dayMoneyAmount !== undefined) setDayMoneyAmount(initialConfig.dayMoneyAmount);
+        if (initialConfig.potFee !== undefined) setPotFee(initialConfig.potFee);
+        if (initialConfig.guaranteedPrize !== undefined) setGuaranteedPrize(initialConfig.guaranteedPrize);
+        if (initialConfig.minBet !== undefined) setMinBet(initialConfig.minBet);
+        if (initialConfig.maxLevelBet !== undefined) setMaxLevelBet(initialConfig.maxLevelBet);
+        if (initialConfig.plasadaSplit !== undefined) setPlasadaSplit(initialConfig.plasadaSplit);
+        if (initialConfig.bandingCategory !== undefined) setBandingCategory(initialConfig.bandingCategory);
+        if (initialConfig.henniesAllowed !== undefined) setHenniesAllowed(initialConfig.henniesAllowed);
+        if (initialConfig.elimsAdvancePts !== undefined) setElimsAdvancePts(initialConfig.elimsAdvancePts);
+        if (initialConfig.semisScoreReset !== undefined) setSemisScoreReset(initialConfig.semisScoreReset);
+        if (initialConfig.championPrize !== undefined) setChampionPrize(initialConfig.championPrize);
+        if (initialConfig.runnerupPrize !== undefined) setRunnerupPrize(initialConfig.runnerupPrize);
+        if (initialConfig.handlerAward !== undefined) setHandlerAward(initialConfig.handlerAward);
+        if (initialConfig.gafferAward !== undefined) setGafferAward(initialConfig.gafferAward);
+        if (initialConfig.stagFighterAward !== undefined) setStagFighterAward(initialConfig.stagFighterAward);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, initialConfig]);
 
   const stages = [
     { num: 1, label: 'Identity & Format', sub: 'Category & Stage Breakdown' },
