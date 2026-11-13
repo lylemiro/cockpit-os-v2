@@ -46,10 +46,21 @@ export function ModuleWindowModal() {
   const [openTabs, setOpenTabs] = useState([]);
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
-  const [isMaximized, setIsMaximized] = useState(true);
+  const [isMaximized, setIsMaximized] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
   const [showDetailsPane, setShowDetailsPane] = useState(false);
   const [explorerSearch, setExplorerSearch] = useState('');
   const [viewMode, setViewMode] = useState('workspace'); // 'workspace' | 'this-pc' | 'graph'
+
+  const [windowPos, setWindowPos] = useState(() => {
+    const isClient = typeof window !== 'undefined';
+    const defaultW = Math.min(1180, isClient ? Math.max(760, window.innerWidth - 80) : 1180);
+    const defaultH = Math.min(740, isClient ? Math.max(480, window.innerHeight - 150) : 740);
+    const defaultX = isClient ? Math.max(20, Math.floor((window.innerWidth - defaultW) / 2)) : 40;
+    const defaultY = isClient ? Math.max(52, Math.floor((window.innerHeight - 54 - defaultH) / 2)) : 54;
+    return { x: defaultX, y: defaultY, width: defaultW, height: defaultH };
+  });
 
   const [expandedSections, setExpandedSections] = useState({
     quickAccess: true,
@@ -77,7 +88,146 @@ export function ModuleWindowModal() {
     });
   }, [activeModuleId]);
 
-  if (!activeModuleId) return null;
+  // Dragging logic
+  const handleTitlebarPointerDown = (e) => {
+    if (e.button !== 0) return;
+    if (e.target.closest('button, input, a, .win-tab-item, .win-new-tab-btn, .win-caption-controls')) {
+      return;
+    }
+
+    e.preventDefault();
+    setIsDragging(true);
+
+    let startMouseX = e.clientX;
+    let startMouseY = e.clientY;
+    let startPos = { ...windowPos };
+
+    if (isMaximized) {
+      setIsMaximized(false);
+      const restoredWidth = startPos.width || 1140;
+      const restoredX = Math.max(10, Math.min(window.innerWidth - restoredWidth - 10, e.clientX - restoredWidth / 2));
+      const restoredY = 52;
+      startPos = { ...startPos, x: restoredX, y: restoredY };
+      setWindowPos(startPos);
+      startMouseX = e.clientX;
+      startMouseY = e.clientY;
+    }
+
+    const onPointerMove = (moveEv) => {
+      const deltaX = moveEv.clientX - startMouseX;
+      const deltaY = moveEv.clientY - startMouseY;
+
+      const clampedX = Math.max(-startPos.width + 160, Math.min(window.innerWidth - 160, startPos.x + deltaX));
+      const clampedY = Math.max(46, Math.min(window.innerHeight - 94, startPos.y + deltaY));
+
+      setWindowPos((prev) => ({
+        ...prev,
+        x: clampedX,
+        y: clampedY
+      }));
+    };
+
+    const onPointerUp = () => {
+      setIsDragging(false);
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+    };
+
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+  };
+
+  const handleTitlebarDoubleClick = (e) => {
+    if (e.target.closest('button, input, a, .win-tab-item, .win-new-tab-btn, .win-caption-controls')) {
+      return;
+    }
+    setIsMaximized((prev) => !prev);
+  };
+
+  // 8-directional Resizing logic
+  const handleResizePointerDown = (e, dir) => {
+    if (isMaximized) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    setIsResizing(true);
+    const startMouseX = e.clientX;
+    const startMouseY = e.clientY;
+    const initial = { ...windowPos };
+
+    const onPointerMove = (moveEv) => {
+      const deltaX = moveEv.clientX - startMouseX;
+      const deltaY = moveEv.clientY - startMouseY;
+
+      let nextX = initial.x;
+      let nextY = initial.y;
+      let nextW = initial.width;
+      let nextH = initial.height;
+
+      const minW = 680;
+      const minH = 440;
+      const maxW = window.innerWidth - 20;
+      const maxH = window.innerHeight - 105;
+
+      if (dir.includes('e')) {
+        nextW = Math.max(minW, Math.min(maxW - initial.x, initial.width + deltaX));
+      }
+      if (dir.includes('s')) {
+        nextH = Math.max(minH, Math.min(maxH - initial.y, initial.height + deltaY));
+      }
+      if (dir.includes('w')) {
+        const potentialW = initial.width - deltaX;
+        if (potentialW >= minW) {
+          nextX = initial.x + deltaX;
+          nextW = potentialW;
+        } else {
+          nextX = initial.x + (initial.width - minW);
+          nextW = minW;
+        }
+      }
+      if (dir.includes('n')) {
+        const potentialH = initial.height - deltaY;
+        if (potentialH >= minH && initial.y + deltaY >= 46) {
+          nextY = initial.y + deltaY;
+          nextH = potentialH;
+        } else if (potentialH < minH) {
+          nextY = initial.y + (initial.height - minH);
+          nextH = minH;
+        }
+      }
+
+      setWindowPos({
+        x: nextX,
+        y: nextY,
+        width: nextW,
+        height: nextH
+      });
+    };
+
+    const onPointerUp = () => {
+      setIsResizing(false);
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+    };
+
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+  };
+
+  const handleCloseWindow = () => {
+    setError(null);
+    setOpenTabs([]);
+    setHistory([]);
+    setHistoryIndex(-1);
+    setActiveModuleId(null);
+  };
+
+  if (!activeModuleId && openTabs.length === 0) return null;
+  const isWindowMinimized = !activeModuleId;
+
+  if (isWindowMinimized) {
+    return <div className="modal-backdrop is-minimized" style={{ display: 'none' }} />;
+  }
 
   const navigateToFolder = (folderId) => {
     setError(null);
@@ -180,12 +330,40 @@ export function ModuleWindowModal() {
       }}
     >
       <section
-        className={`win-explorer-window ${isMaximized ? 'is-maximized' : ''}`}
+        className={`win-explorer-window ${isMaximized ? 'is-maximized' : ''} ${isDragging ? 'is-dragging' : ''} ${isResizing ? 'is-resizing' : ''}`}
         role="dialog"
         aria-modal="true"
+        style={
+          isMaximized
+            ? {}
+            : {
+                left: `${windowPos.x}px`,
+                top: `${windowPos.y}px`,
+                width: `${windowPos.width}px`,
+                height: `${windowPos.height}px`
+              }
+        }
       >
+        {/* Resize Handles (8 Directions) */}
+        {!isMaximized && (
+          <>
+            <div className="win-resize-handle is-n" onPointerDown={(e) => handleResizePointerDown(e, 'n')} />
+            <div className="win-resize-handle is-s" onPointerDown={(e) => handleResizePointerDown(e, 's')} />
+            <div className="win-resize-handle is-e" onPointerDown={(e) => handleResizePointerDown(e, 'e')} />
+            <div className="win-resize-handle is-w" onPointerDown={(e) => handleResizePointerDown(e, 'w')} />
+            <div className="win-resize-handle is-ne" onPointerDown={(e) => handleResizePointerDown(e, 'ne')} />
+            <div className="win-resize-handle is-nw" onPointerDown={(e) => handleResizePointerDown(e, 'nw')} />
+            <div className="win-resize-handle is-se" onPointerDown={(e) => handleResizePointerDown(e, 'se')} />
+            <div className="win-resize-handle is-sw" onPointerDown={(e) => handleResizePointerDown(e, 'sw')} />
+          </>
+        )}
+
         {/* 1. WINDOWS 11 EXPLORER TABBED TITLE BAR */}
-        <header className="win-titlebar">
+        <header
+          className="win-titlebar"
+          onPointerDown={handleTitlebarPointerDown}
+          onDoubleClick={handleTitlebarDoubleClick}
+        >
           <div className="win-tabs-strip">
             <button
               type="button"
@@ -253,10 +431,7 @@ export function ModuleWindowModal() {
               type="button"
               className="win-caption-btn is-close"
               title="Close Window [ESC]"
-              onClick={() => {
-                setError(null);
-                setActiveModuleId(null);
-              }}
+              onClick={handleCloseWindow}
             >
               <X size={15} />
             </button>
