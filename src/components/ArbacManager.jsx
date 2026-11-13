@@ -214,27 +214,27 @@ export function ArbacManager() {
 
   return (
     <div className="form-stack">
-      <div className="action-btn-row">
+      <div className="subsystem-tabs-bar">
         <button
           type="button"
-          className={subTab === 'users' ? 'btn-primary-emerald' : 'btn-secondary-gold'}
+          className={`subsystem-tab-btn ${subTab === 'users' ? 'is-active' : ''}`}
           onClick={() => setSubTab('users')}
         >
-          Database Users & Granular 23-Checkbox CRUD ({employees.length})
+          Database Users &amp; Permissions ({employees.length})
         </button>
         <button
           type="button"
-          className={subTab === 'roles' ? 'btn-primary-emerald' : 'btn-secondary-gold'}
+          className={`subsystem-tab-btn ${subTab === 'roles' ? 'is-active' : ''}`}
           onClick={() => setSubTab('roles')}
         >
-          ARBAC Role Templates CRUD ({arbacRoles.length})
+          Role Templates ({arbacRoles.length})
         </button>
         <button
           type="button"
-          className={subTab === 'tenants' ? 'btn-primary-emerald' : 'btn-secondary-gold'}
+          className={`subsystem-tab-btn ${subTab === 'tenants' ? 'is-active' : ''}`}
           onClick={() => setSubTab('tenants')}
         >
-          Multi-Tenant Physical Databases ({tenants.length} DBs)
+          Physical Tenant Databases ({tenants.length})
         </button>
       </div>
 
@@ -433,17 +433,17 @@ export function ArbacManager() {
                           </span>
                         </td>
                         <td>
-                          <div className="action-btn-row">
+                          <div className="table-actions-cell">
                             <button
                               type="button"
-                              className="btn-secondary-gold"
+                              className="btn-table-edit"
                               onClick={() => startEditEmployee(emp)}
                             >
                               Edit / Perms
                             </button>
                             <button
                               type="button"
-                              className="btn-secondary-gold"
+                              className="btn-table-shift"
                               onClick={() =>
                                 mutateApi(`/api/employees/${emp.employee_id}`, 'PATCH', {})
                               }
@@ -452,7 +452,7 @@ export function ArbacManager() {
                             </button>
                             <button
                               type="button"
-                              className="btn-danger-outline"
+                              className="btn-table-del"
                               onClick={() =>
                                 mutateApi(`/api/employees/${emp.employee_id}`, 'DELETE', {})
                               }
@@ -609,17 +609,17 @@ export function ArbacManager() {
                           </span>
                         </td>
                         <td>
-                          <div className="action-btn-row">
+                          <div className="table-actions-cell">
                             <button
                               type="button"
-                              className="btn-secondary-gold"
+                              className="btn-table-edit"
                               onClick={() => startEditRole(r)}
                             >
                               Edit Checkboxes
                             </button>
                             <button
                               type="button"
-                              className="btn-danger-outline"
+                              className="btn-table-del"
                               onClick={() =>
                                 mutateApi(`/api/arbac/roles/${r.role_id}`, 'DELETE', {})
                               }
@@ -751,13 +751,13 @@ export function ArbacManager() {
                           </td>
                           <td>{t.dbMetrics?.sizeKb || 0} KB</td>
                           <td>
-                            <div className="action-btn-row">
+                            <div className="table-actions-cell">
                               {isCurrent ? (
                                 <span className="status-badge is-passed">MOUNTED DB</span>
                               ) : (
                                 <button
                                   type="button"
-                                  className="btn-primary-emerald"
+                                  className="btn-table-edit"
                                   onClick={() => switchTenant(t.tenant_id)}
                                 >
                                   Mount DB
@@ -766,7 +766,7 @@ export function ArbacManager() {
                               {tenants.length > 1 && (
                                 <button
                                   type="button"
-                                  className="btn-danger-outline"
+                                  className="btn-table-del"
                                   onClick={() =>
                                     mutateApi(`/api/tenants/${t.tenant_id}`, 'DELETE', {})
                                   }

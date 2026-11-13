@@ -47,7 +47,7 @@ export function ModuleWindowModal() {
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [isMaximized, setIsMaximized] = useState(false);
-  const [showDetailsPane, setShowDetailsPane] = useState(true);
+  const [showDetailsPane, setShowDetailsPane] = useState(false);
   const [explorerSearch, setExplorerSearch] = useState('');
   const [viewMode, setViewMode] = useState('workspace'); // 'workspace' | 'this-pc' | 'graph'
 
