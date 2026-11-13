@@ -231,3 +231,4 @@ export function WindowsStartMenuFlyout({ isOpen, onClose, onOpenSearch }) {
     </div>
   );
 }
+

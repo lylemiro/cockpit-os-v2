@@ -901,6 +901,147 @@ export async function handleApiRequest(req, res, wsHub) {
     // =========================================================================
     // GRANULAR ARBAC ROLES CRUD (23 PERMISSION CHECKBOXES + ATTRIBUTES)
     // =========================================================================
+    if (method === 'POST' && pathname === '/api/arbac/roles/seed-filipino-defaults') {
+      const filipinoDefaultRoles = [
+        {
+          id: 'ROLE_SUPERADMIN',
+          name: 'Superadmin / Pangulo ng Sabungan',
+          zone: 'Executive Command Console',
+          float: 1000000,
+          perms: ALL_23_PERMISSIONS
+        },
+        {
+          id: 'ROLE_ARENA_ADMIN',
+          name: 'Arena Admin / Tagapamahala',
+          zone: 'Executive Management Office',
+          float: 500000,
+          perms: [
+            'arena.config.manage',
+            'security.logtrail.export',
+            'arbac.staff.crud',
+            'arbac.float.assign',
+            'events.derby.schedule',
+            'events.entries.enroll',
+            'events.escrow.clear',
+            'matchmaking.timbangan.weigh',
+            'matchmaking.kasahan.pair',
+            'matchmaking.soltada.publish',
+            'ruedo.staging.advance',
+            'ruedo.betting.toggle',
+            'ruedo.verdict.declare',
+            'ruedo.var.replay',
+            'betting.ticket.issue',
+            'cashier.payout.release',
+            'betting.ticket.void',
+            'finance.zreading.generate',
+            'cockhouse.bays.manage'
+          ]
+        },
+        {
+          id: 'ROLE_MESA_CONTROL',
+          name: 'Mesa de Control / Hukom sa Mesa',
+          zone: 'Mesa de Control',
+          float: 0,
+          perms: [
+            'events.derby.schedule',
+            'matchmaking.soltada.publish',
+            'ruedo.staging.advance',
+            'ruedo.betting.toggle',
+            'ruedo.verdict.declare',
+            'ruedo.var.replay',
+            'security.logtrail.export'
+          ]
+        },
+        {
+          id: 'ROLE_SENTENCIADOR',
+          name: 'Sentenciador / Ring Referee',
+          zone: 'Ruedo Pit Ring',
+          float: 0,
+          perms: ['ruedo.staging.advance', 'ruedo.verdict.declare', 'ruedo.var.replay']
+        },
+        {
+          id: 'ROLE_KASADOR',
+          name: 'Kasador / Matchmaker',
+          zone: 'Timbangan & Kasahan Booth',
+          float: 0,
+          perms: [
+            'events.entries.enroll',
+            'matchmaking.timbangan.weigh',
+            'matchmaking.kasahan.pair',
+            'matchmaking.soltada.publish',
+            'cockhouse.bays.manage'
+          ]
+        },
+        {
+          id: 'ROLE_HEAD_CASHIER',
+          name: 'Head Cashier / Monton Supervisor',
+          zone: 'Center Cashier Cage',
+          float: 250000,
+          perms: [
+            'events.escrow.clear',
+            'arbac.float.assign',
+            'cashier.payout.release',
+            'betting.ticket.void',
+            'finance.zreading.generate',
+            'security.logtrail.export'
+          ]
+        },
+        {
+          id: 'ROLE_KRISTO_TELLER',
+          name: 'Kristo / POS Ticket Teller',
+          zone: 'Betting Booths & Grandstand',
+          float: 50000,
+          perms: ['betting.ticket.issue']
+        },
+        {
+          id: 'ROLE_MANANARI',
+          name: 'Mananari / Tari Armorer',
+          zone: 'Armory & Tari Station',
+          float: 0,
+          perms: ['matchmaking.tari.signoff', 'cockhouse.bays.manage']
+        },
+        {
+          id: 'ROLE_VET_SURGEON',
+          name: 'Manggagamot / Veterinary Surgeon',
+          zone: 'Veterinary Recovery Clinic',
+          float: 0,
+          perms: ['clinic.vet.suture', 'cockhouse.bays.manage']
+        },
+        {
+          id: 'ROLE_GAB_BIR_AUDITOR',
+          name: 'GAB & BIR Compliance Auditor',
+          zone: 'Compliance & Audit Office',
+          float: 0,
+          perms: ['arena.config.manage', 'security.logtrail.export', 'finance.zreading.generate']
+        }
+      ];
+
+      const upsertRole = tdb.prepare(`
+        INSERT INTO arbac_roles (role_id, role_name, department_zone, require_device_binding, max_cash_float, permissions_json, permissions_count)
+        VALUES (?, ?, ?, 1, ?, ?, ?)
+        ON CONFLICT(role_name) DO UPDATE SET
+          department_zone = excluded.department_zone,
+          max_cash_float = excluded.max_cash_float,
+          permissions_json = excluded.permissions_json,
+          permissions_count = excluded.permissions_count
+      `);
+
+      for (const r of filipinoDefaultRoles) {
+        upsertRole.run(r.id, r.name, r.zone, r.float, JSON.stringify(r.perms), r.perms.length);
+      }
+
+      appendAuditLog(
+        tdb,
+        'ARBAC_ROLES_SYNCED',
+        'ARBAC System',
+        hostInfo.terminalId,
+        'SUCCESS',
+        'Synchronized 10 Pre-Defined Filipino Legal Sabong ARBAC Roles.'
+      );
+
+      return syncAndRespond('ARBAC_ROLES_SYNCED', tenantId);
+    }
+
     if (method === 'POST' && pathname === '/api/arbac/roles') {
       const {
         role_name,

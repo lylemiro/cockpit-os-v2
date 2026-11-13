@@ -249,3 +249,4 @@ export function WindowsCalendarFlyout({ isOpen, onClose }) {
     </div>
   );
 }
+
