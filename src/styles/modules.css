@@ -4,14 +4,14 @@
 
 .modal-backdrop {
   position: fixed;
-  inset: 0;
+  inset: 0 0 48px 0;
   z-index: 100;
   background: var(--bg-modal-backdrop);
   backdrop-filter: blur(6px);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 28px;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
 }
 
 .os-window-modal {
@@ -109,18 +109,19 @@
   color: var(--emerald-800);
 }
 
-/* Workspace Layout Grid */
+/* Workspace Layout - Fullwidth, Non-Compressed Single Column Structure */
 .workspace-split-grid {
-  display: grid;
-  grid-template-columns: minmax(420px, 480px) 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 20px;
-  align-items: start;
+  width: 100%;
 }
 
-@media (max-width: 1280px) {
-  .workspace-split-grid {
-    grid-template-columns: 1fr;
-  }
+.fullwidth-module-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
 }
 
 .workspace-panel {
@@ -899,13 +900,13 @@
    Windows 11 File Explorer Style Shell (Tabs, Address Bar, Left Tree, Drives)
    ========================================================================== */
 .win-explorer-window {
-  width: 95vw;
-  max-width: 1540px;
-  height: 88vh;
+  width: 100%;
+  max-width: 100vw;
+  height: 100%;
   background: var(--bg-card-solid);
-  border: 1px solid var(--border-subtle);
-  border-radius: 14px;
-  box-shadow: var(--shadow-modal);
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
   display: grid;
   grid-template-rows: 40px 46px 1fr 28px;
   overflow: hidden;
@@ -913,9 +914,9 @@
 }
 
 .win-explorer-window.is-maximized {
-  width: 100vw;
+  width: 100%;
   max-width: 100vw;
-  height: 100vh;
+  height: 100%;
   border-radius: 0;
 }
 
@@ -2315,3 +2316,916 @@
   color: var(--text-muted);
 }
 
+
+
+/* =========================================================================
+   CAROUSEL JOURNEY MODAL (OPERATOR ENROLLMENT & ROLE CREATION)
+   ========================================================================= */
+
+.carousel-journey-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 20, 14, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 9999;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
+  animation: journeyFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes journeyFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.carousel-journey-modal {
+  width: 100vw;
+  height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  background: var(--bg-card-solid);
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: journeyScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes journeyScaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* 1. Header Bar */
+.journey-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: var(--bg-card-subtle);
+  border-bottom: 1px solid var(--border-card);
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.journey-title-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.journey-icon-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: var(--emerald-50);
+  border: 1px solid var(--emerald-200);
+  color: var(--emerald-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.journey-icon-badge.is-gold {
+  background: var(--gold-50);
+  border-color: var(--gold-200);
+  color: var(--gold-600);
+}
+
+[data-theme='dark'] .journey-icon-badge {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #34d399;
+}
+
+[data-theme='dark'] .journey-icon-badge.is-gold {
+  background: rgba(217, 119, 6, 0.15);
+  border-color: rgba(217, 119, 6, 0.35);
+  color: #fbbf24;
+}
+
+.journey-main-title {
+  margin: 0;
+  font-size: 15.5px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.journey-sub-title {
+  margin: 2px 0 0 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Step Tracker */
+.journey-steps-tracker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.journey-step-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.6;
+}
+
+.journey-step-item:hover {
+  opacity: 0.9;
+  background: var(--bg-card-subtle);
+}
+
+.journey-step-item.is-current {
+  opacity: 1;
+  background: var(--emerald-50);
+  border: 1px solid var(--emerald-300);
+}
+
+.journey-step-item.is-completed {
+  opacity: 0.95;
+}
+
+[data-theme='dark'] .journey-step-item.is-current {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.step-number-bubble {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-card);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.journey-step-item.is-current .step-number-bubble {
+  background: var(--emerald-600);
+  border-color: var(--emerald-600);
+  color: #ffffff;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.journey-step-item.is-completed .step-number-bubble {
+  background: var(--emerald-500);
+  border-color: var(--emerald-500);
+  color: #ffffff;
+}
+
+.step-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.journey-step-item.is-current .step-label {
+  color: var(--emerald-800);
+}
+
+[data-theme='dark'] .journey-step-item.is-current .step-label {
+  color: #6ee7b7;
+}
+
+.journey-step-divider {
+  width: 16px;
+  height: 2px;
+  background: var(--border-card);
+}
+
+.journey-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border-card);
+  background: var(--bg-card-subtle);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.journey-close-btn:hover {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+/* 2. Slide Content Area */
+.journey-slide-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.journey-slide-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: stageSlideIn 0.25s ease;
+}
+
+@keyframes stageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Stage Hero Banner */
+.stage-hero-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--bg-card-subtle) 0%, var(--emerald-50) 100%);
+  border: 1px solid var(--border-card);
+  gap: 16px;
+}
+
+[data-theme='dark'] .stage-hero-banner {
+  background: linear-gradient(135deg, rgba(15, 30, 22, 0.7) 0%, rgba(16, 185, 129, 0.1) 100%);
+}
+
+.hero-banner-content {
+  flex: 1;
+}
+
+.hero-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--emerald-700);
+  display: block;
+  margin-bottom: 4px;
+}
+
+[data-theme='dark'] .hero-eyebrow {
+  color: #34d399;
+}
+
+.stage-hero-banner h4 {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.stage-hero-banner p {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.hero-clearance-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  min-width: 150px;
+}
+
+.stat-big-number {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--emerald-600);
+  font-family: var(--font-mono);
+}
+
+.stat-total-den {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.stat-percentage-bar {
+  width: 140px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(15, 41, 30, 0.12);
+  overflow: hidden;
+}
+
+.stat-fill-bar {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  transition: width 0.3s ease;
+}
+
+.stat-clearance-text {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+/* Roles Carousel Grid */
+.roles-carousel-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--gold-700);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+[data-theme='dark'] .roles-carousel-heading {
+  color: #fbbf24;
+}
+
+.roles-carousel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  padding: 4px;
+}
+
+.role-archetype-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-card);
+  background: var(--bg-card-subtle);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  gap: 8px;
+}
+
+.role-archetype-card:hover {
+  border-color: var(--emerald-400);
+  background: var(--emerald-50);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.12);
+}
+
+[data-theme='dark'] .role-archetype-card:hover {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.role-archetype-card.is-selected {
+  border-color: var(--emerald-500);
+  background: var(--emerald-50);
+  box-shadow: 0 0 0 2px var(--emerald-500), 0 6px 16px rgba(16, 185, 129, 0.18);
+}
+
+[data-theme='dark'] .role-archetype-card.is-selected {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: #34d399;
+  box-shadow: 0 0 0 2px #34d399, 0 6px 16px rgba(16, 185, 129, 0.25);
+}
+
+.role-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.role-card-name {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.role-selected-badge {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--emerald-600);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.role-card-department {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--emerald-700);
+}
+
+[data-theme='dark'] .role-card-department {
+  color: #6ee7b7;
+}
+
+.role-card-desc {
+  margin: 0;
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.role-card-meta-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.meta-pill-clearance {
+  font-size: 9.5px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-card);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--emerald-700);
+}
+
+.meta-pill-float {
+  font-size: 9.5px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  background: var(--gold-50);
+  border: 1px solid var(--gold-200);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--gold-700);
+}
+
+[data-theme='dark'] .meta-pill-clearance {
+  color: #34d399;
+}
+
+[data-theme='dark'] .meta-pill-float {
+  background: rgba(217, 119, 6, 0.15);
+  border-color: rgba(217, 119, 6, 0.35);
+  color: #fbbf24;
+}
+
+/* Stage Form Section */
+.stage-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-card);
+  padding: 16px 18px;
+  border-radius: 12px;
+}
+
+.form-section-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.stage-input-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.stage-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.stage-form-group label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.input-stage {
+  padding: 8px 12px;
+  font-size: 12px;
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-card);
+  border-radius: 8px;
+  color: var(--text-primary);
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.input-stage:focus {
+  border-color: var(--emerald-500);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+/* Granular 23-Matrix Grid */
+.matrix-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-card);
+  border-radius: 10px;
+}
+
+.matrix-active-count {
+  font-size: 11.5px;
+  color: var(--text-primary);
+}
+
+.matrix-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-quick-check,
+.btn-quick-clear {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1px solid var(--border-card);
+  background: var(--bg-card-solid);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-quick-check {
+  color: var(--emerald-700);
+  border-color: var(--emerald-300);
+  background: var(--emerald-50);
+}
+
+.btn-quick-check:hover {
+  background: var(--emerald-100);
+}
+
+.btn-quick-clear {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.btn-quick-clear:hover {
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.journey-domains-matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+  padding: 4px;
+}
+
+.domain-matrix-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-card);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.domain-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--bg-card-solid);
+  border-bottom: 1px solid var(--border-card);
+}
+
+.domain-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.domain-active-badge {
+  font-size: 9.5px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  background: var(--emerald-50);
+  color: var(--emerald-700);
+  border: 1px solid var(--emerald-200);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+[data-theme='dark'] .domain-active-badge {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #34d399;
+}
+
+.domain-permissions-list {
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  gap: 4px;
+}
+
+.perm-item-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.perm-item-row:hover {
+  background: var(--bg-card-solid);
+}
+
+.perm-item-row.is-checked {
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.perm-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.perm-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.perm-key-tag {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--text-muted);
+}
+
+/* Stage 4: Passport Summary Card */
+.journey-passport-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-card);
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.passport-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-card);
+}
+
+.passport-avatar-bubble {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: var(--emerald-500);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  flex-shrink: 0;
+}
+
+.passport-hero-info {
+  flex: 1;
+}
+
+.passport-type-badge {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--gold-700);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+}
+
+[data-theme='dark'] .passport-type-badge {
+  color: #fbbf24;
+}
+
+.passport-operator-name {
+  margin: 2px 0 2px 0;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--text-primary);
+}
+
+.passport-role-tag {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--emerald-700);
+}
+
+[data-theme='dark'] .passport-role-tag {
+  color: #6ee7b7;
+}
+
+.passport-status-stamp {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--emerald-50);
+  border: 1px solid var(--emerald-300);
+  color: var(--emerald-800);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+[data-theme='dark'] .passport-status-stamp {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #34d399;
+}
+
+.passport-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 20px;
+}
+
+.passport-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.passport-field.full-row {
+  grid-column: span 2;
+}
+
+.passport-label {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.passport-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.passport-value.is-gold {
+  color: var(--gold-700);
+  font-family: var(--font-mono);
+}
+
+[data-theme='dark'] .passport-value.is-gold {
+  color: #fbbf24;
+}
+
+.passport-value.is-emerald {
+  color: var(--emerald-700);
+  font-weight: 800;
+}
+
+[data-theme='dark'] .passport-value.is-emerald {
+  color: #34d399;
+}
+
+.passport-value.is-mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+/* 3. Navigation Footer Bar */
+.journey-nav-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  background: var(--bg-card-subtle);
+  border-top: 1px solid var(--border-card);
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.journey-footer-left,
+.journey-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.journey-stage-counter {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+.journey-stage-counter strong {
+  color: var(--text-primary);
+}
+
+.btn-cancel-flat {
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-cancel-flat:hover {
+  background: var(--bg-card-solid);
+  color: var(--text-primary);
+  border-color: var(--border-card);
+}
+
+.btn-primary-emerald.is-submit-btn {
+  padding: 10px 20px;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+
+
+.venue-preview-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-card);
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+.venue-preview-box code {
+  font-family: var(--font-mono);
+  color: var(--emerald-700);
+  font-weight: 700;
+}
+
+[data-theme='dark'] .venue-preview-box code {
+  color: #34d399;
+}
