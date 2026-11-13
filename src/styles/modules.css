@@ -1378,16 +1378,198 @@
   color: var(--emerald-800);
 }
 
+.win-explorer-window.is-active-window {
+  box-shadow: 0 24px 70px -10px rgba(0, 0, 0, 0.5), 0 0 0 1.5px rgba(52, 211, 153, 0.35);
+}
+
+[data-theme='dark'] .win-explorer-window.is-active-window {
+  box-shadow: 0 28px 80px -10px rgba(0, 0, 0, 0.8), 0 0 0 1.5px rgba(52, 211, 153, 0.4);
+}
+
+.win-new-win-title-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-bottom: 2px;
+  transition: all 0.12s ease;
+}
+
+.win-new-win-title-btn:hover {
+  background: rgba(14, 138, 78, 0.1);
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .win-new-win-title-btn {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+[data-theme='dark'] .win-new-win-title-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.win-new-win-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card-solid);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+
+.win-new-win-btn:hover {
+  background: var(--emerald-50);
+  color: var(--emerald-800);
+  border-color: var(--emerald-400);
+}
+
+[data-theme='dark'] .win-new-win-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+[data-theme='dark'] .win-new-win-btn:hover {
+  background: rgba(52, 211, 153, 0.18);
+  color: #6ee7b7;
+  border-color: rgba(52, 211, 153, 0.35);
+}
+
 /* 3. Explorer 3-Pane Split Body */
 .win-explorer-body {
   display: grid;
   grid-template-columns: 235px 1fr;
   min-height: 0;
   overflow: hidden;
+  position: relative;
+}
+
+.win-explorer-body.is-sidebar-collapsed {
+  grid-template-columns: 0px 1fr;
 }
 
 .win-explorer-body.has-details-pane {
   grid-template-columns: 235px 1fr 255px;
+}
+
+.win-explorer-body.is-sidebar-collapsed.has-details-pane {
+  grid-template-columns: 0px 1fr 255px;
+}
+
+.win-explorer-body.is-sidebar-collapsed .win-tree-pane {
+  display: none !important;
+  visibility: hidden;
+  width: 0;
+  padding: 0;
+  border-right: none;
+  overflow: hidden;
+}
+
+/* Sidebar Expand Rail / Float Toggle when collapsed */
+.win-sidebar-expand-rail {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 15;
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-card);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  border-radius: 6px;
+  padding: 5px 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.win-sidebar-expand-rail:hover {
+  background: var(--emerald-50);
+  color: var(--emerald-800);
+  border-color: var(--emerald-400);
+  box-shadow: 0 6px 18px rgba(14, 138, 78, 0.2);
+}
+
+[data-theme='dark'] .win-sidebar-expand-rail {
+  background: #082215;
+  border-color: rgba(52, 211, 153, 0.3);
+  color: #6ee7b7;
+}
+
+[data-theme='dark'] .win-sidebar-expand-rail:hover {
+  background: rgba(52, 211, 153, 0.2);
+  color: #ffffff;
+  border-color: rgba(52, 211, 153, 0.5);
+}
+
+/* Left Tree Navigation Pane Top Header */
+.win-tree-pane-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 4px 6px 4px;
+  border-bottom: 1px solid var(--border-card);
+  margin-bottom: 4px;
+}
+
+.win-tree-header-title {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.win-tree-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.win-tree-header-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  background: transparent;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.win-tree-header-btn:hover {
+  background: rgba(14, 138, 78, 0.12);
+  color: var(--emerald-700);
+}
+
+[data-theme='dark'] .win-tree-header-btn {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme='dark'] .win-tree-header-btn:hover {
+  background: rgba(52, 211, 153, 0.18);
+  color: #6ee7b7;
 }
 
 /* Left Tree Navigation Pane */
@@ -3521,6 +3703,23 @@
 
 .journey-stage-counter strong {
   color: var(--text-primary);
+}
+
+.journey-active-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.journey-active-summary strong {
+  color: var(--text-primary);
+  font-weight: 700;
 }
 
 .btn-cancel-flat {

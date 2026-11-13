@@ -169,7 +169,17 @@ export function UserEnrollmentCarouselModal({
   };
 
   const handleSubmitEnrollment = (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
+    if (!form.full_name.trim()) {
+      alert('Please enter Operator Full Name.');
+      setCurrentStage(2);
+      return;
+    }
+    if (!form.staff_code.trim()) {
+      alert('Please enter Operator Username / Staff Code.');
+      setCurrentStage(2);
+      return;
+    }
     onSubmit(form);
   };
 
@@ -235,11 +245,7 @@ export function UserEnrollmentCarouselModal({
                   className={`journey-step-item ${isCurrent ? 'is-current' : ''} ${
                     isCompleted ? 'is-completed' : ''
                   }`}
-                  onClick={() => {
-                    if (st.num < currentStage || (currentStage === 1 && form.full_name)) {
-                      setCurrentStage(st.num);
-                    }
-                  }}
+                  onClick={() => setCurrentStage(st.num)}
                 >
                   <div className="journey-step-num-bubble">
                     {isCompleted ? <Check size={12} /> : st.num}
@@ -281,10 +287,7 @@ export function UserEnrollmentCarouselModal({
                     <div
                       key={role.role_id}
                       className={`role-archetype-card ${isSelected ? 'is-selected' : ''}`}
-                      onClick={() => {
-                        handleSelectRolePreset(role);
-                        setCurrentStage(2);
-                      }}
+                      onClick={() => handleSelectRolePreset(role)}
                     >
                       <div className="role-card-top-row">
                         <span className="role-card-tag">{role.tag}</span>
@@ -311,7 +314,7 @@ export function UserEnrollmentCarouselModal({
                         type="button"
                         className={`role-card-select-btn ${isSelected ? 'is-active' : ''}`}
                       >
-                        {isSelected ? 'Selected Preset ✓' : 'Select & Continue →'}
+                        {isSelected ? 'Selected Archetype ✓' : 'Apply Archetype'}
                       </button>
                     </div>
                   );
@@ -762,21 +765,11 @@ export function UserEnrollmentCarouselModal({
           )}
         </div>
 
-        {/* 3. Carousel Navigation Footer Bar */}
+        {/* 3. Navigation Footer Bar (Direct Submit - No Next Button) */}
         <div className="journey-nav-footer">
           <div className="journey-footer-left">
-            {currentStage > 1 && (
-              <button
-                type="button"
-                className="btn-secondary-gold"
-                onClick={handlePrev}
-              >
-                <ChevronLeft size={16} />
-                <span>Previous Stage</span>
-              </button>
-            )}
-            <span className="journey-stage-counter">
-              Stage <strong>{currentStage}</strong> of <strong>4</strong>
+            <span className="journey-active-summary">
+              Role: <strong>{form.role.split(' / ')[0]}</strong> • <strong>{totalPerms} / {ALL_PERMISSION_KEYS.length}</strong> Perms ({clearancePct}%)
             </span>
           </div>
 
@@ -785,32 +778,21 @@ export function UserEnrollmentCarouselModal({
               Cancel
             </button>
 
-            {currentStage < 4 ? (
-              <button
-                type="button"
-                className="btn-primary-emerald"
-                onClick={handleNext}
-              >
-                <span>Continue to Next Stage</span>
-                <ChevronRight size={16} />
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="btn-primary-emerald is-submit-btn"
-                disabled={submitting}
-                onClick={handleSubmitEnrollment}
-              >
-                <ShieldCheck size={16} />
-                <span>
-                  {submitting
-                    ? 'Writing to SQLite WAL...'
-                    : editingEmployee
-                    ? 'Confirm & Save Operator Changes'
-                    : 'Enroll Operator in Active Tenant DB'}
-                </span>
-              </button>
-            )}
+            <button
+              type="button"
+              className="btn-primary-emerald is-submit-btn"
+              disabled={submitting}
+              onClick={handleSubmitEnrollment}
+            >
+              <ShieldCheck size={16} />
+              <span>
+                {submitting
+                  ? 'Writing to SQLite WAL...'
+                  : editingEmployee
+                  ? 'Confirm & Save Operator Changes'
+                  : 'Enroll Operator in Active Tenant DB'}
+              </span>
+            </button>
           </div>
         </div>
       </div>

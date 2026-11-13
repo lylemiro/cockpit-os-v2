@@ -58,9 +58,20 @@ export function TenantProvisionCarouselModal({
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
+    if (!form.tenant_code.trim() || !form.arena_name.trim()) {
+      alert('Please fill in Coliseum Arena Name and Tenant Code.');
+      setCurrentStage(1);
+      return;
+    }
+    if (!form.gab_license.trim() || !form.bir_cas_min.trim()) {
+      alert('GAB License and BIR CAS Machine Identification Number (MIN) are required.');
+      setCurrentStage(2);
+      return;
+    }
     if (!form.full_name.trim() || !form.pin_code.trim()) {
       alert('Please provide Primary Superadmin name and security PIN.');
+      setCurrentStage(3);
       return;
     }
     onSubmit(form);
@@ -361,21 +372,11 @@ export function TenantProvisionCarouselModal({
           )}
         </div>
 
-        {/* Footer */}
+        {/* Navigation Footer Bar (Direct Submit - No Next Button) */}
         <div className="journey-nav-footer">
           <div className="journey-footer-left">
-            {currentStage > 1 && (
-              <button
-                type="button"
-                className="btn-secondary-gold"
-                onClick={handlePrev}
-              >
-                <ChevronLeft size={16} />
-                <span>Previous Stage</span>
-              </button>
-            )}
-            <span className="journey-stage-counter">
-              Stage <strong>{currentStage}</strong> of <strong>4</strong>
+            <span className="journey-active-summary">
+              Arena: <strong>{form.arena_name || 'New Coliseum'}</strong> • Code: <strong>{form.tenant_code}</strong>
             </span>
           </div>
 
@@ -384,30 +385,19 @@ export function TenantProvisionCarouselModal({
               Cancel
             </button>
 
-            {currentStage < 4 ? (
-              <button
-                type="button"
-                className="btn-primary-emerald"
-                onClick={handleNext}
-              >
-                <span>Continue to Next Stage</span>
-                <ChevronRight size={16} />
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="btn-primary-emerald is-submit-btn"
-                disabled={submitting}
-                onClick={handleSubmit}
-              >
-                <ShieldCheck size={16} />
-                <span>
-                  {submitting
-                    ? 'Provisioning Physical SQLite File...'
-                    : 'Provision Physical Tenant Database'}
-                </span>
-              </button>
-            )}
+            <button
+              type="button"
+              className="btn-primary-emerald is-submit-btn"
+              disabled={submitting}
+              onClick={handleSubmit}
+            >
+              <ShieldCheck size={16} />
+              <span>
+                {submitting
+                  ? 'Provisioning Physical SQLite File...'
+                  : 'Provision Physical Tenant Database'}
+              </span>
+            </button>
           </div>
         </div>
       </div>

@@ -133,6 +133,7 @@ export function RoleTemplateCarouselModal({
   const handleSubmitRole = () => {
     if (!form.role_name.trim()) {
       alert('Role template name is required.');
+      setCurrentStage(1);
       return;
     }
     onSubmit(form);
@@ -551,21 +552,11 @@ export function RoleTemplateCarouselModal({
           )}
         </div>
 
-        {/* 3. Carousel Navigation Footer Bar */}
+        {/* 3. Navigation Footer Bar (Direct Submit - No Next Button) */}
         <div className="journey-nav-footer">
           <div className="journey-footer-left">
-            {currentStage > 1 && (
-              <button
-                type="button"
-                className="btn-secondary-gold"
-                onClick={handlePrev}
-              >
-                <ChevronLeft size={16} />
-                <span>Previous Stage</span>
-              </button>
-            )}
-            <span className="journey-stage-counter">
-              Stage <strong>{currentStage}</strong> of <strong>3</strong>
+            <span className="journey-active-summary">
+              Role: <strong>{form.role_name || 'Unassigned'}</strong> • <strong>{totalPerms} / {ALL_PERMISSION_KEYS.length}</strong> Perms ({clearancePct}%)
             </span>
           </div>
 
@@ -574,32 +565,21 @@ export function RoleTemplateCarouselModal({
               Cancel
             </button>
 
-            {currentStage < 3 ? (
-              <button
-                type="button"
-                className="btn-primary-emerald"
-                onClick={handleNext}
-              >
-                <span>Continue to Next Stage</span>
-                <ChevronRight size={16} />
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="btn-primary-emerald is-submit-btn"
-                disabled={submitting}
-                onClick={handleSubmitRole}
-              >
-                <ShieldCheck size={16} />
-                <span>
-                  {submitting
-                    ? 'Publishing to SQLite Master...'
-                    : editingRole
-                    ? 'Save Role Template Changes'
-                    : 'Publish Role Template to Catalog'}
-                </span>
-              </button>
-            )}
+            <button
+              type="button"
+              className="btn-primary-emerald is-submit-btn"
+              disabled={submitting}
+              onClick={handleSubmitRole}
+            >
+              <ShieldCheck size={16} />
+              <span>
+                {submitting
+                  ? 'Publishing to SQLite Master...'
+                  : editingRole
+                  ? 'Save Role Template Changes'
+                  : 'Publish Role Template to Catalog'}
+              </span>
+            </button>
           </div>
         </div>
       </div>
