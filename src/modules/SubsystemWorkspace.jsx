@@ -1791,52 +1791,52 @@ export function SubsystemWorkspace({ moduleId }) {
                   </div>
                 </div>
 
-                {/* Card 4: Custom Sanction Engine */}
+                {/* Card 4: Regular Derby, Ulutan & Panta */}
                 <div
                   className="derby-launch-card"
                   onClick={() =>
                     openWithArchetype({
-                      tournamentCategory: 'Cock Derby',
-                      totalRounds: 5,
-                      isMultiStage: true,
-                      elimsRounds: 2,
+                      tournamentCategory: 'Regular Derby',
+                      totalRounds: 4,
+                      isMultiStage: false,
+                      elimsRounds: 4,
                       semisRounds: 0,
-                      finalsRounds: 3,
-                      title: 'Coliseum Sanctioned Master Derby',
-                      promoter: 'Arena Operations & Promoters Council',
-                      clusterDistrict: 'Regional Open',
-                      minWeightGrams: 1800,
+                      finalsRounds: 0,
+                      title: 'Coliseum Regular Derby / Ulutan & Panta',
+                      promoter: 'Arena Operations & Local Promoters',
+                      clusterDistrict: 'Arena Open',
+                      minWeightGrams: 1750,
                       maxWeightGrams: 2450,
-                      weightToleranceGrams: 30,
+                      weightToleranceGrams: 35,
                       matchingSystem: 'STANDARD',
                       potMode: 'UPFRONT_POT_ESCROW',
                       dayMoneyAmount: 0,
-                      potFee: 55000,
-                      guaranteedPrize: 1000000,
-                      minBet: 5500,
+                      potFee: 11000,
+                      guaranteedPrize: 300000,
+                      minBet: 2200,
                       maxLevelBet: 0,
                       plasadaSplit: '70/30',
                       bandingCategory: 'OPEN',
                       henniesAllowed: 0,
                       elimsAdvancePts: '2.0',
                       semisScoreReset: 0,
-                      championPrize: 700000,
-                      runnerupPrize: 200000,
-                      handlerAward: 50000,
-                      gafferAward: 25000,
+                      championPrize: 200000,
+                      runnerupPrize: 70000,
+                      handlerAward: 20000,
+                      gafferAward: 10000,
                       stagFighterAward: 0
                     })
                   }
                 >
                   <div className="derby-launch-card-top">
-                    <div className="derby-launch-card-title">Custom Sanctioned Format</div>
-                    <span className="derby-launch-badge" style={{ color: '#d97706', borderColor: 'rgba(217,119,6,0.3)', background: 'rgba(217,119,6,0.08)' }}>Flexible Engine</span>
+                    <div className="derby-launch-card-title">Regular Derby, Ulutan &amp; Panta</div>
+                    <span className="derby-launch-badge is-amber">Regular &bull; Ulutan &bull; Panta</span>
                   </div>
                   <div className="derby-launch-card-desc">
-                    Full custom control over stage breakdowns, pot escrow fees, Kasahan scale brackets, and special awards.
+                    Single-day Regular Derby, Ulutan, Panta, or free-typed custom category with flexible weight matching and pot fee.
                   </div>
                   <div className="derby-launch-card-cta">
-                    <span>Open Custom Rule Builder</span>
+                    <span>Open Regular / Custom Builder</span>
                     <ChevronRight size={14} />
                   </div>
                 </div>

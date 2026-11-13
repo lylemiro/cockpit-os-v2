@@ -39,7 +39,8 @@ export function DerbyTournamentCarouselModal({
   const [saveError, setSaveError] = useState('');
 
   // 1. DYNAMIC IDENTITY & STAGE STRUCTURE
-  const [tournamentCategory, setTournamentCategory] = useState('Stag Derby'); // 'Stag Derby' | 'Cock Derby' | 'Bullstag Derby' | 'Pewee Derby'
+  const [tournamentCategory, setTournamentCategory] = useState('Stag Derby'); // Free-text e.g. 'Regular Derby', 'Ulutan', 'Panta', 'Stag Derby'
+  const [customFormatOverride, setCustomFormatOverride] = useState('');
   const [totalRounds, setTotalRounds] = useState(11);
   const [isMultiStage, setIsMultiStage] = useState(true);
   const [elimsRounds, setElimsRounds] = useState(3);
@@ -99,12 +100,25 @@ export function DerbyTournamentCarouselModal({
   }, [isMultiStage, stageRoundsSum, totalRounds]);
 
   // Dynamic format label
-  const derivedFormatLabel = useMemo(() => {
+  const autoFormatLabel = useMemo(() => {
+    const rawCat = tournamentCategory.trim() || 'Derby';
+    const cleanBase = rawCat.replace(/\s*derby$/i, '').trim() || 'Open';
     if (!isMultiStage) {
-      return `${totalRounds}-${tournamentCategory.replace(' Derby', '')} Straight Derby`;
+      if (/ulutan|hackfight|pintakasi/i.test(rawCat)) {
+        return Number(totalRounds) <= 1 ? `${rawCat} (Open Weight Matching)` : `${totalRounds}-Hits ${rawCat}`;
+      }
+      if (/panta/i.test(rawCat)) {
+        return `${totalRounds}-Cock ${rawCat} (Fight-All Format)`;
+      }
+      return `${totalRounds}-${cleanBase} Regular Derby (Straight Format)`;
     }
-    return `${totalRounds}-${tournamentCategory.replace(' Derby', '')} Derby (${elimsRounds}-${semisRounds}-${finalsRounds} Championship Format)`;
+    const stageParts = [elimsRounds, semisRounds, finalsRounds].filter((n) => Number(n) > 0).join('-');
+    return `${totalRounds}-${cleanBase} Derby (${stageParts} Format)`;
   }, [totalRounds, tournamentCategory, isMultiStage, elimsRounds, semisRounds, finalsRounds]);
+
+  const derivedFormatLabel = useMemo(() => {
+    return customFormatOverride.trim() ? customFormatOverride.trim() : autoFormatLabel;
+  }, [customFormatOverride, autoFormatLabel]);
 
   // Sum of distributed prizes
   const totalAllocatedPrizes = useMemo(() => {
@@ -183,6 +197,7 @@ export function DerbyTournamentCarouselModal({
     if (isOpen) {
       setSaveStatus('idle');
       setSaveError('');
+      setCustomFormatOverride('');
       setCurrentStage(1);
       if (initialConfig) {
         if (initialConfig.tournamentCategory !== undefined) setTournamentCategory(initialConfig.tournamentCategory);
@@ -413,24 +428,76 @@ export function DerbyTournamentCarouselModal({
 
                 <div className="form-row-3col">
                   <div className="stage-form-group">
-                    <label>Tournament Category</label>
-                    <select
+                    <label>Tournament Category (Type Custom or Pick Preset)</label>
+                    <input
                       className="input-stage"
+                      type="text"
+                      list="coliseo-category-suggestions"
+                      placeholder="Type category (e.g. Regular Derby, Ulutan, Panta, Stag Derby)..."
                       value={tournamentCategory}
-                      onChange={(e) => setTournamentCategory(e.target.value)}
-                    >
-                      <option value="Stag Derby">Stag Derby (Banded Young Stags)</option>
-                      <option value="Cock Derby">Cock Derby (Mature Cocks)</option>
-                      <option value="Bullstag Derby">Bullstag Derby</option>
-                      <option value="Pewee Derby">Pewee / Small Fowl Derby</option>
-                    </select>
+                      onChange={(e) => {
+                        setTournamentCategory(e.target.value);
+                        setCustomFormatOverride('');
+                      }}
+                    />
+                    <datalist id="coliseo-category-suggestions">
+                      <option value="Regular Derby" />
+                      <option value="Ulutan" />
+                      <option value="Panta" />
+                      <option value="Stag Derby" />
+                      <option value="Cock Derby" />
+                      <option value="Bullstag Derby" />
+                      <option value="Hackfight / Timbangan" />
+                      <option value="Pintakasi Special" />
+                      <option value="Barkadahan Derby" />
+                    </datalist>
+                    <div className="category-quick-pills">
+                      {[
+                        { label: 'Regular Derby', rounds: 4, multi: false },
+                        { label: 'Ulutan', rounds: 2, multi: false },
+                        { label: 'Panta', rounds: 3, multi: false, match: 'FIGHT_ALL' },
+                        { label: 'Stag Derby', rounds: 11, multi: true },
+                        { label: 'Cock Derby', rounds: 5, multi: true },
+                        { label: 'Bullstag', rounds: 4, multi: false }
+                      ].map((preset) => (
+                        <button
+                          key={preset.label}
+                          type="button"
+                          className={`category-pill-btn ${tournamentCategory.toLowerCase() === preset.label.toLowerCase() ? 'is-active' : ''}`}
+                          onClick={() => {
+                            setTournamentCategory(preset.label);
+                            setCustomFormatOverride('');
+                            setIsMultiStage(preset.multi);
+                            setTotalRounds(preset.rounds);
+                            if (preset.match) {
+                              setMatchingSystem(preset.match);
+                            }
+                            if (preset.multi && preset.rounds === 11) {
+                              setElimsRounds(3);
+                              setSemisRounds(3);
+                              setFinalsRounds(5);
+                            } else if (preset.multi && preset.rounds === 5) {
+                              setElimsRounds(2);
+                              setSemisRounds(0);
+                              setFinalsRounds(3);
+                            } else {
+                              setElimsRounds(preset.rounds);
+                              setSemisRounds(0);
+                              setFinalsRounds(0);
+                            }
+                          }}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="stage-form-group">
-                    <label>Total Stags / Cocks per Entry</label>
+                    <label>Total Stags / Cocks / Hits per Entry</label>
                     <input
                       type="number"
-                      min="2"
+                      min="1"
                       max="15"
                       className="input-stage"
                       value={totalRounds}
@@ -442,16 +509,14 @@ export function DerbyTournamentCarouselModal({
                           setSemisRounds(3);
                           setFinalsRounds(5);
                           setIsMultiStage(true);
-                        } else if (val === 4) {
+                        } else if (val === 4 && isMultiStage) {
                           setElimsRounds(2);
                           setSemisRounds(0);
                           setFinalsRounds(2);
-                          setIsMultiStage(true);
-                        } else if (val === 3) {
-                          setElimsRounds(3);
+                        } else if (val <= 3 && !isMultiStage) {
+                          setElimsRounds(val);
                           setSemisRounds(0);
                           setFinalsRounds(0);
-                          setIsMultiStage(false);
                         }
                       }}
                     />
@@ -465,7 +530,7 @@ export function DerbyTournamentCarouselModal({
                       onChange={(e) => setIsMultiStage(e.target.value === 'MULTI')}
                     >
                       <option value="MULTI">Multi-Stage Championship (Elims ➔ Semis ➔ Finals)</option>
-                      <option value="SINGLE">Single-Stage (Straight Fight-All / Panta)</option>
+                      <option value="SINGLE">Single-Stage / Regular (Ulutan / Panta / Straight)</option>
                     </select>
                   </div>
                 </div>
@@ -583,11 +648,13 @@ export function DerbyTournamentCarouselModal({
                 </div>
 
                 <div className="stage-form-group">
-                  <label>Derived Official Format Descriptor</label>
+                  <label>Official Format Descriptor (Auto-derived or Custom)</label>
                   <input
                     className="input-stage"
-                    readOnly
-                    value={derivedFormatLabel}
+                    type="text"
+                    value={customFormatOverride || autoFormatLabel}
+                    onChange={(e) => setCustomFormatOverride(e.target.value)}
+                    placeholder={autoFormatLabel}
                   />
                 </div>
               </div>

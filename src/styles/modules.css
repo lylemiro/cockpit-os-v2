@@ -6225,4 +6225,42 @@
   color: var(--text-primary);
 }
 
+/* Free-Type Category Quick Presets */
+.category-quick-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.category-pill-btn {
+  padding: 3px 9px;
+  font-size: 10.5px;
+  font-weight: 700;
+  border-radius: var(--radius-pill, 999px);
+  border: 1px solid var(--border-card);
+  background: var(--bg-card-subtle);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.category-pill-btn:hover {
+  border-color: var(--emerald-500);
+  color: var(--text-primary);
+}
+
+.category-pill-btn.is-active {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: var(--emerald-500);
+  color: var(--emerald-500);
+}
+
+.derby-launch-badge.is-amber {
+  color: #d97706;
+  border-color: rgba(217, 119, 6, 0.3);
+  background: rgba(217, 119, 6, 0.08);
+}
+
+
 
