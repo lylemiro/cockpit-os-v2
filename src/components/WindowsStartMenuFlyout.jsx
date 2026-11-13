@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Search,
   Lock,
@@ -68,8 +69,14 @@ export function WindowsStartMenuFlyout({ isOpen, onClose, onOpenSearch }) {
     setActiveModuleId(appId);
   };
 
-  return (
-    <div ref={flyoutRef} className="win-start-menu-flyout" role="dialog" aria-label="Cockpit OS Start Menu">
+  return createPortal(
+    <>
+      <div
+        className="win-start-menu-backdrop"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div ref={flyoutRef} className="win-start-menu-flyout" role="dialog" aria-label="Cockpit OS Start Menu">
       {/* 1. Quick Search Trigger */}
       <div className="start-search-bar" onClick={() => { onClose(); onOpenSearch(); }}>
         <Search size={16} className="card-title-icon-emerald" />
@@ -229,6 +236,8 @@ export function WindowsStartMenuFlyout({ isOpen, onClose, onOpenSearch }) {
         </div>
       </div>
     </div>
-  );
+  </>,
+  document.body
+);
 }
 

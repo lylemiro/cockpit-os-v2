@@ -817,7 +817,7 @@
    ========================================================================== */
 .bottom-taskbar {
   position: relative;
-  z-index: 15;
+  z-index: 950;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1414,7 +1414,17 @@
    6. Windows 11 Fluent Flyouts: Start Menu, Calendar, Notifications, Global Search
    ========================================================================== */
 
-/* A. START MENU FLYOUT */
+/* A. START MENU FLYOUT (ABOVE ALL) */
+.win-start-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 14, 9, 0.45);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 9999;
+  animation: fadeInBackdrop 0.16s ease-out;
+}
+
 .win-start-menu-flyout {
   position: fixed;
   bottom: 60px;
@@ -1427,8 +1437,8 @@
   -webkit-backdrop-filter: blur(28px);
   border: 1px solid var(--border-card);
   border-radius: var(--radius-xl);
-  box-shadow: 0 20px 60px -10px rgba(6, 26, 17, 0.28);
-  z-index: 99;
+  box-shadow: 0 20px 60px -10px rgba(6, 26, 17, 0.45);
+  z-index: 10000;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -1682,7 +1692,17 @@
   border-color: #ef4444;
 }
 
-/* B. CALENDAR FLYOUT */
+/* B. CALENDAR FLYOUT (ABOVE ALL) */
+.win-calendar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 14, 9, 0.45);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 9999;
+  animation: fadeInBackdrop 0.16s ease-out;
+}
+
 .win-calendar-flyout {
   position: fixed;
   bottom: 60px;
@@ -1695,8 +1715,8 @@
   -webkit-backdrop-filter: blur(28px);
   border: 1px solid var(--border-card);
   border-radius: var(--radius-xl);
-  box-shadow: 0 20px 60px -10px rgba(6, 26, 17, 0.28);
-  z-index: 99;
+  box-shadow: 0 20px 60px -10px rgba(6, 26, 17, 0.45);
+  z-index: 10000;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -2272,12 +2292,12 @@
   border-color: var(--emerald-400);
 }
 
-/* D. GLOBAL SEARCH MODAL (Spotlight / Windows Search) */
+/* D. GLOBAL SEARCH MODAL (Spotlight / Windows Search - ABOVE ALL) */
 .win-global-search-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 150;
-  background: rgba(8, 26, 17, 0.45);
+  z-index: 10000;
+  background: rgba(4, 16, 10, 0.55);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   display: flex;

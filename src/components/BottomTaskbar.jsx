@@ -140,7 +140,13 @@ export function BottomTaskbar({ searchQuery, onSearchChange }) {
                 type="button"
                 className={`dock-icon-btn ${isActive ? 'is-active' : ''}`}
                 title={app.label}
-                onClick={() => setActiveModuleId(isActive ? null : app.id)}
+                onClick={() => {
+                  setIsStartMenuOpen(false);
+                  setIsCalendarOpen(false);
+                  setIsNotifOpen(false);
+                  setIsSearchOpen(false);
+                  setActiveModuleId(isActive ? null : app.id);
+                }}
               >
                 <AppIconGlyph name={app.icon} size={20} />
                 {isActive && <span className="dock-active-pill" />}

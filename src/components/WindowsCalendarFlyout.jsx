@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, Trophy } from 'lucide-react';
 import { useArena } from '../context/ArenaContext.jsx';
 
@@ -123,8 +124,14 @@ export function WindowsCalendarFlyout({ isOpen, onClose }) {
 
   const events = arenaState?.events || [];
 
-  return (
-    <div ref={flyoutRef} className="win-calendar-flyout" role="dialog" aria-label="System Calendar">
+  return createPortal(
+    <>
+      <div
+        className="win-calendar-backdrop"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div ref={flyoutRef} className="win-calendar-flyout" role="dialog" aria-label="System Calendar">
       {/* 1. Live Digital Clock & Full Date Header */}
       <div className="cal-header-time-card">
         <div className="cal-digital-clock">
@@ -247,6 +254,8 @@ export function WindowsCalendarFlyout({ isOpen, onClose }) {
         </div>
       </div>
     </div>
-  );
+  </>,
+  document.body
+);
 }
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Search,
   X,
@@ -374,7 +375,7 @@ export function GlobalSearchModal({ isOpen, onClose }) {
 
   const activeResult = filteredResults[selectedIndex] || filteredResults[0];
 
-  return (
+  return createPortal(
     <div className="win-global-search-backdrop" onClick={onClose}>
       <div
         className="win-global-search-modal"
@@ -549,7 +550,8 @@ export function GlobalSearchModal({ isOpen, onClose }) {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
