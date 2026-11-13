@@ -1351,140 +1351,188 @@ export function SubsystemWorkspace({ moduleId }) {
           <>
             {/* Active Tournament Showcase Hero Card */}
             <div className="derby-active-hero-card">
-              <div className="hero-top-row">
-                <div className="hero-identity-cluster">
-                  <div className="hero-badges-strip">
+              <div className="derby-hero-header-row">
+                <div className="derby-hero-title-cluster">
+                  <div className="derby-hero-badge-strip">
                     <span className="derby-format-badge">
-                      <Trophy size={13} />
-                      <span>{activeEv.format || 'Coliseum Derby'}</span>
+                      {activeEv.format || 'Coliseum Derby'}
                     </span>
-                    <span className="balance-check-pill is-balanced">
-                      <CheckCircle2 size={12} />
-                      <span>ACTIVE LIVE DERBY</span>
+                    <span className="derby-status-pill-active">
+                      LIVE ACTIVE
                     </span>
                     {activeEv.pot_mode && (
                       <span className="balance-check-pill">
-                        <span>{activeEv.pot_mode === 'NO_POT_BAYAD_AGAD' ? 'No Pot Money (Bayad Agad)' : 'Standard Pot Escrow'}</span>
+                        <span>{activeEv.pot_mode === 'NO_POT_BAYAD_AGAD' ? 'No Pot • Bayad Agad' : 'Upfront Pot Escrow'}</span>
                       </span>
                     )}
                   </div>
-                  <h2 className="hero-tournament-title">{activeEv.title}</h2>
-                  <div className="hero-venue-meta">
-                    <span><strong>Host:</strong> {activeEv.promoter}</span>
+                  <h2
+                    className="derby-hero-main-title"
+                    onClick={() => setSelectedEventDetail(activeEv)}
+                    style={{ cursor: 'pointer' }}
+                    title="Click for full tournament details"
+                  >
+                    {activeEv.title}
+                  </h2>
+                  <div className="derby-hero-sub-promoter">
+                    <span>{activeEv.promoter}</span>
                     <span>&bull;</span>
-                    <span><strong>Venue:</strong> {activeEv.venue_name || arenaState?.tenant?.arena_name || 'Leyte Recreational & Amusement Complex (LRAC)'}</span>
-                    {activeEv.cluster_district && (
-                      <>
-                        <span>&bull;</span>
-                        <span><strong>Cluster:</strong> {activeEv.cluster_district}</span>
-                      </>
-                    )}
+                    <span>{activeEv.venue_name || arenaState?.tenant?.arena_name || 'Coliseum Main Arena'}</span>
+                    <span>&bull;</span>
+                    <span>{activeEv.event_date || 'Derby Day'}</span>
                   </div>
                 </div>
 
-                <div className="hero-prize-stat-box">
-                  <div className="prize-stat-label">TOTAL GUARANTEED PURSE</div>
-                  <div className="prize-stat-val">
+                <div className="derby-hero-prize-display">
+                  <div className="derby-hero-prize-label">GUARANTEED PURSE</div>
+                  <div className="derby-hero-prize-amount">
                     ₱{Number(activeEv.guaranteed_prize || activeEv.pot_fee || 0).toLocaleString()}
                   </div>
-                  <div className="prize-stat-sub">
-                    Min Bet: ₱{Number(activeEv.min_bet || 3500).toLocaleString()} &bull; Date: {activeEv.event_date || 'Derby Day'}
+                  <div className="derby-hero-sub-promoter">
+                    <span>Min Bet ₱{Number(activeEv.min_bet || 3500).toLocaleString()}</span>
+                    <span>&bull;</span>
+                    <span>Plasada {activeEv.plasada_split || '70/30'}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Multi-Stage Journey Strip */}
-              <div className="derby-stages-flow-strip">
-                <div className="derby-flow-step-box">
-                  <div className="step-tag">STAGE 1: ELIMINATIONS</div>
-                  <div className="step-stags">
-                    {activeEv.format?.includes('3-3-5') ? '3 Stags' : activeEv.format?.includes('4-Stag') ? '2 Stags' : 'Elims'}
+              {/* Stage Progression Strip (Adapts to Multi-Stage vs Single-Stage) */}
+              {/\d+-\d+(-\d+)?/.test(activeEv.format || '') ? (
+                <div className="derby-stages-flow-strip">
+                  <div className="derby-flow-step-box">
+                    <div className="step-tag">Stage 1: Elims</div>
+                    <div className="step-sub">&ge; {activeEv.elims_advance_pts || '2.0'} Pts Advance</div>
                   </div>
-                  <div className="step-sub">
-                    Advance Cutoff: <strong>&ge; {activeEv.elims_advance_pts || '2.0'} Pts</strong>
+                  <div className="step-arrow">&rarr;</div>
+                  <div className="derby-flow-step-box">
+                    <div className="step-tag">Stage 2: Semis</div>
+                    <div className="step-sub">
+                      {activeEv.semis_score_reset !== 0 ? 'Scores Reset to 0' : 'Cumulative Score'}
+                    </div>
                   </div>
-                </div>
-
-                <div className="step-arrow">&rarr;</div>
-
-                <div className="derby-flow-step-box">
-                  <div className="step-tag">STAGE 2: SEMI-FINALS</div>
-                  <div className="step-stags">
-                    {activeEv.format?.includes('3-3-5') ? '3 Stags' : activeEv.format?.includes('4-Stag') ? '1 Stag' : 'Semis'}
-                  </div>
-                  <div className="step-sub">
-                    Scores Back to Zero: <strong>{activeEv.semis_score_reset !== 0 ? 'YES (EV-GBaCA)' : 'NO'}</strong>
+                  <div className="step-arrow">&rarr;</div>
+                  <div className="derby-flow-step-box is-final">
+                    <div className="step-tag">Stage 3: Finals</div>
+                    <div className="step-sub">Purse ₱{Number(activeEv.guaranteed_prize || 0).toLocaleString()}</div>
                   </div>
                 </div>
+              ) : null}
 
-                <div className="step-arrow">&rarr;</div>
-
-                <div className="derby-flow-step-box is-final">
-                  <div className="step-tag">STAGE 3: CHAMPIONSHIP FINALS</div>
-                  <div className="step-stags">
-                    {activeEv.format?.includes('3-3-5') ? '5 Stags' : activeEv.format?.includes('4-Stag') ? '2 Stags' : 'Finals'}
-                  </div>
-                  <div className="step-sub">
-                    Purse Contest: <strong>₱{Number(activeEv.guaranteed_prize || 0).toLocaleString()}</strong>
-                  </div>
-                </div>
-              </div>
-
-              {/* 4 Pillars Grid */}
+              {/* 4 Concise Rule Cards */}
               <div className="derby-pillars-grid">
                 <div className="derby-pillar-box">
-                  <div className="pillar-header">
-                    <Scale size={14} className="pillar-icon" />
-                    <span className="pillar-title">Pillar 1: Kasahan &amp; Scale Rules</span>
+                  <div className="derby-pillar-header">
+                    <Scale size={13} className="card-title-icon-gold" />
+                    <span>Kasahan &amp; Scale</span>
                   </div>
-                  <div className="pillar-content">
-                    <div><strong>Scale Bracket:</strong> {activeEv.min_weight_grams || 1700}g &ndash; {activeEv.max_weight_grams || 2250}g</div>
-                    <div><strong>Kasahan Variance:</strong> &plusmn;{activeEv.weight_tolerance_grams || 35}g Give &amp; Take</div>
-                    <div><strong>Pairing System:</strong> {activeEv.matching_system === 'HABOL_SYSTEM' ? 'Habol System' : 'Standard Fair Match'}</div>
-                    <div><strong>Hennies Policy:</strong> {activeEv.hennies_allowed ? 'Allowed by Exemption' : 'Strictly No Hennies'}</div>
-                  </div>
-                </div>
-
-                <div className="derby-pillar-box">
-                  <div className="pillar-header">
-                    <BadgeDollarSign size={14} className="pillar-icon" />
-                    <span className="pillar-title">Pillar 2: Pot &amp; Match Bets</span>
-                  </div>
-                  <div className="pillar-content">
-                    <div>
-                      <strong>Pot Structure:</strong> {activeEv.pot_mode === 'NO_POT_BAYAD_AGAD' ? 'No Pot (Bayad Agad)' : 'Upfront Escrow'}
+                  <div className="derby-pillar-rows">
+                    <div className="derby-pillar-row">
+                      <span className="derby-pillar-key">Weight</span>
+                      <span className="derby-pillar-val">{activeEv.min_weight_grams || 1700}g&ndash;{activeEv.max_weight_grams || 2250}g</span>
                     </div>
-                    <div>
-                      <strong>Day Money / Fee:</strong> ₱{Number(activeEv.day_money_amount || activeEv.pot_fee || 0).toLocaleString()}
+                    <div className="derby-pillar-row">
+                      <span className="derby-pillar-key">Variance</span>
+                      <span className="derby-pillar-val">&plusmn;{activeEv.weight_tolerance_grams || 35}g</span>
                     </div>
-                    <div><strong>Minimum Bet:</strong> ₱{Number(activeEv.min_bet || 3500).toLocaleString()} per Sultada</div>
-                    <div><strong>Plasada Split:</strong> {activeEv.plasada_split || '70/30'}</div>
+                    <div className="derby-pillar-row">
+                      <span className="derby-pillar-key">Pairing</span>
+                      <span className="derby-pillar-val">
+                        {activeEv.matching_system === 'HABOL_SYSTEM'
+                          ? 'Habol System'
+                          : activeEv.matching_system === 'FIGHT_ALL'
+                          ? 'Fight All'
+                          : 'Standard Match'}
+                      </span>
+                    </div>
+                    <div className="derby-pillar-row">
+                      <span className="derby-pillar-key">Hennies</span>
+                      <span className="derby-pillar-val">{activeEv.hennies_allowed ? 'Allowed' : 'No Hennies'}</span>
+                    </div>
                   </div>
                 </div>
 
                 <div className="derby-pillar-box">
-                  <div className="pillar-header">
-                    <Layers size={14} className="pillar-icon" />
-                    <span className="pillar-title">Pillar 3: Qualification &amp; Scoring</span>
+                  <div className="derby-pillar-header">
+                    <BadgeDollarSign size={13} className="card-title-icon-emerald" />
+                    <span>Pot &amp; Betting</span>
                   </div>
-                  <div className="pillar-content">
-                    <div><strong>Elims Cutoff:</strong> {activeEv.elims_advance_pts || '2.0'} pts to advance</div>
-                    <div><strong>Semi-Finals Reset:</strong> {activeEv.semis_score_reset !== 0 ? 'Scores Reset to 0' : 'Cumulative'}</div>
-                    <div><strong>Banding Eligibility:</strong> {activeEv.banding_category || 'Open Banded'}</div>
-                    <div><strong>Scoring System:</strong> Win = 1.0 pt, Draw = 0.5 pt, Loss = 0 pt</div>
+                  <div className="derby-pillar-rows">
+                    <div className="derby-pillar-row">
+                      <span className="derby-pillar-key">Structure</span>
+                      <span className="derby-pillar-val">
+                        {activeEv.pot_mode === 'NO_POT_BAYAD_AGAD' ? 'Bayad Agad' : 'Pot Escrow'}
+                      </span>
+                    </div>
+                    <div className="derby-pillar-row">
+                      <span className="derby-pillar-key">
+                        {activeEv.pot_mode === 'NO_POT_BAYAD_AGAD' ? 'Day Money' : 'Pot Fee'}
+                      </span>
+                      <span className="derby-pillar-val">
+                        ₱{Number(activeEv.day_money_amount || activeEv.pot_fee || 0).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="derby-pillar-row">
+                      <span className="derby-pillar-key">Min Bet</span>
+                      <span className="derby-pillar-val">₱{Number(activeEv.min_bet || 3500).toLocaleString()}</span>
+                    </div>
+                    <div className="derby-pillar-row">
+                      <span className="derby-pillar-key">Plasada</span>
+                      <span className="derby-pillar-val">{activeEv.plasada_split || '70/30'}</span>
+                    </div>
                   </div>
                 </div>
 
                 <div className="derby-pillar-box">
-                  <div className="pillar-header">
-                    <Award size={14} className="pillar-icon" />
-                    <span className="pillar-title">Pillar 4: Purse &amp; Awards</span>
+                  <div className="derby-pillar-header">
+                    <Layers size={13} className="card-title-icon-gold" />
+                    <span>Qualification</span>
                   </div>
-                  <div className="pillar-content">
-                    <div><strong>Champion Purse:</strong> ₱{Number(activeEv.champion_prize || 1500000).toLocaleString()}</div>
-                    <div><strong>Runner-Up:</strong> ₱{Number(activeEv.runnerup_prize || 500000).toLocaleString()}</div>
-                    <div><strong>Stag Fighter / Kill:</strong> ₱{Number(activeEv.stag_fighter_award || 1000000).toLocaleString()}</div>
-                    <div><strong>Best Handler / Gaffer:</strong> ₱{Number(activeEv.handler_award || 200000).toLocaleString()} / ₱{Number(activeEv.gaffer_award || 100000).toLocaleString()}</div>
+                  <div className="derby-pillar-rows">
+                    <div className="derby-pillar-row">
+                      <span className="derby-pillar-key">Cutoff</span>
+                      <span className="derby-pillar-val">&ge; {activeEv.elims_advance_pts || '2.0'} pts</span>
+                    </div>
+                    <div className="derby-pillar-row">
+                      <span className="derby-pillar-key">Score Rule</span>
+                      <span className="derby-pillar-val">
+                        {activeEv.semis_score_reset !== 0 ? 'Reset to 0' : 'Cumulative'}
+                      </span>
+                    </div>
+                    <div className="derby-pillar-row">
+                      <span className="derby-pillar-key">Banding</span>
+                      <span className="derby-pillar-val">{activeEv.banding_category || 'OPEN'}</span>
+                    </div>
+                    <div className="derby-pillar-row">
+                      <span className="derby-pillar-key">Scoring</span>
+                      <span className="derby-pillar-val">1.0 / 0.5 / 0</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="derby-pillar-box">
+                  <div className="derby-pillar-header">
+                    <Award size={13} className="card-title-icon-gold" />
+                    <span>Purse &amp; Awards</span>
+                  </div>
+                  <div className="derby-pillar-rows">
+                    <div className="derby-pillar-row">
+                      <span className="derby-pillar-key">Champion</span>
+                      <span className="derby-pillar-val">₱{Number(activeEv.champion_prize || 0).toLocaleString()}</span>
+                    </div>
+                    <div className="derby-pillar-row">
+                      <span className="derby-pillar-key">Runner-Up</span>
+                      <span className="derby-pillar-val">₱{Number(activeEv.runnerup_prize || 0).toLocaleString()}</span>
+                    </div>
+                    <div className="derby-pillar-row">
+                      <span className="derby-pillar-key">Fastest Kill</span>
+                      <span className="derby-pillar-val">₱{Number(activeEv.stag_fighter_award || 0).toLocaleString()}</span>
+                    </div>
+                    <div className="derby-pillar-row">
+                      <span className="derby-pillar-key">Handler / Gaffer</span>
+                      <span className="derby-pillar-val">
+                        ₱{Number(activeEv.handler_award || 0).toLocaleString()} / ₱{Number(activeEv.gaffer_award || 0).toLocaleString()}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -5599,11 +5599,11 @@
   background: linear-gradient(135deg, var(--bg-card-solid) 0%, var(--bg-card-subtle) 100%);
   border: 1.5px solid var(--border-card);
   border-radius: var(--radius-lg, 12px);
-  padding: 22px 26px;
+  padding: 18px 22px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 14px;
 }
 
 .derby-hero-header-row {
@@ -5651,21 +5651,22 @@
 }
 
 .derby-hero-main-title {
-  font-size: 20px;
-  font-weight: 900;
+  font-size: 18px;
+  font-weight: 800;
   color: var(--text-primary);
   text-transform: uppercase;
-  letter-spacing: 0.02em;
-  margin: 4px 0 2px 0;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+  margin: 2px 0;
 }
 
 .derby-hero-sub-promoter {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11.5px;
+  font-weight: 500;
   color: var(--text-secondary);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
@@ -5674,22 +5675,23 @@
   flex-direction: column;
   align-items: flex-end;
   text-align: right;
-  gap: 2px;
+  gap: 3px;
 }
 
 .derby-hero-prize-label {
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
   color: var(--gold-600, #d97706);
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 }
 
 .derby-hero-prize-amount {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 900;
+  line-height: 1.1;
   color: var(--gold-500, #f59e0b);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   font-family: var(--font-mono);
 }
 
@@ -5739,15 +5741,15 @@
 /* 4 Core Pillars Grid */
 .derby-pillars-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
 }
 
 .derby-pillar-box {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 14px 16px;
+  padding: 12px 14px;
   background: var(--bg-card-solid);
   border: 1px solid var(--border-card);
   border-radius: 10px;
@@ -5756,17 +5758,20 @@
 .derby-pillar-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
+  gap: 7px;
+  font-size: 11px;
   font-weight: 800;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--text-primary);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .derby-pillar-rows {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   font-size: 11px;
 }
 
