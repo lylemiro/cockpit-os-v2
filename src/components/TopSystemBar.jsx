@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Minus, Square, Lock, RotateCcw } from 'lucide-react';
+import { Minus, Square } from 'lucide-react';
 import { useArena } from '../context/ArenaContext.jsx';
 import { AppIconGlyph } from './AppIconGlyph.jsx';
 import { ALL_PERMISSION_KEYS } from './arbacCatalog.js';
@@ -10,9 +10,7 @@ export function TopSystemBar() {
     loading,
     wsConnected,
     setActiveModuleId,
-    authenticatedOperator,
-    lockSession,
-    rebootSystem
+    authenticatedOperator
   } = useArena();
 
   const [now, setNow] = useState(() => new Date());
@@ -114,22 +112,6 @@ export function TopSystemBar() {
             onClick={() => setActiveModuleId('command-overview')}
           >
             <Square size={12} />
-          </button>
-          <button
-            type="button"
-            className="window-ctrl-btn"
-            title="Lock Operator Session (Return to Gate 0 Login)"
-            onClick={lockSession}
-          >
-            <Lock size={13} />
-          </button>
-          <button
-            type="button"
-            className="window-ctrl-btn"
-            title="Reboot Cockpit OS Kernel"
-            onClick={rebootSystem}
-          >
-            <RotateCcw size={13} />
           </button>
         </div>
       </div>

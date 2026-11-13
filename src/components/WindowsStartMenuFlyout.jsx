@@ -1,9 +1,11 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import {
   Search,
   Lock,
   RotateCcw,
+  Power,
+  LogOut,
   Settings as SettingsIcon,
   Shield,
   HardDrive,
@@ -29,6 +31,16 @@ export function WindowsStartMenuFlyout({ isOpen, onClose, onOpenSearch }) {
   } = useArena();
 
   const flyoutRef = useRef(null);
+  const [isPowerMenuOpen, setIsPowerMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+  // Close menus when flyout closes
+  useEffect(() => {
+    if (!isOpen) {
+      setIsPowerMenuOpen(false);
+      setIsUserMenuOpen(false);
+    }
+  }, [isOpen]);
 
   // Close when clicking outside
   useEffect(() => {
@@ -40,12 +52,26 @@ export function WindowsStartMenuFlyout({ isOpen, onClose, onOpenSearch }) {
         if (!e.target.closest('.start-launcher-btn')) {
           onClose();
         }
+      } else {
+        // If clicked inside flyout but outside power menu, close power menu
+        if (isPowerMenuOpen && !e.target.closest('.start-power-actions') && !e.target.closest('.start-power-flyout-menu')) {
+          setIsPowerMenuOpen(false);
+        }
+        if (isUserMenuOpen && !e.target.closest('.start-operator-info') && !e.target.closest('.start-user-flyout-menu')) {
+          setIsUserMenuOpen(false);
+        }
       }
     };
 
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
-        onClose();
+        if (isPowerMenuOpen) {
+          setIsPowerMenuOpen(false);
+        } else if (isUserMenuOpen) {
+          setIsUserMenuOpen(false);
+        } else {
+          onClose();
+        }
       }
     };
 
@@ -55,7 +81,7 @@ export function WindowsStartMenuFlyout({ isOpen, onClose, onOpenSearch }) {
       window.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, isPowerMenuOpen, isUserMenuOpen]);
 
   if (!isOpen) return null;
 
@@ -186,7 +212,113 @@ export function WindowsStartMenuFlyout({ isOpen, onClose, onOpenSearch }) {
 
       {/* 4. Bottom Operator Profile & Power Actions */}
       <div className="start-footer-bar">
-        <div className="start-operator-info" onClick={() => handleLaunchApp('users-permissions')} title="View Operator Profile">
+        {/* User Session Flyout Popup */}
+        {isUserMenuOpen && (
+          <div className="start-user-flyout-menu" role="menu">
+            <button
+              type="button"
+              className="start-power-menu-item"
+              onClick={() => {
+                setIsUserMenuOpen(false);
+                onClose();
+                handleLaunchApp('users-permissions');
+              }}
+            >
+              <Shield size={15} className="card-title-icon-emerald" />
+              <div className="start-power-item-text">
+                <span className="start-power-item-title">Account Settings</span>
+                <span className="start-power-item-desc">ARBAC &amp; Permissions</span>
+              </div>
+            </button>
+            <button
+              type="button"
+              className="start-power-menu-item"
+              onClick={() => {
+                setIsUserMenuOpen(false);
+                onClose();
+                lockSession();
+              }}
+            >
+              <Lock size={15} className="card-title-icon-gold" />
+              <div className="start-power-item-text">
+                <span className="start-power-item-title">Lock Session</span>
+                <span className="start-power-item-desc">Zero-Trust Gate 0 PIN</span>
+              </div>
+            </button>
+            <button
+              type="button"
+              className="start-power-menu-item is-signout"
+              onClick={() => {
+                setIsUserMenuOpen(false);
+                onClose();
+                lockSession();
+              }}
+            >
+              <LogOut size={15} />
+              <div className="start-power-item-text">
+                <span className="start-power-item-title">Sign Out</span>
+                <span className="start-power-item-desc">Switch Operator Account</span>
+              </div>
+            </button>
+          </div>
+        )}
+
+        {/* Power / Restart Flyout Popup */}
+        {isPowerMenuOpen && (
+          <div className="start-power-flyout-menu" role="menu">
+            <button
+              type="button"
+              className="start-power-menu-item"
+              onClick={() => {
+                setIsPowerMenuOpen(false);
+                onClose();
+                lockSession();
+              }}
+            >
+              <Lock size={15} className="card-title-icon-gold" />
+              <div className="start-power-item-text">
+                <span className="start-power-item-title">Lock</span>
+                <span className="start-power-item-desc">Lock operator workstation</span>
+              </div>
+            </button>
+            <button
+              type="button"
+              className="start-power-menu-item is-restart"
+              onClick={() => {
+                setIsPowerMenuOpen(false);
+                onClose();
+                rebootSystem();
+              }}
+            >
+              <RotateCcw size={15} className="card-title-icon-emerald" />
+              <div className="start-power-item-text">
+                <span className="start-power-item-title">Restart</span>
+                <span className="start-power-item-desc">Reboot Cockpit OS Kernel</span>
+              </div>
+            </button>
+            <button
+              type="button"
+              className="start-power-menu-item is-signout"
+              onClick={() => {
+                setIsPowerMenuOpen(false);
+                onClose();
+                lockSession();
+              }}
+            >
+              <LogOut size={15} />
+              <div className="start-power-item-text">
+                <span className="start-power-item-title">Sign Out</span>
+                <span className="start-power-item-desc">Return to Gate 0 Login</span>
+              </div>
+            </button>
+          </div>
+        )}
+
+        <div
+          className="start-operator-info"
+          onClick={() => setIsUserMenuOpen((prev) => !prev)}
+          title="Operator Profile & Session Menu"
+        >
           <div className="start-operator-avatar">
             {authenticatedOperator?.staff_code || 'EMP-01'}
           </div>
@@ -220,18 +352,21 @@ export function WindowsStartMenuFlyout({ isOpen, onClose, onOpenSearch }) {
           <button
             type="button"
             className="start-action-btn"
-            title="Lock Operator Session (Return to Gate 0 Login)"
-            onClick={() => { onClose(); lockSession(); }}
+            title="Lock Operator Session [Gate 0 PIN]"
+            onClick={() => {
+              onClose();
+              lockSession();
+            }}
           >
             <Lock size={16} />
           </button>
           <button
             type="button"
-            className="start-action-btn is-danger"
-            title="Reboot Cockpit OS Kernel"
-            onClick={() => { onClose(); rebootSystem(); }}
+            className={`start-action-btn is-danger ${isPowerMenuOpen ? 'is-active' : ''}`}
+            title="Power: Restart Cockpit OS Kernel / Sign Out"
+            onClick={() => setIsPowerMenuOpen((prev) => !prev)}
           >
-            <RotateCcw size={16} />
+            <Power size={16} />
           </button>
         </div>
       </div>

@@ -1692,6 +1692,125 @@
   border-color: #ef4444;
 }
 
+/* Start Menu Power & Session Flyout Popup */
+.start-operator-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  user-select: none;
+}
+
+.start-operator-chip:hover {
+  background: rgba(14, 138, 78, 0.1);
+}
+
+[data-theme='dark'] .start-operator-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.start-user-flyout-menu {
+  position: absolute;
+  bottom: 56px;
+  left: 18px;
+  width: 210px;
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(52, 211, 153, 0.25);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 10005;
+  animation: flyoutSlideUp 0.14s ease-out;
+}
+
+[data-theme='dark'] .start-user-flyout-menu {
+  background: #082215;
+  border-color: rgba(52, 211, 153, 0.3);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(52, 211, 153, 0.3);
+}
+
+.start-power-flyout-menu {
+  position: absolute;
+  bottom: 56px;
+  right: 18px;
+  width: 220px;
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(52, 211, 153, 0.25);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 10005;
+  animation: flyoutSlideUp 0.14s ease-out;
+}
+
+[data-theme='dark'] .start-power-flyout-menu {
+  background: #082215;
+  border-color: rgba(52, 211, 153, 0.3);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(52, 211, 153, 0.3);
+}
+
+.start-power-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.12s ease;
+  width: 100%;
+}
+
+.start-power-menu-item:hover {
+  background: rgba(14, 138, 78, 0.12);
+  color: var(--emerald-800);
+}
+
+[data-theme='dark'] .start-power-menu-item:hover {
+  background: rgba(52, 211, 153, 0.16);
+  color: #6ee7b7;
+}
+
+.start-power-menu-item.is-restart:hover {
+  background: rgba(52, 211, 153, 0.18);
+  color: #34d399;
+}
+
+.start-power-menu-item.is-signout:hover {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+
+.start-power-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.start-power-item-title {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.start-power-item-desc {
+  font-size: 10px;
+  color: var(--text-muted);
+  line-height: 1.2;
+}
+
 /* B. CALENDAR FLYOUT (ABOVE ALL) */
 .win-calendar-backdrop {
   position: fixed;
