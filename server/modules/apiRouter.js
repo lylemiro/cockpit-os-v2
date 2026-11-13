@@ -4,10 +4,13 @@ import {
   closeAndRemoveTenantDb,
   getTenantDbFileMetrics,
   appendAuditLog,
+  ALL_COLISEO_PERMISSIONS,
   ALL_23_PERMISSIONS
 } from '../db/database.js';
 import { getLiveSystemMetrics } from '../services/lanDiscovery.js';
 import { evaluateZeroTrustGates } from '../middleware/zeroTrustGates.js';
+
+const TOTAL_PERMS = ALL_COLISEO_PERMISSIONS.length;
 
 function safeParseJsonArray(str, fallback = []) {
   if (!str) return fallback;
@@ -367,7 +370,7 @@ function buildDatabaseGraph(databaseTables, activeTenant, records = {}) {
   }
 
   const logicalRelations = [
-    ['employees', 'arbac_roles', 'role → role_name (23-perm ARBAC)'],
+    ['employees', 'arbac_roles', `role → role_name (${TOTAL_PERMS}-perm ARBAC)`],
     ['devices', 'employees', 'bound_operator_id → staff_code'],
     ['wagers', 'fights', 'fight_number → fight_number'],
     ['wagers', 'devices', 'teller_terminal → code'],
@@ -402,7 +405,7 @@ function buildDatabaseGraph(databaseTables, activeTenant, records = {}) {
     const nodeId = `role:${role.role_name}`;
     graphNodes.push({
       id: nodeId,
-      label: `Role: ${role.role_name} (${role.permissions_count}/23)`,
+      label: `Role: ${role.role_name} (${role.permissions_count}/${TOTAL_PERMS})`,
       kind: 'record',
       group: 'security',
       gate: 'Gate 0 ARBAC',
@@ -425,7 +428,7 @@ function buildDatabaseGraph(databaseTables, activeTenant, records = {}) {
       kind: 'record',
       group: 'security',
       gate: 'Gate 0 DB User',
-      details: `${emp.role} (${emp.permissions_count}/23 perms)`
+      details: `${emp.role} (${emp.permissions_count}/${TOTAL_PERMS} perms)`
     });
     graphEdges.push({
       id: `edge:${nodeId}->table:employees`,
@@ -645,7 +648,7 @@ export async function handleApiRequest(req, res, wsHub) {
         role = 'Chief System Architect / CSO',
         zone = 'Executive Command Console',
         pin_code = '1234',
-        permissions = ALL_23_PERMISSIONS
+        permissions = ALL_COLISEO_PERMISSIONS
       } = body;
 
       if (!arena_name || !full_name || String(pin_code).length < 4) {
@@ -673,7 +676,7 @@ export async function handleApiRequest(req, res, wsHub) {
       // Instantiate dedicated physical SQLite WAL database file for this tenant
       const newTdb = getTenantDb(newTenantId);
       const permsArray =
-        Array.isArray(permissions) && permissions.length > 0 ? permissions : ALL_23_PERMISSIONS;
+        Array.isArray(permissions) && permissions.length > 0 ? permissions : ALL_COLISEO_PERMISSIONS;
       const empId = `EMP-01`;
       const roleId = `ROLE-01`;
       const devId = `DEV-T01`;
@@ -758,7 +761,7 @@ export async function handleApiRequest(req, res, wsHub) {
         `EMP-01 (${full_name.trim()})`,
         hostInfo.terminalId,
         'SUCCESS',
-        `Authenticated Root ARBAC session (${permsArray.length}/23 permissions)`
+        `Authenticated Root ARBAC session (${permsArray.length}/${TOTAL_PERMS} permissions)`
       );
 
       const operator = {
@@ -878,7 +881,7 @@ export async function handleApiRequest(req, res, wsHub) {
         `${emp.staff_code} (${emp.full_name})`,
         hostInfo.terminalId,
         'SUCCESS',
-        `Gate 0 Verified on ${activeTenantRow.db_file_name} (${emp.permissions_count}/23 ARBAC permissions)`
+        `Gate 0 Verified on ${activeTenantRow.db_file_name} (${emp.permissions_count}/${TOTAL_PERMS} ARBAC permissions)`
       );
 
       const operator = {
@@ -909,7 +912,7 @@ export async function handleApiRequest(req, res, wsHub) {
     }
 
     // =========================================================================
-    // GRANULAR ARBAC ROLES CRUD (23 PERMISSION CHECKBOXES + ATTRIBUTES)
+    // GRANULAR ARBAC ROLES CRUD (48 PERMISSION CHECKBOXES + ATTRIBUTES)
     // =========================================================================
     if (method === 'POST' && pathname === '/api/arbac/roles/seed-filipino-defaults') {
       const filipinoDefaultRoles = [
@@ -918,7 +921,7 @@ export async function handleApiRequest(req, res, wsHub) {
           name: 'Superadmin / Pangulo ng Sabungan',
           zone: 'Executive Command Console',
           float: 1000000,
-          perms: ALL_23_PERMISSIONS
+          perms: ALL_COLISEO_PERMISSIONS
         },
         {
           id: 'ROLE_ARENA_ADMIN',
@@ -927,24 +930,40 @@ export async function handleApiRequest(req, res, wsHub) {
           float: 500000,
           perms: [
             'arena.config.manage',
+            'arena.rules.manage',
             'security.logtrail.export',
+            'tenant.database.switch',
+            'tenant.database.backup',
+            'security.whitelist.manage',
+            'security.device.binding',
+            'security.lockout.reset',
             'arbac.staff.crud',
             'arbac.float.assign',
+            'arbac.shift.toggle',
             'events.derby.schedule',
+            'events.derby.activate',
             'events.entries.enroll',
             'events.escrow.clear',
             'matchmaking.timbangan.weigh',
             'matchmaking.kasahan.pair',
             'matchmaking.soltada.publish',
             'ruedo.staging.advance',
+            'ruedo.clock.control',
+            'ruedo.pitbell.ring',
             'ruedo.betting.toggle',
             'ruedo.verdict.declare',
             'ruedo.var.replay',
             'betting.ticket.issue',
-            'cashier.payout.release',
+            'betting.logro.monitor',
             'betting.ticket.void',
+            'cashier.payout.release',
+            'cashier.vault.reconcile',
+            'finance.plasada.view',
             'finance.zreading.generate',
-            'cockhouse.bays.manage'
+            'finance.tax.remittance',
+            'finance.settlement.close',
+            'cockhouse.bays.manage',
+            'cockhouse.disinfect.log'
           ]
         },
         {
@@ -954,11 +973,17 @@ export async function handleApiRequest(req, res, wsHub) {
           float: 0,
           perms: [
             'events.derby.schedule',
+            'events.derby.activate',
             'matchmaking.soltada.publish',
+            'matchmaking.soltada.reorder',
             'ruedo.staging.advance',
+            'ruedo.clock.control',
+            'ruedo.pitbell.ring',
             'ruedo.betting.toggle',
             'ruedo.verdict.declare',
             'ruedo.var.replay',
+            'betting.logro.monitor',
+            'betting.ticket.void',
             'security.logtrail.export'
           ]
         },
@@ -967,7 +992,13 @@ export async function handleApiRequest(req, res, wsHub) {
           name: 'Sentenciador / Ring Referee',
           zone: 'Ruedo Pit Ring',
           float: 0,
-          perms: ['ruedo.staging.advance', 'ruedo.verdict.declare', 'ruedo.var.replay']
+          perms: [
+            'ruedo.staging.advance',
+            'ruedo.clock.control',
+            'ruedo.pitbell.ring',
+            'ruedo.verdict.declare',
+            'ruedo.var.replay'
+          ]
         },
         {
           id: 'ROLE_KASADOR',
@@ -977,8 +1008,10 @@ export async function handleApiRequest(req, res, wsHub) {
           perms: [
             'events.entries.enroll',
             'matchmaking.timbangan.weigh',
+            'matchmaking.wingband.stamp',
             'matchmaking.kasahan.pair',
             'matchmaking.soltada.publish',
+            'matchmaking.soltada.reorder',
             'cockhouse.bays.manage'
           ]
         },
@@ -989,10 +1022,15 @@ export async function handleApiRequest(req, res, wsHub) {
           float: 250000,
           perms: [
             'events.escrow.clear',
+            'events.derby.cancel',
             'arbac.float.assign',
             'cashier.payout.release',
+            'cashier.payout.override',
+            'cashier.vault.reconcile',
             'betting.ticket.void',
+            'finance.plasada.view',
             'finance.zreading.generate',
+            'finance.settlement.close',
             'security.logtrail.export'
           ]
         },
@@ -1001,28 +1039,49 @@ export async function handleApiRequest(req, res, wsHub) {
           name: 'Kristo / POS Ticket Teller',
           zone: 'Betting Booths & Grandstand',
           float: 50000,
-          perms: ['betting.ticket.issue']
+          perms: [
+            'betting.ticket.issue',
+            'betting.logro.monitor',
+            'betting.ticket.void'
+          ]
         },
         {
           id: 'ROLE_MANANARI',
           name: 'Mananari / Tari Armorer',
           zone: 'Armory & Tari Station',
           float: 0,
-          perms: ['matchmaking.tari.signoff', 'cockhouse.bays.manage']
+          perms: [
+            'matchmaking.tari.signoff',
+            'cockhouse.bays.manage',
+            'cockhouse.disinfect.log'
+          ]
         },
         {
           id: 'ROLE_VET_SURGEON',
           name: 'Manggagamot / Veterinary Surgeon',
           zone: 'Veterinary Recovery Clinic',
           float: 0,
-          perms: ['clinic.vet.suture', 'cockhouse.bays.manage']
+          perms: [
+            'clinic.vet.suture',
+            'clinic.emergency.clear',
+            'cockhouse.bays.manage',
+            'cockhouse.disinfect.log'
+          ]
         },
         {
           id: 'ROLE_GAB_BIR_AUDITOR',
           name: 'GAB & BIR Compliance Auditor',
           zone: 'Compliance & Audit Office',
           float: 0,
-          perms: ['arena.config.manage', 'security.logtrail.export', 'finance.zreading.generate']
+          perms: [
+            'arena.config.manage',
+            'arena.license.manage',
+            'security.logtrail.export',
+            'finance.plasada.view',
+            'finance.zreading.generate',
+            'finance.tax.remittance',
+            'finance.settlement.close'
+          ]
         }
       ];
 
@@ -1088,7 +1147,7 @@ export async function handleApiRequest(req, res, wsHub) {
         'ARBAC Admin',
         hostInfo.terminalId,
         'SUCCESS',
-        `Created ARBAC role "${role_name.trim()}" with ${perms.length}/23 granular permissions`
+        `Created ARBAC role "${role_name.trim()}" with ${perms.length}/${TOTAL_PERMS} granular permissions`
       );
       return syncAndRespond('ARBAC_ROLE_CREATED', tenantId);
     }
@@ -1149,7 +1208,7 @@ export async function handleApiRequest(req, res, wsHub) {
         'ARBAC Admin',
         hostInfo.terminalId,
         'INFO',
-        `Updated ARBAC role "${role_name.trim()}" (${perms.length}/23 permissions)`
+        `Updated ARBAC role "${role_name.trim()}" (${perms.length}/${TOTAL_PERMS} permissions)`
       );
       return syncAndRespond('ARBAC_ROLE_UPDATED', tenantId);
     }
@@ -1255,7 +1314,7 @@ export async function handleApiRequest(req, res, wsHub) {
         `${staffCode} (${full_name.trim()})`,
         hostInfo.terminalId,
         'SUCCESS',
-        `Enrolled DB user ${staffCode} in ${activeTenantRow.db_file_name} (${perms.length}/23 permissions)`
+        `Enrolled DB user ${staffCode} in ${activeTenantRow.db_file_name} (${perms.length}/${TOTAL_PERMS} permissions)`
       );
       return syncAndRespond('ARBAC_STAFF_ENROLLED', tenantId);
     }
@@ -1334,11 +1393,7 @@ export async function handleApiRequest(req, res, wsHub) {
         `${nextStaffCode} (${full_name.trim()})`,
         hostInfo.terminalId,
         'INFO',
-        `Updated DB operator ${nextStaffCode} (${perms.length}/23 permissions)`
-      );
-      return syncAndRespond('ARBAC_STAFF_UPDATED', tenantId);
-    }
-        `Updated ARBAC matrix for ${emp.staff_code}: ${perms.length}/23 permissions, Zone=${zone}`
+        `Updated DB operator ${nextStaffCode} (${perms.length}/${TOTAL_PERMS} permissions)`
       );
       return syncAndRespond('ARBAC_STAFF_UPDATED', tenantId);
     }

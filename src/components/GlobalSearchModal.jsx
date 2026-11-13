@@ -250,13 +250,13 @@ export function GlobalSearchModal({ isOpen, onClose }) {
       }
     });
 
-    // 8. 23 Granular ARBAC Permissions Catalog
+    // 8. Granular ARBAC Permissions Catalog
     ARBAC_PERMISSION_GROUPS.forEach((grp) => {
       grp.permissions.forEach((perm) => {
         const match =
           perm.label.toLowerCase().includes(q) ||
           perm.key.toLowerCase().includes(q) ||
-          grp.domain.toLowerCase().includes(q);
+          (grp.domainTitle || grp.domainId || '').toLowerCase().includes(q);
 
         if (match) {
           list.push({

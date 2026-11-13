@@ -182,7 +182,7 @@ export function BootAndLoginScreen() {
       },
       {
         id: 4,
-        label: 'Initializing Gate 0–8 Zero-Trust & 23-Permission ARBAC Security Guard...',
+        label: `Initializing Gate 0–8 Zero-Trust & ${ALL_PERMISSION_KEYS.length}-Permission ARBAC Security Guard...`,
         status: bootStep >= 4 ? 'OK' : 'WAIT'
       },
       ...(!hasConfiguredSuperadmin && bootStep >= 4

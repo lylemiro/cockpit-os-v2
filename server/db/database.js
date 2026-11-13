@@ -17,31 +17,77 @@ export const masterDb = new DatabaseSync(masterDbPath);
 // Connection Pool for Physical Per-Tenant SQLite WAL Databases
 const tenantDbPool = new Map();
 
-export const ALL_23_PERMISSIONS = [
+export const ALL_COLISEO_PERMISSIONS = [
+  // 01. Arena Profile, Licensing & Regulatory Governance
   'arena.config.manage',
-  'security.whitelist.manage',
+  'arena.license.manage',
+  'arena.rules.manage',
   'security.logtrail.export',
-  'arbac.roles.crud',
+
+  // 02. Multi-Tenant Physical SQLite Database Partitions
+  'tenant.database.create',
+  'tenant.database.switch',
+  'tenant.database.backup',
+  'tenant.database.reset',
+
+  // 03. Gate 0 Zero-Trust Hardware Surveillance & Whitelist
+  'security.whitelist.manage',
+  'security.device.binding',
+  'security.lockout.reset',
+  'security.session.terminate',
+
+  // 04. Staff Accounts, Shifts & Role Templates
   'arbac.staff.crud',
+  'arbac.roles.crud',
   'arbac.float.assign',
+  'arbac.shift.toggle',
+  'arbac.credentials.reset',
+
+  // 05. Tournament, Entries & Pot Escrow (Gate 1 & 2)
   'events.derby.schedule',
+  'events.derby.activate',
   'events.entries.enroll',
   'events.escrow.clear',
+  'events.derby.cancel',
+
+  // 06. Timbangan, Kasahan & Armory (Gate 3–5)
   'matchmaking.timbangan.weigh',
+  'matchmaking.wingband.stamp',
   'matchmaking.kasahan.pair',
   'matchmaking.soltada.publish',
+  'matchmaking.soltada.reorder',
   'matchmaking.tari.signoff',
+
+  // 07. Ruedo Pit & Mesa de Control (Gate 6–8)
   'ruedo.staging.advance',
+  'ruedo.clock.control',
+  'ruedo.pitbell.ring',
   'ruedo.betting.toggle',
   'ruedo.verdict.declare',
   'ruedo.var.replay',
+
+  // 08. Grandstand Betting, Kristo POS & Payouts (Gate 7 & 8)
   'betting.ticket.issue',
-  'cashier.payout.release',
+  'betting.logro.monitor',
   'betting.ticket.void',
+  'cashier.payout.release',
+  'cashier.payout.override',
+  'cashier.vault.reconcile',
+
+  // 09. Finance, Plasada Ledger & BIR Compliance
+  'finance.plasada.view',
   'finance.zreading.generate',
+  'finance.tax.remittance',
+  'finance.settlement.close',
+
+  // 10. Cockhouse Coops, Biosecurity & Vet Clinic
   'cockhouse.bays.manage',
-  'clinic.vet.suture'
+  'cockhouse.disinfect.log',
+  'clinic.vet.suture',
+  'clinic.emergency.clear'
 ];
+
+export const ALL_23_PERMISSIONS = ALL_COLISEO_PERMISSIONS;
 
 export function initializeDatabase() {
   masterDb.exec(`
@@ -168,7 +214,7 @@ export function initializeTenantSchema(tdb) {
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
 
-    -- Gate 0: Dynamic ARBAC Role Templates (23-Permission Granular Matrix)
+    -- Gate 0: Dynamic ARBAC Role Templates (Granular Matrix)
     CREATE TABLE IF NOT EXISTS arbac_roles (
       role_id TEXT PRIMARY KEY,
       role_name TEXT UNIQUE NOT NULL,
@@ -194,7 +240,7 @@ export function initializeTenantSchema(tdb) {
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
 
-    -- Gate 0: Database Users / Employees & 23-Permission Granular ARBAC
+    -- Gate 0: Database Users / Employees & Granular ARBAC
     CREATE TABLE IF NOT EXISTS employees (
       employee_id TEXT PRIMARY KEY,
       staff_code TEXT UNIQUE NOT NULL,
@@ -209,7 +255,7 @@ export function initializeTenantSchema(tdb) {
       pin_strikes INTEGER DEFAULT 0,
       is_locked INTEGER DEFAULT 0,
       permissions_json TEXT NOT NULL DEFAULT '[]',
-      permissions_count INTEGER DEFAULT 23,
+      permissions_count INTEGER DEFAULT 48,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
 

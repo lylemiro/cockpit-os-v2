@@ -14,7 +14,7 @@ export const DESKTOP_APPS = [
     icon: 'Users',
     variant: 'emerald',
     gateTag: 'Gate 0',
-    subtitle: 'Staff Registry, 23-Item RBAC Matrix & Shift Zone Assignments',
+    subtitle: 'Staff Registry, Granular ARBAC Matrix & Shift Zone Assignments',
     getCount: (state) => state?.employees?.length || 0
   },
   {

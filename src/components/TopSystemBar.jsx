@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Minus, Square, Lock, RotateCcw } from 'lucide-react';
 import { useArena } from '../context/ArenaContext.jsx';
 import { AppIconGlyph } from './AppIconGlyph.jsx';
+import { ALL_PERMISSION_KEYS } from './arbacCatalog.js';
 
 export function TopSystemBar() {
   const {
@@ -68,7 +69,7 @@ export function TopSystemBar() {
               onClick={() => setActiveModuleId('users-permissions')}
             >
               {authenticatedOperator.staff_code || 'EMP-01'}: {authenticatedOperator.full_name || 'Operator'} (
-              {authenticatedOperator.permissions_count ?? (Array.isArray(authenticatedOperator.permissions) ? authenticatedOperator.permissions.length : 23)}/23)
+              {authenticatedOperator.permissions_count ?? (Array.isArray(authenticatedOperator.permissions) ? authenticatedOperator.permissions.length : ALL_PERMISSION_KEYS.length)}/{ALL_PERMISSION_KEYS.length})
             </button>
             <span className="top-divider">|</span>
           </>

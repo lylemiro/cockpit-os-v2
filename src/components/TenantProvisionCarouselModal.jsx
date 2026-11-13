@@ -12,6 +12,7 @@ import {
   Check,
   Sparkles
 } from 'lucide-react';
+import { ALL_PERMISSION_KEYS } from './arbacCatalog.js';
 
 export function TenantProvisionCarouselModal({
   isOpen,
@@ -300,7 +301,7 @@ export function TenantProvisionCarouselModal({
                     disabled
                   />
                   <small className="text-muted mt-1">
-                    Auto-assigned 23 of 23 permissions under Executive Security domain.
+                    Auto-assigned all {ALL_PERMISSION_KEYS.length} permissions under Executive Security domain.
                   </small>
                 </div>
               </div>

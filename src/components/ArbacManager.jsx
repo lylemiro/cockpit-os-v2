@@ -13,7 +13,7 @@ import {
   Layers,
   Database
 } from 'lucide-react';
-import { FILIPINO_SABONG_DEFAULT_ROLES } from './arbacCatalog.js';
+import { FILIPINO_SABONG_DEFAULT_ROLES, ALL_PERMISSION_KEYS } from './arbacCatalog.js';
 import { useArena } from '../context/ArenaContext.jsx';
 import { UserEnrollmentCarouselModal } from './UserEnrollmentCarouselModal.jsx';
 import { RoleTemplateCarouselModal } from './RoleTemplateCarouselModal.jsx';
@@ -98,7 +98,7 @@ export function ArbacManager() {
       if (res.ok) {
         notifySuccess(
           'Operator Updated',
-          `Successfully saved changes for "${formData.full_name}" with ${formData.permissions.length}/23 active permissions.`
+          `Successfully saved changes for "${formData.full_name}" with ${formData.permissions.length}/${ALL_PERMISSION_KEYS.length} active permissions.`
         );
         setIsUserCarouselOpen(false);
         setEditingEmployee(null);
@@ -128,7 +128,7 @@ export function ArbacManager() {
       if (res.ok) {
         notifySuccess(
           'Role Template Updated',
-          `Updated "${formData.role_name}" (${formData.permissions.length}/23 checked permissions).`
+          `Updated "${formData.role_name}" (${formData.permissions.length}/${ALL_PERMISSION_KEYS.length} checked permissions).`
         );
         setIsRoleCarouselOpen(false);
         setEditingRole(null);
@@ -286,7 +286,7 @@ export function ArbacManager() {
                     const permsCount = Array.isArray(emp.permissions)
                       ? emp.permissions.length
                       : 0;
-                    const clearancePct = Math.round((permsCount / 23) * 100);
+                    const clearancePct = Math.round((permsCount / ALL_PERMISSION_KEYS.length) * 100);
 
                     return (
                       <tr key={emp.employee_id}>
@@ -312,7 +312,7 @@ export function ArbacManager() {
                         <td>
                           <div className="table-perms-progress-box">
                             <span className="table-perms-pill">
-                              {permsCount} / 23 Perms ({clearancePct}%)
+                              {permsCount} / {ALL_PERMISSION_KEYS.length} Perms ({clearancePct}%)
                             </span>
                             <div className="table-perms-track">
                               <div
@@ -451,7 +451,7 @@ export function ArbacManager() {
                   <th>Role Template</th>
                   <th>Department Zone</th>
                   <th>Max Float</th>
-                  <th>Clearance (23 Matrix)</th>
+                  <th>Clearance ({ALL_PERMISSION_KEYS.length} Matrix)</th>
                   <th>Device Binding</th>
                   <th>Actions</th>
                 </tr>
@@ -469,7 +469,7 @@ export function ArbacManager() {
                       <td>₱{Number(r.max_cash_float || 0).toLocaleString()}</td>
                       <td>
                         <span className="table-perms-pill">
-                          {count} / 23 Perms Checked
+                          {count} / {ALL_PERMISSION_KEYS.length} Perms Checked
                         </span>
                       </td>
                       <td>

@@ -27,6 +27,7 @@ import { useArena } from '../context/ArenaContext.jsx';
 import { SubsystemWorkspace } from '../modules/SubsystemWorkspace.jsx';
 import { DatabaseRelationshipGraph } from './DatabaseRelationshipGraph.jsx';
 import { ErrorAlert, LoadingState, EmptyState } from './CentralizedFeedbackStates.jsx';
+import { ALL_PERMISSION_KEYS } from './arbacCatalog.js';
 
 export function ModuleWindowModal() {
   const {
@@ -903,7 +904,7 @@ export function ModuleWindowModal() {
                 <div className="metric-row">
                   <span className="metric-label">ARBAC Clearance</span>
                   <span className="metric-value is-gold">
-                    {authenticatedOperator?.permissions_count || 23} / 23 Perms
+                    {authenticatedOperator?.permissions_count || ALL_PERMISSION_KEYS.length} / {ALL_PERMISSION_KEYS.length} Perms
                   </span>
                 </div>
               </div>

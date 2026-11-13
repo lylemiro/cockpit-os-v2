@@ -98,7 +98,7 @@ export function UserEnrollmentCarouselModal({
   if (!isOpen) return null;
 
   const totalPerms = form.permissions.length;
-  const clearancePct = Math.round((totalPerms / 23) * 100);
+  const clearancePct = Math.round((totalPerms / ALL_PERMISSION_KEYS.length) * 100);
 
   const handleFullNameChange = (val) => {
     const slug = val
@@ -197,7 +197,7 @@ export function UserEnrollmentCarouselModal({
   const stages = [
     { num: 1, label: 'Role Archetype', sub: 'Filipino Sabong Context' },
     { num: 2, label: 'Operator Identity', sub: 'Profile, Username & PIN' },
-    { num: 3, label: 'ARBAC Matrix', sub: '23-Checkbox Clearance' },
+    { num: 3, label: 'ARBAC Matrix', sub: `${ALL_PERMISSION_KEYS.length}-Checkbox Clearance` },
     { num: 4, label: 'Verification', sub: 'Physical DB Enrollment' }
   ];
 
@@ -289,7 +289,7 @@ export function UserEnrollmentCarouselModal({
                       <div className="role-card-top-row">
                         <span className="role-card-tag">{role.tag}</span>
                         <span className="role-card-perms-badge">
-                          {role.permissions.length} / 23 Perms
+                          {role.permissions.length} / {ALL_PERMISSION_KEYS.length} Perms
                         </span>
                       </div>
 
@@ -456,12 +456,12 @@ export function UserEnrollmentCarouselModal({
                     >
                       {FILIPINO_SABONG_DEFAULT_ROLES.map((r) => (
                         <option key={r.role_id} value={r.role_name}>
-                          {r.role_name} ({r.permissions.length}/23 Perms)
+                          {r.role_name} ({r.permissions.length}/{ALL_PERMISSION_KEYS.length} Perms)
                         </option>
                       ))}
                     </select>
                     <span className="field-hint-text">
-                      Selecting a role automatically synchronizes its zone, float, and 23-permission checklist.
+                      Selecting a role automatically synchronizes its zone, float, and {ALL_PERMISSION_KEYS.length}-permission checklist.
                     </span>
                   </div>
                 </div>
@@ -527,13 +527,13 @@ export function UserEnrollmentCarouselModal({
           )}
 
           {/* =====================================================================
-             STAGE 3: GRANULAR 23-PERMISSION ARBAC MATRIX & ROLES CHECKLIST
+             STAGE 3: GRANULAR ARBAC MATRIX & ROLES CHECKLIST
              ===================================================================== */}
           {currentStage === 3 && (
             <div className="journey-slide slide-arbac-matrix">
               <div className="slide-intro-banner">
                 <div className="slide-intro-title">
-                  Stage 3: Granular 23-Checkbox ARBAC Clearance Matrix &amp; Roles Checklist
+                  Stage 3: Granular {ALL_PERMISSION_KEYS.length}-Checkbox ARBAC Clearance Matrix &amp; Roles Checklist
                 </div>
                 <div className="slide-intro-desc">
                   Permissions are pre-selected based on the <strong>{form.role}</strong> archetype. Use the role checklist chips below to quick-apply any archetype, search permissions, or toggle individual checkboxes.
@@ -563,7 +563,7 @@ export function UserEnrollmentCarouselModal({
                         title={`${r.filipino_title}: ${r.description}`}
                       >
                         <span>{r.role_name.split(' / ')[0]}</span>
-                        <span className="role-pill-badge">{r.permissions.length}/23</span>
+                        <span className="role-pill-badge">{r.permissions.length}/{ALL_PERMISSION_KEYS.length}</span>
                       </button>
                     );
                   })}
@@ -574,7 +574,7 @@ export function UserEnrollmentCarouselModal({
               <div className="journey-matrix-actions-bar">
                 <div className="matrix-stat-pill">
                   <span>Activated Clearance:</span>
-                  <strong>{totalPerms} / 23 Permissions ({clearancePct}%)</strong>
+                  <strong>{totalPerms} / {ALL_PERMISSION_KEYS.length} Permissions ({clearancePct}%)</strong>
                 </div>
 
                 <div className="matrix-search-box">
@@ -621,7 +621,7 @@ export function UserEnrollmentCarouselModal({
                       setForm((prev) => ({ ...prev, permissions: [...ALL_PERMISSION_KEYS] }))
                     }
                   >
-                    Check All 23
+                    Check All ({ALL_PERMISSION_KEYS.length})
                   </button>
                   <button
                     type="button"
@@ -747,7 +747,7 @@ export function UserEnrollmentCarouselModal({
                   <div className="passport-field">
                     <span className="passport-label">Clearance Percentage</span>
                     <span className="passport-value is-emerald">
-                      {totalPerms} / 23 Permissions ({clearancePct}%)
+                      {totalPerms} / {ALL_PERMISSION_KEYS.length} Permissions ({clearancePct}%)
                     </span>
                   </div>
                   <div className="passport-field">

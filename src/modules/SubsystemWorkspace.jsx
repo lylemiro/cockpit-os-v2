@@ -51,7 +51,7 @@ export function SubsystemWorkspace({ moduleId }) {
     role: 'Head Monton Cashier',
     zone: 'Center Cashier Cage',
     cash_float: '50000',
-    permissions_count: '23'
+    permissions_count: '48'
   });
 
   const [eventForm, setEventForm] = useState({
@@ -461,7 +461,7 @@ export function SubsystemWorkspace({ moduleId }) {
     );
   }
 
-  // 4. USERS & PERMISSIONS (Granular 23-Checkbox ARBAC + Multi-Tenant DB Users CRUD)
+  // 4. USERS & PERMISSIONS (Granular ARBAC + Multi-Tenant DB Users CRUD)
   if (moduleId === 'users-permissions') {
     return <ArbacManager />;
   }

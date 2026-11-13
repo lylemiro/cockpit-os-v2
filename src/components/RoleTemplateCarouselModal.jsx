@@ -75,7 +75,7 @@ export function RoleTemplateCarouselModal({
   if (!isOpen) return null;
 
   const totalPerms = form.permissions.length;
-  const clearancePct = Math.round((totalPerms / 23) * 100);
+  const clearancePct = Math.round((totalPerms / ALL_PERMISSION_KEYS.length) * 100);
 
   const applyArchetypePreset = (preset) => {
     setSelectedPreset(preset);
@@ -271,7 +271,7 @@ export function RoleTemplateCarouselModal({
                       <p className="role-card-desc">{archetype.description}</p>
                       <div className="role-card-meta-pills">
                         <span className="meta-pill-clearance">
-                          {archetype.permissions.length} / 23 Permissions
+                          {archetype.permissions.length} / {ALL_PERMISSION_KEYS.length} Permissions
                         </span>
                         {archetype.max_cash_float > 0 && (
                           <span className="meta-pill-float">
@@ -358,21 +358,21 @@ export function RoleTemplateCarouselModal({
             </div>
           )}
 
-          {/* ================================= STAGE 2: 23-CHECKBOX MATRIX ================================= */}
+          {/* ================================= STAGE 2: GRANULAR MATRIX ================================= */}
           {currentStage === 2 && (
             <div className="journey-slide-stage">
               <div className="stage-hero-banner">
                 <div className="hero-banner-content">
                   <span className="hero-eyebrow">STAGE 02 OF 03 • ZERO-TRUST ARBAC MATRIX</span>
-                  <h4>Configure Granular 23-Checkbox Permissions</h4>
+                  <h4>Configure Granular {ALL_PERMISSION_KEYS.length}-Checkbox Permissions</h4>
                   <p>
-                    Every button, table view, and mutation in COCKPIT OS v2 is guarded by these 23 cryptographic permission keys.
+                    Every button, table view, and mutation in COCKPIT OS v2 is guarded by these {ALL_PERMISSION_KEYS.length} cryptographic permission keys.
                   </p>
                 </div>
                 <div className="hero-clearance-stat">
                   <div className="stat-big-number">
                     {totalPerms}
-                    <span className="stat-total-den">/23</span>
+                    <span className="stat-total-den">/{ALL_PERMISSION_KEYS.length}</span>
                   </div>
                   <div className="stat-percentage-bar">
                     <div
@@ -390,7 +390,7 @@ export function RoleTemplateCarouselModal({
               <div className="matrix-toolbar">
                 <div className="matrix-toolbar-left">
                   <span className="matrix-active-count">
-                    Active Permissions for <strong>{form.role_name || 'Role'}</strong>: <strong>{totalPerms}</strong> of 23
+                    Active Permissions for <strong>{form.role_name || 'Role'}</strong>: <strong>{totalPerms}</strong> of {ALL_PERMISSION_KEYS.length}
                   </span>
                 </div>
                 <div className="matrix-toolbar-actions">
@@ -405,7 +405,7 @@ export function RoleTemplateCarouselModal({
                     }
                   >
                     <Check size={14} />
-                    <span>Check All 23</span>
+                    <span>Check All ({ALL_PERMISSION_KEYS.length})</span>
                   </button>
                   <button
                     type="button"
@@ -530,7 +530,7 @@ export function RoleTemplateCarouselModal({
                   <div className="passport-field">
                     <span className="passport-label">Active Permissions</span>
                     <span className="passport-value is-emerald">
-                      {totalPerms} / 23 ({clearancePct}% Clearance)
+                      {totalPerms} / {ALL_PERMISSION_KEYS.length} ({clearancePct}% Clearance)
                     </span>
                   </div>
                   <div className="passport-field full-row">
