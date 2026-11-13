@@ -105,6 +105,23 @@ export function BootAndLoginScreen() {
     pin_code: '1234'
   });
 
+  const tenants = arenaState?.tenants || [];
+  const employees = arenaState?.employees || [];
+  const activeTenant = arenaState?.activeTenant;
+  const sys = arenaState?.systemMetrics;
+
+  // Zero-Trust Rule: An active superadmin and database must exist for normal OS sign-in
+  const hasConfiguredSuperadmin = !loading && tenants.length > 0 && employees.length > 0;
+
+  // Auto-select primary operator (e.g. EMP-01) on load
+  useEffect(() => {
+    if (employees.length > 0 && (!selectedUserCode || !employees.some((e) => e.staff_code === selectedUserCode))) {
+      setSelectedUserCode(employees[0].staff_code);
+    }
+  }, [employees, selectedUserCode]);
+
+  const currentOperator = employees.find((e) => e.staff_code === selectedUserCode) || employees[0] || null;
+
   // OS Boot Sequence progression (only on initial load)
   useEffect(() => {
     if (bootCompleted) return undefined;
@@ -112,15 +129,22 @@ export function BootAndLoginScreen() {
     const t2 = setTimeout(() => setBootStep(2), 1000);
     const t3 = setTimeout(() => setBootStep(3), 1500);
     const t4 = setTimeout(() => setBootStep(4), 2000);
-    const t5 = setTimeout(() => setBootCompleted(true), 2600);
+
+    // CRITICAL: IF NO USER OR NO SUPERADMIN, KEEP SYSTEM IN BOOT UNTIL SETUP IS DONE!
+    // Do NOT auto-advance into login screen if zero users/superadmins are enrolled.
+    let t5;
+    if (hasConfiguredSuperadmin) {
+      t5 = setTimeout(() => setBootCompleted(true), 2600);
+    }
+
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
       clearTimeout(t4);
-      clearTimeout(t5);
+      if (t5) clearTimeout(t5);
     };
-  }, [bootCompleted, setBootCompleted]);
+  }, [bootCompleted, setBootCompleted, hasConfiguredSuperadmin]);
 
   // Keyboard shortcut during bootloader: F2 or Del enters Coliseum Server & Database Setup
   useEffect(() => {
@@ -135,20 +159,6 @@ export function BootAndLoginScreen() {
     window.addEventListener('keydown', handleBootKey);
     return () => window.removeEventListener('keydown', handleBootKey);
   }, [bootCompleted, setBootCompleted]);
-
-  const tenants = arenaState?.tenants || [];
-  const employees = arenaState?.employees || [];
-  const activeTenant = arenaState?.activeTenant;
-  const sys = arenaState?.systemMetrics;
-
-  // Auto-select primary operator (e.g. EMP-01) on load
-  useEffect(() => {
-    if (employees.length > 0 && (!selectedUserCode || !employees.some((e) => e.staff_code === selectedUserCode))) {
-      setSelectedUserCode(employees[0].staff_code);
-    }
-  }, [employees, selectedUserCode]);
-
-  const currentOperator = employees.find((e) => e.staff_code === selectedUserCode) || employees[0] || null;
 
   // STAGE 1: OS KERNEL & HARDWARE BOOT SEQUENCE
   if (!bootCompleted) {
@@ -172,7 +182,16 @@ export function BootAndLoginScreen() {
         id: 4,
         label: 'Initializing Gate 0–8 Zero-Trust & 23-Permission ARBAC Security Guard...',
         status: bootStep >= 4 ? 'OK' : 'WAIT'
-      }
+      },
+      ...(!hasConfiguredSuperadmin && bootStep >= 4
+        ? [
+            {
+              id: 5,
+              label: 'Zero-Trust Security Hold: No root Superadmin or tenant database found on this server. Boot halted until initial setup is completed.',
+              status: 'HELD'
+            }
+          ]
+        : [])
     ];
 
     return (
@@ -198,7 +217,13 @@ export function BootAndLoginScreen() {
             {bootChecks.map((chk) => (
               <div key={chk.id} className="os-boot-log-line">
                 <span
-                  className={`os-boot-tag ${chk.status === 'OK' ? 'is-ok' : 'is-wait'}`}
+                  className={`os-boot-tag ${
+                    chk.status === 'OK'
+                      ? 'is-ok'
+                      : chk.status === 'HELD'
+                      ? 'is-held'
+                      : 'is-wait'
+                  }`}
                 >
                   [{chk.status}]
                 </span>
@@ -210,24 +235,39 @@ export function BootAndLoginScreen() {
           <div className="os-boot-footer">
             <button
               type="button"
-              className="btn-boot-setup"
+              className={`btn-boot-setup ${!hasConfiguredSuperadmin ? 'is-prominent-action' : ''}`}
               onClick={() => {
                 setSetupMode(true);
                 setBootCompleted(true);
               }}
-              title="Open Coliseum Server & Tenant Database Setup (F2 or Del)"
+              title={
+                !hasConfiguredSuperadmin
+                  ? 'Complete First-Boot Superadmin & Coliseum Venue Setup'
+                  : 'Open Coliseum Server & Tenant Database Setup (F2 or Del)'
+              }
             >
               <Settings2 size={13} />
-              <span>Configure Server &amp; Database (F2)</span>
+              <span>
+                {!hasConfiguredSuperadmin
+                  ? 'Initialize Server & Superadmin Setup →'
+                  : 'Configure Server & Database (F2)'}
+              </span>
             </button>
 
-            <button
-              type="button"
-              className="btn-secondary-gold"
-              onClick={() => setBootCompleted(true)}
-            >
-              Proceed to Sign-In &rarr;
-            </button>
+            {hasConfiguredSuperadmin ? (
+              <button
+                type="button"
+                className="btn-secondary-gold"
+                onClick={() => setBootCompleted(true)}
+              >
+                Proceed to Sign-In &rarr;
+              </button>
+            ) : (
+              <span className="boot-status-pill-held">
+                <ShieldCheck size={12} />
+                <span>Setup Required Before Boot Can Proceed</span>
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -265,9 +305,9 @@ export function BootAndLoginScreen() {
   };
 
   // Determine whether to show First-Boot Setup wizard
-  // Shows ONLY if zero tenants exist on a new server, or when explicitly requested via setupMode
-  const isFirstBootNewServer = tenants.length === 0;
-  const showSetupWizard = isFirstBootNewServer || setupMode;
+  // If zero tenants exist or zero superadmins exist, system MUST stay in setup wizard until completed
+  const isFirstBootNewServer = !hasConfiguredSuperadmin;
+  const showSetupWizard = !hasConfiguredSuperadmin || setupMode;
 
   return (
     <div className="os-boot-screen is-real-os-login">

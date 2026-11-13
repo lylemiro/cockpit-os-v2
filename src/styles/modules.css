@@ -768,6 +768,11 @@
   color: #fbbf24;
 }
 
+.os-boot-tag.is-held {
+  color: #f87171;
+  font-weight: 800;
+}
+
 .os-boot-footer {
   display: flex;
   align-items: center;
@@ -796,6 +801,34 @@
   border-color: #34d399;
   color: #ffffff;
   box-shadow: 0 0 12px rgba(52, 211, 153, 0.35);
+}
+
+.btn-boot-setup.is-prominent-action {
+  background: rgba(16, 185, 129, 0.28);
+  border-color: #34d399;
+  color: #ffffff;
+  padding: 9px 18px;
+  font-size: 12px;
+  box-shadow: 0 0 16px rgba(52, 211, 153, 0.4);
+}
+
+.btn-boot-setup.is-prominent-action:hover {
+  background: rgba(16, 185, 129, 0.45);
+  border-color: #6ee7b7;
+}
+
+.boot-status-pill-held {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fde68a;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-mono);
 }
 
 .pin-keypad-grid {
