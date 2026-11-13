@@ -47,12 +47,15 @@ export function SubsystemWorkspace({ moduleId }) {
     mayors_permit: '',
     bir_cas_min: '',
     plasada_rate: '0.10',
+    teller_commission_rate: '0.02',
+    system_commission_rate: '0.01',
     logo_url: '',
     address: '',
     phone: '',
     email: '',
     website: '',
     show_logo_on_paperwork: true,
+    show_contact_info: true,
     security_pin: '',
     min_rest_gap: '4',
     vip_seats: '320',
@@ -150,12 +153,15 @@ export function SubsystemWorkspace({ moduleId }) {
         mayors_permit: c.mayors_permit || '',
         bir_cas_min: c.bir_cas_min || '',
         plasada_rate: c.plasada_rate != null ? String(c.plasada_rate) : '0.10',
+        teller_commission_rate: c.teller_commission_rate != null ? String(c.teller_commission_rate) : '0.02',
+        system_commission_rate: c.system_commission_rate != null ? String(c.system_commission_rate) : '0.01',
         logo_url: c.logo_url || '',
         address: c.address || '',
         phone: c.phone || '',
         email: c.email || '',
         website: c.website || '',
         show_logo_on_paperwork: c.show_logo_on_paperwork !== 0,
+        show_contact_info: c.show_contact_info !== 0,
         security_pin: '',
         min_rest_gap: String(c.min_rest_gap || 4),
         vip_seats: String(c.vip_seats || 320),
@@ -226,14 +232,19 @@ export function SubsystemWorkspace({ moduleId }) {
     const showForm = !current || isEditingArena;
     const activeLogo = arenaForm.logo_url || current?.logo_url || '';
     const showLogo = arenaForm.show_logo_on_paperwork ?? (current?.show_logo_on_paperwork !== 0);
+    const showContact = arenaForm.show_contact_info ?? (current?.show_contact_info !== 0);
     const previewConfig = {
       arena_name: (showForm ? arenaForm.arena_name : current?.arena_name) || current?.arena_name || arenaForm.arena_name || '',
       logo_url: activeLogo,
       show_logo_on_paperwork: showLogo,
+      show_contact_info: showContact,
       address: (showForm ? arenaForm.address : current?.address) || current?.address || arenaForm.address || '',
       phone: (showForm ? arenaForm.phone : current?.phone) || current?.phone || arenaForm.phone || '',
       email: (showForm ? arenaForm.email : current?.email) || current?.email || arenaForm.email || '',
-      website: (showForm ? arenaForm.website : current?.website) || current?.website || arenaForm.website || ''
+      website: (showForm ? arenaForm.website : current?.website) || current?.website || arenaForm.website || '',
+      plasada_rate: Number(showForm ? arenaForm.plasada_rate : current?.plasada_rate) || 0.10,
+      teller_commission_rate: Number(showForm ? arenaForm.teller_commission_rate : current?.teller_commission_rate) || 0.02,
+      system_commission_rate: Number(showForm ? arenaForm.system_commission_rate : current?.system_commission_rate) || 0.01
     };
 
     return (
@@ -307,26 +318,52 @@ export function SubsystemWorkspace({ moduleId }) {
                 />
               </div>
             </div>
-            <div className="form-row-2col">
-              <div className="form-field">
-                <label className="form-label">BIR CAS MIN</label>
-                <input
-                  className="form-input"
-                  required
-                  placeholder="MIN-2026-00001"
-                  value={arenaForm.bir_cas_min}
-                  onChange={(e) => setArenaForm({ ...arenaForm, bir_cas_min: e.target.value })}
-                />
-              </div>
+            <div className="form-field">
+              <label className="form-label">BIR CAS MIN</label>
+              <input
+                className="form-input"
+                required
+                placeholder="MIN-2026-00001"
+                value={arenaForm.bir_cas_min}
+                onChange={(e) => setArenaForm({ ...arenaForm, bir_cas_min: e.target.value })}
+              />
+            </div>
+
+            {/* Commissions & Revenue Splits */}
+            <div className="form-divider-label">Commissions &amp; Revenue Splits</div>
+            <div className="form-row-3col">
               <div className="form-field">
                 <label className="form-label">House Plasada Rate</label>
                 <input
                   type="number"
-                  step="0.01"
+                  step="0.005"
                   className="form-input"
                   value={arenaForm.plasada_rate}
                   onChange={(e) => setArenaForm({ ...arenaForm, plasada_rate: e.target.value })}
                 />
+                <span className="field-hint">Arena total plasada (e.g. 0.10 = 10%)</span>
+              </div>
+              <div className="form-field">
+                <label className="form-label">Unified Teller Commission</label>
+                <input
+                  type="number"
+                  step="0.001"
+                  className="form-input"
+                  value={arenaForm.teller_commission_rate}
+                  onChange={(e) => setArenaForm({ ...arenaForm, teller_commission_rate: e.target.value })}
+                />
+                <span className="field-hint">Uniform Kristo/teller rate (e.g. 0.02 = 2%)</span>
+              </div>
+              <div className="form-field">
+                <label className="form-label">System Commission</label>
+                <input
+                  type="number"
+                  step="0.001"
+                  className="form-input"
+                  value={arenaForm.system_commission_rate}
+                  onChange={(e) => setArenaForm({ ...arenaForm, system_commission_rate: e.target.value })}
+                />
+                <span className="field-hint">Cockpit OS platform fee (e.g. 0.01 = 1%)</span>
               </div>
             </div>
 
@@ -384,6 +421,26 @@ export function SubsystemWorkspace({ moduleId }) {
                   onChange={(e) => setArenaForm({ ...arenaForm, website: e.target.value })}
                 />
               </div>
+            </div>
+
+            {/* Paperwork Display Options */}
+            <div className="form-row-2col">
+              <label className="form-checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={arenaForm.show_contact_info}
+                  onChange={(e) => setArenaForm({ ...arenaForm, show_contact_info: e.target.checked })}
+                />
+                <span>Display Business Contact on Paperwork Header</span>
+              </label>
+              <label className="form-checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={arenaForm.show_logo_on_paperwork}
+                  onChange={(e) => setArenaForm({ ...arenaForm, show_logo_on_paperwork: e.target.checked })}
+                />
+                <span>Display Coliseum Logo on Paperwork Header</span>
+              </label>
             </div>
 
             {/* Coliseum Logo Upload */}
@@ -516,12 +573,15 @@ export function SubsystemWorkspace({ moduleId }) {
                       mayors_permit: current.mayors_permit || '',
                       bir_cas_min: current.bir_cas_min || '',
                       plasada_rate: current.plasada_rate != null ? String(current.plasada_rate) : '0.10',
+                      teller_commission_rate: current.teller_commission_rate != null ? String(current.teller_commission_rate) : '0.02',
+                      system_commission_rate: current.system_commission_rate != null ? String(current.system_commission_rate) : '0.01',
                       logo_url: current.logo_url || '',
                       address: current.address || '',
                       phone: current.phone || '',
                       email: current.email || '',
                       website: current.website || '',
                       show_logo_on_paperwork: current.show_logo_on_paperwork !== 0,
+                      show_contact_info: current.show_contact_info !== 0,
                       security_pin: '',
                       min_rest_gap: String(current.min_rest_gap || 4),
                       vip_seats: String(current.vip_seats || 320),
@@ -569,7 +629,29 @@ export function SubsystemWorkspace({ moduleId }) {
                   </tr>
                   <tr>
                     <th>Plasada Commission</th>
-                    <td><strong>{Math.round(current.plasada_rate * 100)}%</strong></td>
+                    <td>
+                      <strong>{(current.plasada_rate * 100).toFixed(1)}%</strong> <span className="text-muted">({current.plasada_rate})</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Unified Teller Commission</th>
+                    <td>
+                      <strong>{((current.teller_commission_rate ?? 0.02) * 100).toFixed(1)}%</strong> <span className="text-muted">({current.teller_commission_rate ?? 0.02})</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>System Commission</th>
+                    <td>
+                      <strong>{((current.system_commission_rate ?? 0.01) * 100).toFixed(1)}%</strong> <span className="text-muted">({current.system_commission_rate ?? 0.01})</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Net Coliseum Retained</th>
+                    <td>
+                      <strong className="text-emerald">
+                        {Math.max(0, ((current.plasada_rate ?? 0.10) - (current.teller_commission_rate ?? 0.02) - (current.system_commission_rate ?? 0.01)) * 100).toFixed(1)}%
+                      </strong>
+                    </td>
                   </tr>
                   <tr>
                     <th>Regulatory Status</th>
@@ -645,11 +727,11 @@ export function SubsystemWorkspace({ moduleId }) {
               </button>
             </div>
 
-            {previewConfig.logo_url ? (
-              <div className="paperwork-logo-toggle-wrap">
+            <div className="paperwork-toolbar-actions">
+              {previewConfig.logo_url ? (
                 <button
                   type="button"
-                  className={`paperwork-logo-toggle-btn ${previewConfig.show_logo_on_paperwork ? 'is-shown' : 'is-removed'}`}
+                  className={`paperwork-toggle-btn ${previewConfig.show_logo_on_paperwork ? 'is-shown' : 'is-removed'}`}
                   onClick={() =>
                     setArenaForm((prev) => ({
                       ...prev,
@@ -661,8 +743,25 @@ export function SubsystemWorkspace({ moduleId }) {
                   {previewConfig.show_logo_on_paperwork ? <Eye size={13} /> : <EyeOff size={13} />}
                   <span>{previewConfig.show_logo_on_paperwork ? 'Logo: Shown in Header' : 'Logo: Removed from Header'}</span>
                 </button>
-              </div>
-            ) : null}
+              ) : null}
+
+              {(previewConfig.address || previewConfig.phone || previewConfig.email || previewConfig.website) ? (
+                <button
+                  type="button"
+                  className={`paperwork-toggle-btn ${previewConfig.show_contact_info ? 'is-shown' : 'is-removed'}`}
+                  onClick={() =>
+                    setArenaForm((prev) => ({
+                      ...prev,
+                      show_contact_info: !previewConfig.show_contact_info
+                    }))
+                  }
+                  title={previewConfig.show_contact_info ? 'Click to Remove Contact Details from Header' : 'Click to Show Contact Details in Header'}
+                >
+                  {previewConfig.show_contact_info ? <Eye size={13} /> : <EyeOff size={13} />}
+                  <span>{previewConfig.show_contact_info ? 'Contact Info: Shown in Header' : 'Contact Info: Removed from Header'}</span>
+                </button>
+              ) : null}
+            </div>
           </div>
 
           {/* Printable Document Sheet Preview */}
@@ -685,7 +784,7 @@ export function SubsystemWorkspace({ moduleId }) {
                     <h3 className="paperwork-coliseum-name">{previewConfig.arena_name}</h3>
                   ) : null}
 
-                  {(previewConfig.address || previewConfig.phone || previewConfig.email || previewConfig.website) && (
+                  {previewConfig.show_contact_info && (previewConfig.address || previewConfig.phone || previewConfig.email || previewConfig.website) ? (
                     <div className="paperwork-contact-strip">
                       {previewConfig.address && (
                         <span className="paperwork-contact-item">
@@ -712,7 +811,7 @@ export function SubsystemWorkspace({ moduleId }) {
                         </span>
                       )}
                     </div>
-                  )}
+                  ) : null}
                 </div>
               </div>
 
@@ -867,21 +966,27 @@ export function SubsystemWorkspace({ moduleId }) {
                         <td><span className="paperwork-tag-pass">BALANCED</span></td>
                       </tr>
                       <tr>
-                        <td><strong>Gross Arena Plasada Retained</strong></td>
-                        <td>{Math.round((previewConfig.plasada_rate || 0.1) * 100)}%</td>
-                        <td>₱55,000.00</td>
-                        <td><span className="paperwork-tag-pass">VERIFIED</span></td>
+                        <td><strong>Gross House Plasada</strong></td>
+                        <td>{(previewConfig.plasada_rate * 100).toFixed(1)}%</td>
+                        <td>₱{(550000 * previewConfig.plasada_rate).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td><span className="paperwork-tag-pass">COLLECTED</span></td>
                       </tr>
                       <tr>
-                        <td><strong>LGU Amusement Tax (PD 449 / LGC)</strong></td>
-                        <td>10.00% of Plasada</td>
-                        <td>₱5,500.00</td>
-                        <td><span className="paperwork-tag-pass">REMITTED</span></td>
+                        <td><strong>Unified Teller Commission</strong></td>
+                        <td>{(previewConfig.teller_commission_rate * 100).toFixed(1)}%</td>
+                        <td>₱{(550000 * previewConfig.teller_commission_rate).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td><span className="paperwork-tag-pass">COMMISSION</span></td>
+                      </tr>
+                      <tr>
+                        <td><strong>Cockpit OS System Fee</strong></td>
+                        <td>{(previewConfig.system_commission_rate * 100).toFixed(1)}%</td>
+                        <td>₱{(550000 * previewConfig.system_commission_rate).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td><span className="paperwork-tag-pass">SYSTEM</span></td>
                       </tr>
                       <tr>
                         <td><strong>Net Coliseum Operating Share</strong></td>
-                        <td>90.00% of Plasada</td>
-                        <td>₱49,500.00</td>
+                        <td>{Math.max(0, ((previewConfig.plasada_rate - previewConfig.teller_commission_rate - previewConfig.system_commission_rate) * 100)).toFixed(1)}%</td>
+                        <td>₱{(550000 * Math.max(0, (previewConfig.plasada_rate - previewConfig.teller_commission_rate - previewConfig.system_commission_rate))).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                         <td><span className="paperwork-tag-pass">SETTLED</span></td>
                       </tr>
                     </tbody>

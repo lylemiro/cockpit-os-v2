@@ -1451,6 +1451,8 @@ export async function handleApiRequest(req, res, wsHub) {
         bir_cas_min,
         security_pin,
         plasada_rate = 0.1,
+        teller_commission_rate = 0.02,
+        system_commission_rate = 0.01,
         logo_url = '',
         address = '',
         phone = '',
@@ -1506,17 +1508,20 @@ export async function handleApiRequest(req, res, wsHub) {
         .prepare(`
           INSERT INTO arena_config (
             id, arena_name, gab_license, mayors_permit, bir_cas_min,
-            plasada_rate, logo_url, address, phone, email, website,
+            plasada_rate, teller_commission_rate, system_commission_rate,
+            logo_url, address, phone, email, website,
             show_gov_header, show_logo_on_paperwork, show_regulatory_strip, show_contact_info,
             min_rest_gap, vip_seats, lower_box_seats, upper_grandstand_seats, total_cockhouse_bays,
             updated_at
-          ) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+          ) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
           ON CONFLICT(id) DO UPDATE SET
             arena_name = excluded.arena_name,
             gab_license = excluded.gab_license,
             mayors_permit = excluded.mayors_permit,
             bir_cas_min = excluded.bir_cas_min,
             plasada_rate = excluded.plasada_rate,
+            teller_commission_rate = excluded.teller_commission_rate,
+            system_commission_rate = excluded.system_commission_rate,
             logo_url = excluded.logo_url,
             address = excluded.address,
             phone = excluded.phone,
@@ -1539,6 +1544,8 @@ export async function handleApiRequest(req, res, wsHub) {
           mayors_permit,
           bir_cas_min,
           Number(plasada_rate),
+          Number(teller_commission_rate),
+          Number(system_commission_rate),
           logo_url || '',
           address || '',
           phone || '',
@@ -1557,13 +1564,15 @@ export async function handleApiRequest(req, res, wsHub) {
 
       masterDb
         .prepare(
-          'UPDATE tenants SET arena_name = ?, gab_license = ?, mayors_permit = ?, bir_cas_min = ?, logo_url = ?, address = ?, phone = ?, email = ?, website = ? WHERE tenant_id = ?'
+          'UPDATE tenants SET arena_name = ?, gab_license = ?, mayors_permit = ?, bir_cas_min = ?, teller_commission_rate = ?, system_commission_rate = ?, logo_url = ?, address = ?, phone = ?, email = ?, website = ? WHERE tenant_id = ?'
         )
         .run(
           arena_name,
           gab_license,
           mayors_permit,
           bir_cas_min,
+          Number(teller_commission_rate),
+          Number(system_commission_rate),
           logo_url || '',
           address || '',
           phone || '',

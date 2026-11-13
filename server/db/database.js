@@ -139,6 +139,12 @@ export function initializeDatabase() {
   try {
     masterDb.exec("ALTER TABLE tenants ADD COLUMN website TEXT DEFAULT ''");
   } catch {}
+  try {
+    masterDb.exec("ALTER TABLE tenants ADD COLUMN teller_commission_rate REAL DEFAULT 0.02");
+  } catch {}
+  try {
+    masterDb.exec("ALTER TABLE tenants ADD COLUMN system_commission_rate REAL DEFAULT 0.01");
+  } catch {}
 }
 
 /**
@@ -219,6 +225,17 @@ export function initializeTenantSchema(tdb) {
       mayors_permit TEXT NOT NULL,
       bir_cas_min TEXT NOT NULL,
       plasada_rate REAL NOT NULL DEFAULT 0.10,
+      teller_commission_rate REAL NOT NULL DEFAULT 0.02,
+      system_commission_rate REAL NOT NULL DEFAULT 0.01,
+      logo_url TEXT DEFAULT '',
+      address TEXT DEFAULT '',
+      phone TEXT DEFAULT '',
+      email TEXT DEFAULT '',
+      website TEXT DEFAULT '',
+      show_gov_header INTEGER NOT NULL DEFAULT 1,
+      show_logo_on_paperwork INTEGER NOT NULL DEFAULT 1,
+      show_regulatory_strip INTEGER NOT NULL DEFAULT 1,
+      show_contact_info INTEGER NOT NULL DEFAULT 1,
       weight_min_grams INTEGER NOT NULL DEFAULT 1800,
       weight_max_grams INTEGER NOT NULL DEFAULT 2650,
       kasahan_tolerance_grams INTEGER NOT NULL DEFAULT 30,
@@ -456,6 +473,12 @@ export function initializeTenantSchema(tdb) {
   } catch {}
   try {
     tdb.exec("ALTER TABLE arena_config ADD COLUMN show_contact_info INTEGER DEFAULT 1");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE arena_config ADD COLUMN teller_commission_rate REAL DEFAULT 0.02");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE arena_config ADD COLUMN system_commission_rate REAL DEFAULT 0.01");
   } catch {}
   try {
     tdb.exec("ALTER TABLE derby_events ADD COLUMN min_weight_grams INTEGER NOT NULL DEFAULT 1800");
