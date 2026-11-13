@@ -95,8 +95,6 @@ export function UserEnrollmentCarouselModal({
     }
   }, [editingEmployee, isOpen]);
 
-  if (!isOpen) return null;
-
   const totalPerms = form.permissions.length;
   const clearancePct = Math.round((totalPerms / ALL_PERMISSION_KEYS.length) * 100);
 
@@ -200,6 +198,8 @@ export function UserEnrollmentCarouselModal({
     { num: 3, label: 'ARBAC Matrix', sub: `${ALL_PERMISSION_KEYS.length}-Checkbox Clearance` },
     { num: 4, label: 'Verification', sub: 'Physical DB Enrollment' }
   ];
+
+  if (!isOpen) return null;
 
   return (
     <div className="carousel-journey-backdrop" onClick={onClose}>

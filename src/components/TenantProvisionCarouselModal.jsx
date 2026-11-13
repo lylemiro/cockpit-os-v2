@@ -33,8 +33,6 @@ export function TenantProvisionCarouselModal({
     pin_code: '1234'
   });
 
-  if (!isOpen) return null;
-
   const handleNext = () => {
     if (currentStage === 1) {
       if (!form.tenant_code.trim() || !form.arena_name.trim()) {
@@ -69,6 +67,8 @@ export function TenantProvisionCarouselModal({
   };
 
   const dbFileName = `tenant_${form.tenant_code.toLowerCase().replace(/[^a-z0-9]/g, '_')}_isolated.db`;
+
+  if (!isOpen) return null;
 
   return (
     <div className="carousel-journey-backdrop" onClick={onClose}>

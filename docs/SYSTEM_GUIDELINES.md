@@ -13,7 +13,7 @@
 2. [Monorepo Directory Structure](#2-monorepo-directory-structure)
 3. [Physical Multi-Tenant, Multi-Database, Multi-User Isolation](#3-physical-multi-tenant-multi-database-multi-user-isolation)
 4. [Zero-Trust Gate Matrix (Gates 0 through 8)](#4-zero-trust-gate-matrix-gates-0-through-8)
-5. [Granular 23-Checkbox ARBAC Matrix](#5-granular-23-checkbox-arbac-matrix)
+5. [Granular 48-Checkbox ARBAC Matrix & 10 Role Archetypes](#5-granular-48-checkbox-arbac-matrix--10-role-archetypes)
 6. [Dynamic Data Lifecycle (Zero Seed Data Policy)](#6-dynamic-data-lifecycle-zero-seed-data-policy)
 7. [Obsidian-Style Interactive Database Relationship Graph](#7-obsidian-style-interactive-database-relationship-graph)
 8. [Windows 11 Desktop UI Shell & Interaction Model](#8-windows-11-desktop-ui-shell--interaction-model)
@@ -52,10 +52,10 @@ Throughout the entire lifecycle of COCKPIT OS, the following seven architectural
    - Every arena tenant provisioned on the machine gets its own **dedicated, physically isolated SQLite database file** in write-ahead logging (WAL) mode (`server/db/tenants/tenant_<code_hash>.db`).
    - Cross-database orchestration is managed strictly by the master control plane (`server/db/master_control_plane.db`).
 
-5. **Granular ARBAC Checkbox CRUD:**
+5. **Granular ARBAC Checkbox CRUD (48 Permissions Across 10 Domains):**
    - Roles and staff accounts are not static enums.
    - Full Create, Read, Update, and Delete operations are provided for both Database Users (`employees`) and Role Templates (`arbac_roles`).
-   - Each user can be toggled across 23 distinct permission checkboxes grouped into 6 regulatory domains.
+   - Each user can be toggled across 48 distinct permission checkboxes grouped into 10 regulatory coliseum domains, supporting the 10 official Filipino legal sabong role archetypes.
 
 6. **Air-Gapped Offline-First Reliability:**
    - Operates 100% autonomously on an isolated local network (LAN / Wi-Fi hotspot) without internet connection, third-party CDNs, or external cloud dependencies.
@@ -63,6 +63,15 @@ Throughout the entire lifecycle of COCKPIT OS, the following seven architectural
 
 7. **Human-First Language (Zero Technical Jargon):**
    - Database errors (e.g. SQLite unique constraints, foreign keys) and network interruptions are translated into plain, reassuring English with clear tips. Non-technical cashiers, referees, and arena staff can troubleshoot issues with zero friction.
+
+8. **Server-Authoritative Thin Client — Logic Always Server-Side, Minimal Frontend:**
+   - **Backend is the Sole Arbiter of Truth:** The Node.js SQLite server (`server/index.js`, `server/modules/apiRouter.js`, `server/middleware/zeroTrustGates.js`) controls all business rules, gate evaluations, balance validations, odds rebalancing, 10% plasada deductions, account lockout enforcement, and physical SQLite WAL transactions.
+   - **Frontend is a Thin Presentation Shell:** The React UI never computes or enforces business rules client-side. The frontend captures operator intent, submits commands via REST, and renders server-computed state pushed over the RFC6455 WebSocket broadcast hub.
+   - Handheld teller terminals and client browsers are treated as untrusted presentation nodes; all state mutations must be evaluated, authorized, executed, and audited on the backend.
+
+9. **React Hook Safety & Strict Rendering Resilience:**
+   - **Zero Conditional Hooks:** React hooks (`useState`, `useEffect`, `useMemo`, `useCallback`, `useRef`) must **never** be placed inside conditional blocks or after early return statements (`if (!isOpen) return null;`).
+   - All hooks must execute unconditionally at the top level of every functional component before any return statement, preventing invariant violations such as Minified React error #310 ("Rendered more hooks than during the previous render").
 
 ---
 
@@ -101,8 +110,8 @@ d:\COCKPIT OS v2\
 │   ├── components/
 │   │   ├── AltTabSwitcher.jsx      # Windows 11 HUD Task Switcher (Alt + Tab keyboard listener)
 │   │   ├── AppIconGlyph.jsx        # Unified icon resolver for SVG & Lucide glyphs
-│   │   ├── arbacCatalog.js         # 23-Permission Catalog across 6 Operational Domains
-│   │   ├── ArbacManager.jsx        # Dynamic 23-Checkbox CRUD for DB Users, Roles & Tenants
+│   │   ├── arbacCatalog.js         # 48-Permission Catalog across 10 Operational Domains
+│   │   ├── ArbacManager.jsx        # Dynamic 48-Checkbox CRUD for DB Users, Roles & Tenants
 │   │   ├── BootAndLoginScreen.jsx  # Kernel Boot Animation, PIN Login, & First-Boot Setup Wizard
 │   │   ├── BottomTaskbar.jsx       # Taskbar with Start Menu, Quick Search, 16 App Dock, & Tray
 │   │   ├── CenterHeroCanvas.jsx    # Centered Frosted-Glass OS Brand Placard & Gate Status
@@ -152,7 +161,7 @@ d:\COCKPIT OS v2\
 | * tenants                          |                             | [tenant_sjc_01_mwdb7iq3.db]        |
 |   - tenant_id, tenant_code         |                             | * arena_config, gab_license        |
 |   - arena_name, db_file_name       |                             | * arbac_roles (Custom Role DDL)    |
-|   - created_at, status             |                             | * employees (23-perm staff)        |
+|   - created_at, status             |                             | * employees (48-perm staff)        |
 |                                    |                             | * entries, roosters, timbangan     |
 | * tenant_db_users                  |                             | * paired_fights, wagers, payouts   |
 |   - cross_user_id, staff_code      |                             | * audit_logtrail                   |
@@ -194,51 +203,100 @@ COCKPIT OS enforces an 8-stage prerequisite security pipeline for every match, w
 
 ---
 
-## 5. Granular 23-Checkbox ARBAC Matrix
+## 5. Granular 48-Checkbox ARBAC Matrix & 10 Role Archetypes
 
-ARBAC (Attribute & Role-Based Access Control) provides granular permission checkboxes grouped across 6 operational domains:
+ARBAC (Attribute & Role-Based Access Control) provides **48 granular cryptographic permission keys** organized across **10 regulatory coliseum domains**, strictly reflecting operational standards under Presidential Decree 449 and GAB / BIR coliseum regulations:
 
 ```
-[ARBAC DOMAINS]
-├── 1. Arena Governance (4 perms)
-│   ├── config.venue_edit       # Modify coliseum parameters, GAB license, Mayor's Permit
-│   ├── config.licensing_view   # Inspect BIR CAS MIN and regulatory certificates
-│   ├── system.tenant_create    # Provision new physical arena databases
-│   └── system.db_backup        # Create tamper-evident SQLite WAL snapshots
+[48 COLISEUM ARBAC PERMISSION KEYS ACROSS 10 OPERATIONAL DOMAINS]
+
+├── 01. Arena Profile, Licensing & Regulatory Governance (4 perms)
+│   ├── arena.config.manage         # Configure Arena Profile, Capacity, Dimensions & City Bounds
+│   ├── arena.license.manage        # Manage GAB License, Mayor’s Permit & BIR CAS MIN Certificates
+│   ├── arena.rules.manage          # Configure Minimum Bet, 10% Plasada Rate & Draw Payout Cap
+│   └── security.logtrail.export    # Inspect & Export Tamper-Evident Microsecond Audit Logtrail
 │
-├── 2. Staff & Identity (4 perms)
-│   ├── arbac.user_create       # Add new database users
-│   ├── arbac.user_edit         # Modify employee names, zones, and clearances
-│   ├── arbac.role_manage       # Create or alter custom ARBAC role templates
-│   └── arbac.pin_reset         # Unlock accounts and reset security PINs
+├── 02. Multi-Tenant Physical SQLite Database Partitions (4 perms)
+│   ├── tenant.database.create      # Provision New Physical SQLite WAL Database Partition
+│   ├── tenant.database.switch      # Switch Active Coliseum Database & Rebind Live Memory WAL
+│   ├── tenant.database.backup      # Generate & Download Cryptographic SQLite Database Snapshot
+│   └── tenant.database.reset       # Authorize Arena Database Factory Zero-Trust Wipe & Purge
 │
-├── 3. Derby & Registration (4 perms)
-│   ├── event.schedule_edit     # Create tournaments and configure pot escrows
-│   ├── entry.register          # Enroll syndicates and issue entry numbers
-│   ├── timbangan.weigh_in      # Perform certified scale weigh-ins and band stamping
-│   └── kasahan.matchmake       # Execute pairing algorithms and approve match slips
+├── 03. Gate 0 Zero-Trust Hardware Surveillance & Whitelist (4 perms)
+│   ├── security.whitelist.manage   # Authorize/Revoke Hardware Terminal MAC Address Whitelist
+│   ├── security.device.binding     # Bind Operator Credentials to Dedicated Hardware Machine
+│   ├── security.lockout.reset      # Clear 3-Strikes PIN Hardware Lockouts & Reset Security Flags
+│   └── security.session.terminate  # Remotely Terminate Active Operator Terminal Sessions
 │
-├── 4. Armory & Biosecurity (3 perms)
-│   ├── tari.gaff_signoff       # Inspect gaff blades and sign off on armory releases
-│   ├── cockhouse.bay_manage    # Allocate biosecure quarantine coop bays
-│   └── vet.suture_record       # Log surgical interventions and medical treatments
+├── 04. Staff Accounts, Shifts & Role Templates (5 perms)
+│   ├── arbac.staff.crud            # Enroll, Edit, and Manage Coliseum Staff Operator Accounts
+│   ├── arbac.roles.crud            # Create, Update & Delete Granular ARBAC Role Templates
+│   ├── arbac.float.assign          # Assign Teller Vault Cash Floats & Shift Floats
+│   ├── arbac.shift.toggle          # Check-In / Check-Out Shift Operators (On-Duty / Off-Duty)
+│   └── arbac.credentials.reset     # Force Security PIN Reset on Next Terminal Login
 │
-├── 5. Ruedo Arena & Betting (4 perms)
-│   ├── ruedo.clock_control     # Start, pause, or reset the official fight countdown
-│   ├── ruedo.declare_verdict   # Enter official referee result (Meron, Wala, Tabla)
-│   ├── wager.issue_ticket      # Operate Kristo POS terminals and issue bets
-│   └── wager.cancel_ticket     # Void unconfirmed tickets before fight start
+├── 05. Tournament, Entries & Pot Escrow (Gate 1 & 2) (5 perms)
+│   ├── events.derby.schedule       # Schedule & Initialize Single/Multi-Day Derby Tournaments
+│   ├── events.derby.activate       # Activate Single Live Derby Event (Gate 1 Exclusivity)
+│   ├── events.entries.enroll       # Register Syndicate Entries, Gallero Profiles & Legbands
+│   ├── events.escrow.clear         # Verify & Collect Pot Money Escrow (Gate 2 Prerequisite)
+│   └── events.derby.cancel         # Cancel or Reschedule Tournaments & Authorize Entry Refunds
 │
-└── 6. Financial Settlement (4 perms)
-    ├── cashier.payout_release  # Disburse verified cash winnings
-    ├── finance.plasada_view    # Audit retained 10% coliseum commission ledgers
-    ├── audit.logtrail_read     # Review microsecond-stamped security logs
-    └── network.terminal_pair   # Pair handheld devices to the local LAN mesh
+├── 06. Timbangan, Kasahan & Armory (Gate 3–5) (6 perms)
+│   ├── matchmaking.timbangan.weigh # Calibrate Digital Scale & Record Biometric Weights (Gate 3)
+│   ├── matchmaking.wingband.stamp  # Stamp & Verify Tamper-Evident RFID Wingband Serials
+│   ├── matchmaking.kasahan.pair    # Execute <=30g Kasahan Auto-Pairing Matrix (Gate 4)
+│   ├── matchmaking.soltada.publish # Publish Official Soltada Fight Card Lineup
+│   ├── matchmaking.soltada.reorder # Reorder / Reschedule Soltada Lineup Fight Sequence
+│   └── matchmaking.tari.signoff    # Inspect & Sign Off Tari Gaff Blades (Gate 5 Armorer)
+│
+├── 07. Ruedo Pit & Mesa de Control (Gate 6–8) (6 perms)
+│   ├── ruedo.staging.advance       # Advance 3-Tier Staging Queue (Heeling -> Pit Gate 6)
+│   ├── ruedo.clock.control         # Start, Pause, and Reset 10:00 Official Match Timer
+│   ├── ruedo.pitbell.ring          # Ring Official Coliseum Pit Bell (Opening / Closing Wagering)
+│   ├── ruedo.betting.toggle        # Open Wagering (Pusta Bukas) & Close Wagering (Pusta Sara)
+│   ├── ruedo.verdict.declare       # Declare Official Sentensya Verdict (Meron/Wala/Tabla/Cancela)
+│   └── ruedo.var.replay            # Trigger Slow-Motion VAR Disputed Call Replay Review
+│
+├── 08. Grandstand Betting, Kristo POS & Payouts (Gate 7 & 8) (6 perms)
+│   ├── betting.ticket.issue        # Issue Kristo / POS Encrypted Barcode Wager Tickets (Gate 7)
+│   ├── betting.logro.monitor       # Real-Time Logro Odds Monitoring & Pari-Mutuel Pool Display
+│   ├── betting.ticket.void         # Authorize Void / Refund on Unstarted or Disputed Bouts
+│   ├── cashier.payout.release      # Scan & Release Winning Barcode Ticket Payouts (Gate 8)
+│   ├── cashier.payout.override     # Authorize Damaged / Missing Barcode Ticket Overrides
+│   └── cashier.vault.reconcile     # Reconcile Cashier Drawer Float with Gross Handle
+│
+├── 09. Finance, Plasada Ledger & BIR Compliance (4 perms)
+│   ├── finance.plasada.view        # Audit Real-time 10% House Plasada Ledger
+│   ├── finance.zreading.generate   # Generate Official BIR CAS Z-Reading Daily Report
+│   ├── finance.tax.remittance      # Calculate & Audit LGU / GAB Regulatory Tax Deductions
+│   └── finance.settlement.close    # Close Daily Financial Books & Generate Cashier Breakdown
+│
+└── 10. Cockhouse Coops, Biosecurity & Vet Clinic (4 perms)
+    ├── cockhouse.bays.manage       # Assign & Manage Cockhouse Bays & Coop Room Suites
+    ├── cockhouse.disinfect.log     # Record Biosecurity Disinfection Cycles & Quarantine
+    ├── clinic.vet.suture           # Record Post-Fight Manggagamot Surgical Suture Logs
+    └── clinic.emergency.clear      # Certify Post-Fight Avian Hemostasis & Recovery Release
 ```
+
+### 10 Official Filipino Sabong Role Archetypes:
+
+| Role Archetype | Filipino Title | Clearance | Assigned Duty Zone | Regulatory Operational Scope |
+| :--- | :--- | :---: | :--- | :--- |
+| **Superadmin / Pangulo ng Sabungan** | *Pangulo ng Sabungan & CSO* | **48 / 48 (100%)** | Executive Command Console | Full unrestricted governance across all 10 domains, physical WAL partitions, and security bypasses. |
+| **Arena Admin / Tagapamahala** | *Tagapamahala ng Sabungan* | **35 / 48 (73%)** | Executive Management Office | General day-to-day operations, staff shift assignments, derby schedules, pot escrow, and BIR compliance. |
+| **Mesa de Control / Hukom sa Mesa** | *Hukom sa Mesa* | **13 / 48 (27%)** | Mesa de Control | Soltada lineups, 10:00 bout timer clock, pit bell triggers, wagering open/close toggles, and VAR review calls. |
+| **Sentenciador / Ring Referee** | *Sentenciador* | **5 / 48 (10%)** | Ruedo Pit Ring | In-ring referee authority: cock handling, kari peck tests, official verdict declarations, and VAR disputes. |
+| **Kasador / Matchmaker** | *Kasador / Tagapagpares* | **7 / 48 (15%)** | Timbangan & Kasahan Booth | Certified scale weigh-in, RFID wingband stamping, $\le$30g auto-pairing matrix, and fight card publish. |
+| **Head Cashier / Monton Supervisor** | *Tagapamahala ng Kahon* | **11 / 48 (23%)** | Center Cashier Cage | Central vault management, pot collection, cashier drawer reconciliation, winning payouts, and BIR Z-readings. |
+| **Kristo / POS Ticket Teller** | *Kristo & POS Ticket Clerk* | **3 / 48 (6%)** | Betting Booths & Grandstand | POS encrypted barcode wager ticket issuance for Meron, Wala, and Draw; live logro odds monitoring. |
+| **Mananari / Tari Armorer** | *Mananari & GAB Gaff Armorer* | **3 / 48 (6%)** | Armory & Tari Station | Single/double curved blade inspection, sharpness verification, tying security, and Gate 5 armory sign-off. |
+| **Manggagamot / Veterinary Surgeon** | *Manggagamot* | **4 / 48 (8%)** | Veterinary Recovery Clinic | Emergency post-fight avian hemostasis, antiseptic treatments, veterinary sutures (tahi), and recovery release. |
+| **GAB & BIR Compliance Auditor** | *Tagasuri ng GAB at BIR* | **7 / 48 (15%)** | Compliance & Audit Office | Regulatory oversight: 10% plasada ledger audit, amusement tax remittances, BIR Z-readings, and tamper logtrail. |
 
 ### User Attributes:
-* **Assigned Duty Zone:** e.g., `Mesa de Control`, `Timbangan Scale Bay`, `Ruedo Arena Floor`, `Cashier Vault`.
-* **Hardware Binding Code:** Whitelisted Terminal ID authorized for this employee.
+* **Assigned Duty Zone:** e.g., `Executive Command Console`, `Mesa de Control`, `Timbangan & Kasahan Booth`, `Center Cashier Cage`.
+* **Hardware Binding Code:** Whitelisted Terminal ID authorized for this employee (Gate 0 Enforcement).
 * **Cash Float Limit:** Maximum operational cash drawer limit for cashiers.
 * **Commission Rate:** Allowed percentage for Kristo bookmakers.
 * **PIN Lockout Counter:** Automatically increments on wrong PIN, locking at 3 consecutive failed attempts.
@@ -331,7 +389,7 @@ The OS includes three curated 16:9 widescreen wallpapers generated via Google AI
   - Bell icon located directly next to the clock displays an unread badge and opens the Action Center with active alerts, plain-English system messages, and tamper-evident audit logs.
 * **Global Search Engine (`GlobalSearchModal.jsx`):**
   - Triggered via the taskbar search bar, Start Menu search, or <kbd>Ctrl</kbd> + <kbd>K</kbd>.
-  - Indexes all 19 applications, physical SQLite database tables, employees, derby tournaments, roosters/entries, sultada fights, wagers/bets, 23 ARBAC permissions, and audit trails.
+  - Indexes all 19 applications, physical SQLite database tables, employees, derby tournaments, roosters/entries, sultada fights, wagers/bets, 48 ARBAC permissions, and audit trails.
   - Supports category filters (`All`, `Apps`, `Data`, `ARBAC`, `Logs`), keyboard arrows (<kbd>↑</kbd> <kbd>↓</kbd> <kbd>Enter</kbd>), and a real-time metadata preview pane.
 
 ---

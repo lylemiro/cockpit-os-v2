@@ -45,6 +45,20 @@ Every pull request, commit, and code change must comply with these five mandator
   - All mutating actions must pass through [`server/middleware/zeroTrustGates.js`](file:///d:/COCKPIT%20OS%20v2/server/middleware/zeroTrustGates.js).
   - Ensure the user has the specific ARBAC permission key verified before writing to the database.
 
+### Rule 6: Server-Authoritative Architecture — Logic Always Backend, Minimal Frontend
+* ❌ **STRICTLY FORBIDDEN:** Calculating business rules, odds, plasada commissions, pot splits, gate validations, or permission authorisations inside React components.
+* ✅ **MANDATORY:**
+  - **Single Source of Truth:** All calculations, validations, transitions, and ACID database writes must occur on the Node.js SQLite server (`server/modules/apiRouter.js`, `server/db/database.js`).
+  - **Thin Frontend Shell:** React components collect user intent, dispatch HTTP calls (`mutateApi`), and render authoritative server-computed states.
+  - Handheld POS devices and cashier screens must never compute payouts or bets independently; they submit tickets to the backend, which verifies verdicts and returns computed payout amounts.
+
+### Rule 7: React Rules of Hooks Strict Compliance — ZERO Conditional Hooks
+* ❌ **STRICTLY FORBIDDEN:** Placing hooks (`useState`, `useEffect`, `useMemo`, `useCallback`, `useRef`) after early returns (e.g. `if (!isOpen) return null;`) or inside conditional branches/loops.
+* ✅ **MANDATORY:**
+  - All hooks must be declared at the topmost level of the functional component before any early return statements.
+  - If a modal or flyout needs to conditionally render, place `if (!isOpen) return null;` immediately before the JSX `return (...)`.
+  - Violating this triggers **Minified React error #310** (*"Rendered more hooks than during the previous render"*).
+
 ---
 
 ## 2. Directory Layout & Module Structure

@@ -72,8 +72,6 @@ export function RoleTemplateCarouselModal({
     }
   }, [editingRole, isOpen]);
 
-  if (!isOpen) return null;
-
   const totalPerms = form.permissions.length;
   const clearancePct = Math.round((totalPerms / ALL_PERMISSION_KEYS.length) * 100);
 
@@ -139,6 +137,8 @@ export function RoleTemplateCarouselModal({
     }
     onSubmit(form);
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="carousel-journey-backdrop" onClick={onClose}>
