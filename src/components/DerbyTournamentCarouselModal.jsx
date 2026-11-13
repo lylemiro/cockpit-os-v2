@@ -411,7 +411,7 @@ export function DerbyTournamentCarouselModal({
                   </div>
                 </div>
 
-                <div className="form-row-3col" style={{ marginTop: '8px' }}>
+                <div className="form-row-3col">
                   <div className="stage-form-group">
                     <label>Tournament Category</label>
                     <select
@@ -471,7 +471,7 @@ export function DerbyTournamentCarouselModal({
                 </div>
 
                 {isMultiStage && (
-                  <div className="derby-stages-flow-strip" style={{ marginTop: '12px' }}>
+                  <div className="derby-stages-flow-strip">
                     <div className="derby-flow-step-box">
                       <div className="step-tag">STAGE 1: ELIMINATIONS</div>
                       <div className="step-stags">
@@ -479,12 +479,11 @@ export function DerbyTournamentCarouselModal({
                           type="number"
                           min="1"
                           max="10"
-                          className="input-stage"
-                          style={{ width: '80px', textAlign: 'center', fontWeight: '800' }}
+                          className="input-stage input-stage-number"
                           value={elimsRounds}
                           onChange={(e) => setElimsRounds(Number(e.target.value))}
                         />
-                        <span style={{ fontSize: '11px', fontWeight: '700' }}>Stags</span>
+                        <span className="step-tag">Stags</span>
                       </div>
                       <div className="step-sub">Local / Open Bands</div>
                     </div>
@@ -498,12 +497,11 @@ export function DerbyTournamentCarouselModal({
                           type="number"
                           min="0"
                           max="10"
-                          className="input-stage"
-                          style={{ width: '80px', textAlign: 'center', fontWeight: '800' }}
+                          className="input-stage input-stage-number"
                           value={semisRounds}
                           onChange={(e) => setSemisRounds(Number(e.target.value))}
                         />
-                        <span style={{ fontSize: '11px', fontWeight: '700' }}>Stags</span>
+                        <span className="step-tag">Stags</span>
                       </div>
                       <div className="step-sub">Scores Back to Zero</div>
                     </div>
@@ -517,12 +515,11 @@ export function DerbyTournamentCarouselModal({
                           type="number"
                           min="1"
                           max="10"
-                          className="input-stage"
-                          style={{ width: '80px', textAlign: 'center', fontWeight: '800' }}
+                          className="input-stage input-stage-number"
                           value={finalsRounds}
                           onChange={(e) => setFinalsRounds(Number(e.target.value))}
                         />
-                        <span style={{ fontSize: '11px', fontWeight: '700' }}>Stags</span>
+                        <span className="step-tag">Stags</span>
                       </div>
                       <div className="step-sub">Purse &amp; Champion</div>
                     </div>
@@ -531,7 +528,7 @@ export function DerbyTournamentCarouselModal({
               </div>
 
               {/* Tournament Identifiers Input Grid */}
-              <div className="stage-input-grid" style={{ marginTop: '12px' }}>
+              <div className="stage-input-grid">
                 <div className="stage-form-group">
                   <label>Official Tournament Title *</label>
                   <input
@@ -591,7 +588,6 @@ export function DerbyTournamentCarouselModal({
                     className="input-stage"
                     readOnly
                     value={derivedFormatLabel}
-                    style={{ background: 'var(--bg-card-subtle)', fontWeight: '700' }}
                   />
                 </div>
               </div>
@@ -623,24 +619,24 @@ export function DerbyTournamentCarouselModal({
                     Allowable Match Variance: &plusmn;{weightToleranceGrams}g
                   </span>
                 </div>
-                <div style={{ padding: '8px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                  <div style={{ textAlign: 'center', minWidth: '90px' }}>
-                    <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>MIN WEIGHT</div>
-                    <div style={{ fontSize: '15px', fontWeight: '800', color: '#10b981' }}>{minWeightGrams}g</div>
-                    <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>({(minWeightGrams / 1000).toFixed(3)} kg)</div>
+                <div className="derby-scale-envelope-bar">
+                  <div className="derby-scale-end-box">
+                    <div className="derby-scale-end-label">MIN WEIGHT</div>
+                    <div className="derby-scale-end-val">{minWeightGrams}g</div>
+                    <div className="derby-scale-end-sub">({(minWeightGrams / 1000).toFixed(3)} kg)</div>
                   </div>
-                  <div style={{ flex: 1, height: '8px', background: 'var(--border-card)', borderRadius: '4px', position: 'relative', overflow: 'hidden' }}>
-                    <div style={{ width: '100%', height: '100%', background: 'linear-gradient(90deg, #10b981, #d97706, #10b981)' }} />
+                  <div className="derby-scale-track">
+                    <div className="derby-scale-fill" />
                   </div>
-                  <div style={{ textAlign: 'center', minWidth: '90px' }}>
-                    <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>MAX WEIGHT</div>
-                    <div style={{ fontSize: '15px', fontWeight: '800', color: '#10b981' }}>{maxWeightGrams}g</div>
-                    <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>({(maxWeightGrams / 1000).toFixed(3)} kg)</div>
+                  <div className="derby-scale-end-box">
+                    <div className="derby-scale-end-label">MAX WEIGHT</div>
+                    <div className="derby-scale-end-val">{maxWeightGrams}g</div>
+                    <div className="derby-scale-end-sub">({(maxWeightGrams / 1000).toFixed(3)} kg)</div>
                   </div>
                 </div>
               </div>
 
-              <div className="stage-input-grid" style={{ marginTop: '12px' }}>
+              <div className="stage-input-grid">
                 <div className="stage-form-group">
                   <label>Minimum Accepted Weight (grams) *</label>
                   <input
@@ -877,27 +873,27 @@ export function DerbyTournamentCarouselModal({
                     )}
                   </span>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '6px' }}>
-                  <div style={{ background: 'var(--bg-card-subtle)', padding: '6px 10px', borderRadius: '4px' }}>
-                    <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>GUARANTEED PURSE</div>
-                    <div style={{ fontSize: '13px', fontWeight: '800', color: '#d97706' }}>₱{Number(guaranteedPrize).toLocaleString()}</div>
+                <div className="derby-purse-meter-grid">
+                  <div className="derby-purse-meter-cell">
+                    <div className="derby-purse-meter-title">GUARANTEED PURSE</div>
+                    <div className="derby-purse-meter-val is-gold">₱{Number(guaranteedPrize).toLocaleString()}</div>
                   </div>
-                  <div style={{ background: 'var(--bg-card-subtle)', padding: '6px 10px', borderRadius: '4px' }}>
-                    <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>CHAMPION + RUNNER UP</div>
-                    <div style={{ fontSize: '13px', fontWeight: '800', color: '#10b981' }}>₱{(Number(championPrize) + Number(runnerupPrize)).toLocaleString()}</div>
+                  <div className="derby-purse-meter-cell">
+                    <div className="derby-purse-meter-title">CHAMPION + RUNNER UP</div>
+                    <div className="derby-purse-meter-val is-green">₱{(Number(championPrize) + Number(runnerupPrize)).toLocaleString()}</div>
                   </div>
-                  <div style={{ background: 'var(--bg-card-subtle)', padding: '6px 10px', borderRadius: '4px' }}>
-                    <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>POINT BRACKETS (7/6/5/3)</div>
-                    <div style={{ fontSize: '13px', fontWeight: '800' }}>₱{(Number(bracketAny7Prize) + Number(bracketAny6Prize) + Number(bracketAny5Prize) + Number(bracketAny3Prize)).toLocaleString()}</div>
+                  <div className="derby-purse-meter-cell">
+                    <div className="derby-purse-meter-title">POINT BRACKETS (7/6/5/3)</div>
+                    <div className="derby-purse-meter-val">₱{(Number(bracketAny7Prize) + Number(bracketAny6Prize) + Number(bracketAny5Prize) + Number(bracketAny3Prize)).toLocaleString()}</div>
                   </div>
-                  <div style={{ background: 'var(--bg-card-subtle)', padding: '6px 10px', borderRadius: '4px' }}>
-                    <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>SPECIAL AWARDS</div>
-                    <div style={{ fontSize: '13px', fontWeight: '800', color: '#3b82f6' }}>₱{(Number(handlerAward) + Number(gafferAward) + Number(stagFighterAward)).toLocaleString()}</div>
+                  <div className="derby-purse-meter-cell">
+                    <div className="derby-purse-meter-title">SPECIAL AWARDS</div>
+                    <div className="derby-purse-meter-val is-blue">₱{(Number(handlerAward) + Number(gafferAward) + Number(stagFighterAward)).toLocaleString()}</div>
                   </div>
                 </div>
               </div>
 
-              <div className="stage-input-grid" style={{ marginTop: '12px' }}>
+              <div className="stage-input-grid">
                 <div className="stage-form-group">
                   <label>Semi-Finals Score Reset Protocol</label>
                   <select
@@ -1122,7 +1118,7 @@ export function DerbyTournamentCarouselModal({
 
                   <div className="passport-field full-row">
                     <span className="passport-label">Synthesized Sanction Text</span>
-                    <span className="passport-value" style={{ fontSize: '11px', lineHeight: '1.45', color: 'var(--text-secondary)' }}>
+                    <span className="passport-value passport-manifesto-text">
                       {synthesizedDerbyRules}
                     </span>
                   </div>
@@ -1130,20 +1126,20 @@ export function DerbyTournamentCarouselModal({
               </div>
 
               {/* Active Toggle */}
-              <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div className="derby-activate-checkbox-row">
                 <input
                   type="checkbox"
                   id="activateNow"
                   checked={activateNow}
                   onChange={(e) => setActivateNow(e.target.checked)}
                 />
-                <label htmlFor="activateNow" style={{ fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+                <label htmlFor="activateNow" className="derby-activate-checkbox-label">
                   Set as Active Live Tournament immediately (Enforces Gate 1 Lock)
                 </label>
               </div>
 
               {saveError && (
-                <div className="stage4-error-banner" style={{ marginTop: '10px' }}>
+                <div className="stage4-error-banner">
                   <AlertCircle size={16} />
                   <span>{saveError}</span>
                 </div>

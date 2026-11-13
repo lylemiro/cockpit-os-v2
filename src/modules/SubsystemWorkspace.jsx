@@ -1202,10 +1202,18 @@ export function SubsystemWorkspace({ moduleId }) {
         {/* Top Action Bar */}
         <div className="derby-top-action-bar">
           <div className="derby-bar-title-cluster">
-            <span className="journey-badge-pill">
-              <Trophy size={13} className="card-title-icon-gold" />
-              <span>GATE 1 &bull; TOURNAMENT DIRECTOR</span>
-            </span>
+            <div className="derby-title-badge-row">
+              <span className="journey-badge-pill">
+                <Trophy size={13} className="card-title-icon-gold" />
+                <span>GATE 1 &bull; TOURNAMENT DIRECTOR</span>
+              </span>
+              {!activeEv && (
+                <span className="derby-status-tag-idle">
+                  <Clock size={11} />
+                  <span>Gate 1 Sanction Standby</span>
+                </span>
+              )}
+            </div>
             <div className="derby-bar-main-title">
               Coliseum Derby Tournament Operations &amp; Schedule
             </div>
@@ -1223,23 +1231,19 @@ export function SubsystemWorkspace({ moduleId }) {
                 setIsDerbyCarouselOpen(true);
               }}
             >
-              <Sparkles size={15} />
-              <span>+ Configure &amp; Launch Tournament (Carousel Journey)</span>
+              <Sparkles size={14} />
+              <span>+ Launch Tournament Builder</span>
             </button>
 
-            {activeEv ? (
+            {activeEv && (
               <button
                 type="button"
                 className="btn-secondary-gold"
                 onClick={() => setShowEnrollDrawer(!showEnrollDrawer)}
               >
-                <Users size={15} />
-                <span>{showEnrollDrawer ? 'Close Enrollment Panel' : '+ Enroll Syndicate Entry'}</span>
+                <Users size={14} />
+                <span>{showEnrollDrawer ? 'Close Enrollment' : '+ Enroll Syndicate Entry'}</span>
               </button>
-            ) : (
-              <span className="balance-check-pill" style={{ color: '#d97706', borderColor: 'rgba(217, 119, 6, 0.35)' }}>
-                <span>Standby for Gate 1 Sanction</span>
-              </span>
             )}
           </div>
         </div>
@@ -1612,31 +1616,30 @@ export function SubsystemWorkspace({ moduleId }) {
                 </div>
               </div>
 
-              {/* 4-Gate Operational Pipeline */}
+              {/* 4-Gate Operational Pipeline Stepper */}
               <div className="derby-pipeline-visualizer">
                 <div className="derby-pipeline-step is-active">
-                  <span className="derby-pipeline-gate">GATE 1 &bull; FOCUS</span>
-                  <span className="derby-pipeline-name">Sanction &amp; Rules</span>
-                  <span className="derby-pipeline-status" style={{ color: '#10b981' }}>Active Setup</span>
+                  <span className="derby-pipeline-bubble">1</span>
+                  <span>Gate 1: Sanction &amp; Rules</span>
                 </div>
-                <div className="derby-pipeline-step is-locked">
-                  <span className="derby-pipeline-gate">GATE 2</span>
-                  <span className="derby-pipeline-name">Pot Escrow &amp; Teams</span>
-                  <span className="derby-pipeline-status">Locked (Needs Gate 1)</span>
+                <span className="derby-pipeline-arrow">&rarr;</span>
+                <div className="derby-pipeline-step">
+                  <span className="derby-pipeline-bubble">2</span>
+                  <span>Gate 2: Pot Escrow &amp; Teams</span>
                 </div>
-                <div className="derby-pipeline-step is-locked">
-                  <span className="derby-pipeline-gate">GATE 3 &amp; 4</span>
-                  <span className="derby-pipeline-name">Timbangan &amp; Pairing</span>
-                  <span className="derby-pipeline-status">Locked (Needs Teams)</span>
+                <span className="derby-pipeline-arrow">&rarr;</span>
+                <div className="derby-pipeline-step">
+                  <span className="derby-pipeline-bubble">3</span>
+                  <span>Gate 3 &amp; 4: Timbangan &amp; Kasahan</span>
                 </div>
-                <div className="derby-pipeline-step is-locked">
-                  <span className="derby-pipeline-gate">GATE 5</span>
-                  <span className="derby-pipeline-name">Ruedo Soltada Arena</span>
-                  <span className="derby-pipeline-status">Locked (Fight Card)</span>
+                <span className="derby-pipeline-arrow">&rarr;</span>
+                <div className="derby-pipeline-step">
+                  <span className="derby-pipeline-bubble">4</span>
+                  <span>Gate 5: Ruedo Soltada Arena</span>
                 </div>
               </div>
 
-              {/* 4 Quick Archetype Launch Cards */}
+              {/* 4 Clean, Decluttered Archetype Launch Cards */}
               <div className="derby-archetypes-matrix">
                 {/* Card 1: 11-Stag Championship (3-3-5) */}
                 <div
@@ -1675,23 +1678,15 @@ export function SubsystemWorkspace({ moduleId }) {
                     })
                   }
                 >
-                  <div>
-                    <div className="derby-launch-card-header">
-                      <span className="derby-launch-badge">EV-GBaCA / LRAC FORMAT</span>
-                      <span style={{ fontSize: '11px', fontWeight: '800', color: '#10b981' }}>11 STAGS</span>
-                    </div>
+                  <div className="derby-launch-card-top">
                     <div className="derby-launch-card-title">11-Stag Championship (3-3-5)</div>
-                    <div className="derby-launch-meta-row" style={{ marginTop: '8px' }}>
-                      <span className="derby-launch-meta-tag is-prize">₱5,000,000 Guaranteed</span>
-                      <span className="derby-launch-meta-tag">No Pot Bayad Agad</span>
-                      <span className="derby-launch-meta-tag">1,700–2,250g (±35g Habol)</span>
-                    </div>
+                    <span className="derby-launch-badge">11 Stags &bull; ₱5.0M Purse</span>
                   </div>
-                  <div className="derby-launch-flow-desc">
-                    <strong>3-3-5 Multi-Stage:</strong> 3 Elims (Open Band) ➔ 3 Semis (Scores back to 0) ➔ 5 Championship Finals.
+                  <div className="derby-launch-card-desc">
+                    3 Elims (Open Band) &rarr; 3 Semis (Scores to 0) &rarr; 5 Finals. 1,700g&ndash;2,250g (&plusmn;35g Habol), No Pot Bayad Agad.
                   </div>
-                  <div className="derby-launch-action-link">
-                    <span>Configure 11-Stag Carousel</span>
+                  <div className="derby-launch-card-cta">
+                    <span>Select &amp; Configure</span>
                     <ChevronRight size={14} />
                   </div>
                 </div>
@@ -1733,23 +1728,15 @@ export function SubsystemWorkspace({ moduleId }) {
                     })
                   }
                 >
-                  <div>
-                    <div className="derby-launch-card-header">
-                      <span className="derby-launch-badge">BAYAD AGAD CHALLENGE</span>
-                      <span style={{ fontSize: '11px', fontWeight: '800', color: '#10b981' }}>4 STAGS</span>
-                    </div>
+                  <div className="derby-launch-card-top">
                     <div className="derby-launch-card-title">4-Stag Derby Challenge (Hybrid)</div>
-                    <div className="derby-launch-meta-row" style={{ marginTop: '8px' }}>
-                      <span className="derby-launch-meta-tag is-prize">₱150,000 Bayad Agad</span>
-                      <span className="derby-launch-meta-tag">Min Bet ₱4,400</span>
-                      <span className="derby-launch-meta-tag">Max Level ₱11,000</span>
-                    </div>
+                    <span className="derby-launch-badge">4 Stags &bull; ₱150K Bayad Agad</span>
                   </div>
-                  <div className="derby-launch-flow-desc">
-                    <strong>2-2 Fast Hybrid:</strong> 2 Elims ➔ 2 Finals. Includes Any 3 Pts (₱25k) and Last Win (₱10k) shared pools.
+                  <div className="derby-launch-card-desc">
+                    2 Elims &rarr; 2 Finals. Includes Any 3 Pts (₱25k) and Last Win (₱10k) shared pools. Min Bet ₱4,400.
                   </div>
-                  <div className="derby-launch-action-link">
-                    <span>Configure 4-Stag Carousel</span>
+                  <div className="derby-launch-card-cta">
+                    <span>Select &amp; Configure</span>
                     <ChevronRight size={14} />
                   </div>
                 </div>
@@ -1791,23 +1778,15 @@ export function SubsystemWorkspace({ moduleId }) {
                     })
                   }
                 >
-                  <div>
-                    <div className="derby-launch-card-header">
-                      <span className="derby-launch-badge">CLUSTER ELIMS</span>
-                      <span style={{ fontSize: '11px', fontWeight: '800', color: '#10b981' }}>3 STAGS</span>
-                    </div>
+                  <div className="derby-launch-card-top">
                     <div className="derby-launch-card-title">3-Stag Panta Elims (Fight All)</div>
-                    <div className="derby-launch-meta-row" style={{ marginTop: '8px' }}>
-                      <span className="derby-launch-meta-tag is-prize">₱20k–₱50k Day Money</span>
-                      <span className="derby-launch-meta-tag">Open Banded</span>
-                      <span className="derby-launch-meta-tag">Min Bet ₱3,300</span>
-                    </div>
+                    <span className="derby-launch-badge">3 Stags &bull; ₱20K–₱50K Day Money</span>
                   </div>
-                  <div className="derby-launch-flow-desc">
-                    <strong>Fight All (Walang Iwanan):</strong> 3 Sultadas single stage. Top 2.0+ pointer qualifiers advance to regionals.
+                  <div className="derby-launch-card-desc">
+                    Fight All (Walang Iwanan) single stage. 3 Sultadas with 2.0+ pointer qualifiers advancing to regional championship.
                   </div>
-                  <div className="derby-launch-action-link">
-                    <span>Configure 3-Stag Carousel</span>
+                  <div className="derby-launch-card-cta">
+                    <span>Select &amp; Configure</span>
                     <ChevronRight size={14} />
                   </div>
                 </div>
@@ -1849,22 +1828,14 @@ export function SubsystemWorkspace({ moduleId }) {
                     })
                   }
                 >
-                  <div>
-                    <div className="derby-launch-card-header">
-                      <span className="derby-launch-badge" style={{ color: '#d97706', borderColor: 'rgba(217,119,6,0.3)', background: 'rgba(217,119,6,0.08)' }}>FLEXIBLE ENGINE</span>
-                      <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-secondary)' }}>CUSTOM</span>
-                    </div>
+                  <div className="derby-launch-card-top">
                     <div className="derby-launch-card-title">Custom Sanctioned Format</div>
-                    <div className="derby-launch-meta-row" style={{ marginTop: '8px' }}>
-                      <span className="derby-launch-meta-tag">Custom Purse &amp; Pots</span>
-                      <span className="derby-launch-meta-tag">N-Cock Fights</span>
-                      <span className="derby-launch-meta-tag">GAB Audited</span>
-                    </div>
+                    <span className="derby-launch-badge" style={{ color: '#d97706', borderColor: 'rgba(217,119,6,0.3)', background: 'rgba(217,119,6,0.08)' }}>Flexible Engine</span>
                   </div>
-                  <div className="derby-launch-flow-desc">
-                    <strong>Full Rule Customization:</strong> Define custom fight stages, pot escrow, Kasahan tolerances, and awards.
+                  <div className="derby-launch-card-desc">
+                    Full custom control over stage breakdowns, pot escrow fees, Kasahan scale brackets, and special awards.
                   </div>
-                  <div className="derby-launch-action-link">
+                  <div className="derby-launch-card-cta">
                     <span>Open Custom Rule Builder</span>
                     <ChevronRight size={14} />
                   </div>
