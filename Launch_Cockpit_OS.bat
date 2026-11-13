@@ -29,16 +29,16 @@ if %errorlevel% neq 0 (
     echo [BOOT 3/4] Cockpit OS Kernel Daemon is already active on Port 4000.
 )
 
-echo [BOOT 4/4] Launching Cockpit OS Desktop Shell...
+echo [BOOT 4/4] Launching Cockpit OS Desktop Shell in Auto-Fullscreen...
 where msedge >nul 2>&1
 if %errorlevel% equ 0 (
-    start "" msedge --app=http://127.0.0.1:4000 --start-maximized
+    start "" msedge --app=http://127.0.0.1:4000 --start-fullscreen --start-maximized
     exit /b 0
 )
 
 where chrome >nul 2>&1
 if %errorlevel% equ 0 (
-    start "" chrome --app=http://127.0.0.1:4000 --start-maximized
+    start "" chrome --app=http://127.0.0.1:4000 --start-fullscreen --start-maximized
     exit /b 0
 )
 

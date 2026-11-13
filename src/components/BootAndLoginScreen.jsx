@@ -15,7 +15,9 @@ import {
   ChevronRight,
   HardDrive,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 import { useArena } from '../context/ArenaContext.jsx';
 import { AppIconGlyph } from './AppIconGlyph.jsx';
@@ -43,6 +45,35 @@ export function BootAndLoginScreen() {
   // Modes: 'login' (default real OS login) | 'setup' (first-time provisioning / database switch)
   const [setupMode, setSetupMode] = useState(false);
   const [showKeypad, setShowKeypad] = useState(false);
+  const [now, setNow] = useState(new Date());
+  const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
+
+  // Auto-ticking clock
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Sync fullscreen state
+  useEffect(() => {
+    const handleFsChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener('fullscreenchange', handleFsChange);
+    return () => document.removeEventListener('fullscreenchange', handleFsChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  };
+
+  const triggerAutoFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+  };
 
   // Login Form State
   const [selectedUserCode, setSelectedUserCode] = useState('');
@@ -202,12 +233,23 @@ export function BootAndLoginScreen() {
   const showSetupWizard = isFirstBootNewServer || setupMode;
 
   return (
-    <div className="os-boot-screen is-real-os-login">
-      {/* Top Bar with System Telemetry */}
+    <div className="os-boot-screen is-real-os-login" onClick={triggerAutoFullscreen}>
+      {/* Top Bar with System Telemetry, Live Digital Clock & Fullscreen Toggle */}
       <div className="real-os-top-bar">
         <div className="real-os-brand-pill">
           <AppIconGlyph name="Monitor" size={14} />
           <span>COCKPIT OS v2.4.0</span>
+        </div>
+
+        {/* Live Top Center Lock Screen Clock */}
+        <div className="real-os-clock-header">
+          <span className="lock-clock-time">
+            {now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+          </span>
+          <span className="lock-clock-dot">•</span>
+          <span className="lock-clock-date">
+            {now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+          </span>
         </div>
 
         <div className="real-os-telemetry-cluster">
@@ -225,6 +267,20 @@ export function BootAndLoginScreen() {
               <span>{activeTenant.tenant_code}: {activeTenant.arena_name}</span>
             </span>
           )}
+
+          {/* Explicit Fullscreen Toggle */}
+          <button
+            type="button"
+            className={`telemetry-pill btn-fs-pill ${isFullscreen ? 'is-active' : ''}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleFullscreen();
+            }}
+            title={isFullscreen ? 'Exit Fullscreen' : 'Enter Auto-Fullscreen'}
+          >
+            {isFullscreen ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
+            <span>{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}</span>
+          </button>
         </div>
       </div>
 
