@@ -492,6 +492,57 @@ export function initializeTenantSchema(tdb) {
   try {
     tdb.exec("ALTER TABLE derby_events ADD COLUMN derby_rules TEXT DEFAULT ''");
   } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN guaranteed_prize REAL DEFAULT 0");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN pot_mode TEXT DEFAULT 'STANDARD'");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN day_money_amount REAL DEFAULT 0");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN max_level_bet REAL DEFAULT 0");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN banding_category TEXT DEFAULT 'OPEN'");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN hennies_allowed INTEGER DEFAULT 0");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN elims_advance_pts REAL DEFAULT 2.0");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN semis_score_reset INTEGER DEFAULT 1");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN champion_prize REAL DEFAULT 0");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN runnerup_prize REAL DEFAULT 0");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN handler_award REAL DEFAULT 0");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN gaffer_award REAL DEFAULT 0");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN stag_fighter_award REAL DEFAULT 0");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN cluster_district TEXT DEFAULT ''");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN venue_name TEXT DEFAULT ''");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN matching_system TEXT DEFAULT 'STANDARD'");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN rules_json TEXT DEFAULT '{}'");
+  } catch {}
 }
 
 export function appendAuditLog(tdb, eventCode, actor, terminalId, severity, details) {

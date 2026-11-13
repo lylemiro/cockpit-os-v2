@@ -5505,3 +5505,287 @@
   color: #64748b;
   font-weight: 600;
 }
+
+/* =========================================================================
+   COLISEO DERBY TOURNAMENT SHOWCASE & DYNAMIC RULES ENGINE
+   ========================================================================= */
+
+.derby-workspace-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.derby-top-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.derby-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.derby-active-hero-card {
+  position: relative;
+  background: linear-gradient(135deg, var(--bg-card-solid) 0%, var(--bg-card-subtle) 100%);
+  border: 1.5px solid var(--border-card);
+  border-radius: var(--radius-lg, 12px);
+  padding: 22px 26px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.derby-hero-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.derby-hero-title-cluster {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.derby-hero-badge-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.derby-format-badge {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--emerald-600);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  letter-spacing: 0.03em;
+}
+
+.derby-status-pill-active {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: #10b981;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+.derby-hero-main-title {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin: 4px 0 2px 0;
+}
+
+.derby-hero-sub-promoter {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.derby-hero-prize-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  gap: 2px;
+}
+
+.derby-hero-prize-label {
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--gold-600, #d97706);
+  letter-spacing: 0.05em;
+}
+
+.derby-hero-prize-amount {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--gold-500, #f59e0b);
+  letter-spacing: 0.02em;
+  font-family: var(--font-mono);
+}
+
+/* Dynamic Multi-Stage Flowchart Strip */
+.derby-stages-flow-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 18px;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-card);
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+
+.derby-flow-step-box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-card);
+  flex: 1;
+  min-width: 140px;
+}
+
+.derby-flow-step-name {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-transform: uppercase;
+}
+
+.derby-flow-step-rule {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.derby-flow-arrow {
+  color: var(--emerald-500);
+  display: flex;
+  align-items: center;
+}
+
+/* 4 Core Pillars Grid */
+.derby-pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.derby-pillar-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-card);
+  border-radius: 10px;
+}
+
+.derby-pillar-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.derby-pillar-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.derby-pillar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.derby-pillar-key {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.derby-pillar-val {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+/* Quick Dynamic Archetype Selector Cards */
+.derby-archetype-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.derby-archetype-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--bg-card-solid);
+  border: 1.5px solid var(--border-card);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.derby-archetype-card:hover {
+  border-color: var(--emerald-500);
+  background: var(--bg-card-hover);
+}
+
+.derby-archetype-card.is-active {
+  border-color: var(--emerald-500);
+  background: rgba(16, 185, 129, 0.08);
+  box-shadow: 0 0 0 1px var(--emerald-500);
+}
+
+.derby-archetype-name {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.derby-archetype-desc {
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+/* Balance Check Pill */
+.balance-check-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-card);
+}
+
+.balance-check-pill.is-balanced {
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.35);
+}

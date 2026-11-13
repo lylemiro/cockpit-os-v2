@@ -14,11 +14,21 @@ import {
   Mail,
   Globe,
   Eye,
-  EyeOff
+  EyeOff,
+  Sparkles,
+  Plus,
+  Layers,
+  Scale,
+  Award,
+  BadgeDollarSign,
+  Clock,
+  RotateCw,
+  Users
 } from 'lucide-react';
 import { useArena } from '../context/ArenaContext.jsx';
 import { DatabaseRelationshipGraph } from '../components/DatabaseRelationshipGraph.jsx';
 import { ArbacManager } from '../components/ArbacManager.jsx';
+import { DerbyTournamentCarouselModal } from '../components/DerbyTournamentCarouselModal.jsx';
 
 export function SubsystemWorkspace({ moduleId }) {
   const {
@@ -39,6 +49,8 @@ export function SubsystemWorkspace({ moduleId }) {
   const [dbTab, setDbTab] = useState('graph'); // 'graph' | 'tables'
   const [isEditingArena, setIsEditingArena] = useState(false);
   const [paperworkDocType, setPaperworkDocType] = useState('bout_sheet'); // 'bout_sheet' | 'tari_clearance' | 'plasada_voucher'
+  const [isDerbyCarouselOpen, setIsDerbyCarouselOpen] = useState(false);
+  const [showEnrollDrawer, setShowEnrollDrawer] = useState(false);
 
   // Form states for dynamic creation across modules
   const [arenaForm, setArenaForm] = useState({
@@ -1170,122 +1182,54 @@ export function SubsystemWorkspace({ moduleId }) {
     return <ArbacManager />;
   }
 
-  // 5. EVENTS & SCHEDULE (Gate 1 & Gate 2)
+  // 5. EVENTS & SCHEDULE (Carousel Journey Redesign)
   if (moduleId === 'events-schedule') {
     const events = arenaState.events || [];
     const entries = arenaState.entries || [];
-    return (
-      <div className="workspace-split-grid">
-        <div className="form-stack">
-          <form
-            className="workspace-panel form-stack"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              const res = await handleAction(
-                '/api/events',
-                'POST',
-                eventForm,
-                `Created derby "${eventForm.title}".`
-              );
-              if (res.ok) setEventForm({ ...eventForm, title: '', promoter: '' });
-            }}
-          >
-            <div className="workspace-panel-title">Gate 1: Schedule Derby Event</div>
-            <div className="form-field">
-              <label className="form-label">Tournament Title</label>
-              <input
-                className="form-input"
-                required
-                placeholder="e.g. 2026 National Stag 4-Cock Derby"
-                value={eventForm.title}
-                onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
-              />
-            </div>
-            <div className="form-row-2col">
-              <div className="form-field">
-                <label className="form-label">Format</label>
-                <select
-                  className="form-select"
-                  value={eventForm.format}
-                  onChange={(e) => setEventForm({ ...eventForm, format: e.target.value })}
-                >
-                  <option>2-Cock Ulutan</option>
-                  <option>3-Cock Derby</option>
-                  <option>4-Cock Stag Derby</option>
-                  <option>5-Cock Championship</option>
-                  <option>7-Cock Invitational</option>
-                </select>
-              </div>
-              <div className="form-field">
-                <label className="form-label">Pot Fee (₱)</label>
-                <input
-                  type="number"
-                  className="form-input"
-                  value={eventForm.pot_fee}
-                  onChange={(e) => setEventForm({ ...eventForm, pot_fee: e.target.value })}
-                />
-              </div>
-            </div>
-            <div className="form-field">
-              <label className="form-label">Host / Promoter</label>
-              <input
-                className="form-input"
-                required
-                placeholder="e.g. San Juan Syndicate"
-                value={eventForm.promoter}
-                onChange={(e) => setEventForm({ ...eventForm, promoter: e.target.value })}
-              />
-            </div>
-            <div className="form-row-2col">
-              <div className="form-field">
-                <label className="form-label">Derby Min Weight (g)</label>
-                <input
-                  type="number"
-                  className="form-input"
-                  required
-                  value={eventForm.min_weight_grams}
-                  onChange={(e) => setEventForm({ ...eventForm, min_weight_grams: e.target.value })}
-                />
-              </div>
-              <div className="form-field">
-                <label className="form-label">Derby Max Weight (g)</label>
-                <input
-                  type="number"
-                  className="form-input"
-                  required
-                  value={eventForm.max_weight_grams}
-                  onChange={(e) => setEventForm({ ...eventForm, max_weight_grams: e.target.value })}
-                />
-              </div>
-            </div>
-            <div className="form-row-2col">
-              <div className="form-field">
-                <label className="form-label">Kasahan Tolerance (±g)</label>
-                <input
-                  type="number"
-                  className="form-input"
-                  required
-                  value={eventForm.weight_tolerance_grams}
-                  onChange={(e) => setEventForm({ ...eventForm, weight_tolerance_grams: e.target.value })}
-                />
-              </div>
-              <div className="form-field">
-                <label className="form-label">Derby Rules &amp; Sanctions</label>
-                <input
-                  className="form-input"
-                  placeholder="e.g. Standard GAB / PD 449 Rules"
-                  value={eventForm.derby_rules}
-                  onChange={(e) => setEventForm({ ...eventForm, derby_rules: e.target.value })}
-                />
-              </div>
-            </div>
-            <button type="submit" className="btn-primary-emerald" disabled={submitting}>
-              {submitting ? 'Creating...' : '+ Create Derby Event'}
-            </button>
-          </form>
+    const activeEv = arenaState.activeEvent || events.find((e) => e.status === 'ACTIVE') || events[0];
 
+    return (
+      <div className="derby-workspace-stack">
+        {/* Top Action Bar */}
+        <div className="derby-top-action-bar">
+          <div className="derby-bar-title-cluster">
+            <span className="journey-badge-pill">
+              <Trophy size={13} className="card-title-icon-gold" />
+              <span>GATE 1 &bull; TOURNAMENT DIRECTOR</span>
+            </span>
+            <div className="derby-bar-main-title">
+              Coliseum Derby Tournament Operations &amp; Schedule
+            </div>
+            <div className="derby-bar-subtitle">
+              PD 449 / GAB Sanctioned &bull; Multi-Stage Progression, Habol System &bull; Physical SQLite WAL
+            </div>
+          </div>
+
+          <div className="derby-bar-actions-cluster">
+            <button
+              type="button"
+              className="btn-primary-emerald"
+              onClick={() => setIsDerbyCarouselOpen(true)}
+            >
+              <Sparkles size={15} />
+              <span>+ Configure &amp; Launch Tournament (Carousel Journey)</span>
+            </button>
+
+            <button
+              type="button"
+              className="btn-secondary-gold"
+              onClick={() => setShowEnrollDrawer(!showEnrollDrawer)}
+            >
+              <Users size={15} />
+              <span>{showEnrollDrawer ? 'Close Enrollment Panel' : '+ Enroll Syndicate Entry'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Quick Inline Entry Enrollment Drawer */}
+        {showEnrollDrawer && (
           <form
-            className="workspace-panel form-stack"
+            className="workspace-panel form-stack animate-fadeIn"
             onSubmit={async (e) => {
               e.preventDefault();
               const res = await handleAction(
@@ -1294,29 +1238,37 @@ export function SubsystemWorkspace({ moduleId }) {
                 entryForm,
                 `Enrolled syndicate entry "${entryForm.entry_name.toUpperCase()}".`
               );
-              if (res.ok) setEntryForm({ ...entryForm, entry_name: '', owner_gallero: '' });
+              if (res.ok) {
+                setEntryForm({ ...entryForm, entry_name: '', owner_gallero: '' });
+                setShowEnrollDrawer(false);
+              }
             }}
           >
-            <div className="workspace-panel-title">Gate 2: Enroll Entry & Pot Escrow</div>
-            <div className="form-field">
-              <label className="form-label">Entry / Team Name</label>
-              <input
-                className="form-input"
-                required
-                placeholder="e.g. THUNDERBIRD GOLD"
-                value={entryForm.entry_name}
-                onChange={(e) => setEntryForm({ ...entryForm, entry_name: e.target.value })}
-              />
+            <div className="workspace-panel-title">
+              <Users size={16} className="card-title-icon-gold" />
+              <span>Gate 2: Fast Syndicate Entry Enrollment &amp; Pot Escrow</span>
             </div>
-            <div className="form-field">
-              <label className="form-label">Owner / Gallero</label>
-              <input
-                className="form-input"
-                required
-                placeholder="e.g. Boss Atong / San Juan Farm"
-                value={entryForm.owner_gallero}
-                onChange={(e) => setEntryForm({ ...entryForm, owner_gallero: e.target.value })}
-              />
+            <div className="form-row-2col">
+              <div className="form-field">
+                <label className="form-label">Entry / Syndicate Team Name *</label>
+                <input
+                  className="form-input"
+                  required
+                  placeholder="e.g. THUNDERBIRD GOLD"
+                  value={entryForm.entry_name}
+                  onChange={(e) => setEntryForm({ ...entryForm, entry_name: e.target.value })}
+                />
+              </div>
+              <div className="form-field">
+                <label className="form-label">Owner / Gallero Breeder *</label>
+                <input
+                  className="form-input"
+                  required
+                  placeholder="e.g. Boss Atong / San Juan Farm"
+                  value={entryForm.owner_gallero}
+                  onChange={(e) => setEntryForm({ ...entryForm, owner_gallero: e.target.value })}
+                />
+              </div>
             </div>
             <div className="form-row-2col">
               <div className="form-field">
@@ -1328,13 +1280,13 @@ export function SubsystemWorkspace({ moduleId }) {
                     setEntryForm({ ...entryForm, pot_payment_status: e.target.value })
                   }
                 >
-                  <option value="PAID">PAID</option>
-                  <option value="PENDING_CASHIER">PENDING_CASHIER</option>
-                  <option value="EXEMPT">EXEMPT</option>
+                  <option value="PAID">PAID (Verified Escrow)</option>
+                  <option value="PENDING_CASHIER">PENDING_CASHIER (Pay at Cage)</option>
+                  <option value="EXEMPT">EXEMPT (Sponsor / Promoter Entry)</option>
                 </select>
               </div>
               <div className="form-field">
-                <label className="form-label">Seating Tier</label>
+                <label className="form-label">Coliseum Seating Tier</label>
                 <select
                   className="form-select"
                   value={entryForm.syndicate_tier}
@@ -1346,120 +1298,194 @@ export function SubsystemWorkspace({ moduleId }) {
                 </select>
               </div>
             </div>
-            <button type="submit" className="btn-primary-emerald" disabled={submitting}>
-              {submitting ? 'Enrolling...' : '+ Enroll Syndicate Entry'}
-            </button>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+              <button
+                type="button"
+                className="btn-cancel-flat"
+                onClick={() => setShowEnrollDrawer(false)}
+              >
+                Cancel
+              </button>
+              <button type="submit" className="btn-primary-emerald" disabled={submitting}>
+                {submitting ? 'Enrolling...' : '+ Submit & Enroll Entry'}
+              </button>
+            </div>
           </form>
-        </div>
+        )}
 
-        <div className="form-stack">
-          {arenaState?.activeEvent && (
-            <div className="active-derby-rules-banner">
-              <div className="derby-rules-title">
-                <Trophy size={16} className="card-title-icon-gold" />
-                <span>Active Derby: <strong>{arenaState.activeEvent.title}</strong></span>
+        {/* Active Tournament Showcase Hero Card */}
+        {activeEv ? (
+          <div className="derby-active-hero-card">
+            <div className="hero-top-row">
+              <div className="hero-identity-cluster">
+                <div className="hero-badges-strip">
+                  <span className="derby-format-badge">
+                    <Trophy size={13} />
+                    <span>{activeEv.format || 'Coliseum Derby'}</span>
+                  </span>
+                  <span className="balance-check-pill is-balanced">
+                    <CheckCircle2 size={12} />
+                    <span>ACTIVE LIVE DERBY</span>
+                  </span>
+                  {activeEv.pot_mode && (
+                    <span className="balance-check-pill">
+                      <span>{activeEv.pot_mode === 'NO_POT_BAYAD_AGAD' ? 'No Pot Money (Bayad Agad)' : 'Standard Pot Escrow'}</span>
+                    </span>
+                  )}
+                </div>
+                <h2 className="hero-tournament-title">{activeEv.title}</h2>
+                <div className="hero-venue-meta">
+                  <span><strong>Host:</strong> {activeEv.promoter}</span>
+                  <span>&bull;</span>
+                  <span><strong>Venue:</strong> {activeEv.venue_name || arenaState?.tenant?.arena_name || 'Leyte Recreational & Amusement Complex (LRAC)'}</span>
+                  {activeEv.cluster_district && (
+                    <>
+                      <span>&bull;</span>
+                      <span><strong>Cluster:</strong> {activeEv.cluster_district}</span>
+                    </>
+                  )}
+                </div>
               </div>
-              <div className="derby-rules-grid">
-                <div className="derby-rule-chip">
-                  <span className="derby-rule-label">Format</span>
-                  <span className="derby-rule-val">{arenaState.activeEvent.format}</span>
+
+              <div className="hero-prize-stat-box">
+                <div className="prize-stat-label">TOTAL GUARANTEED PURSE</div>
+                <div className="prize-stat-val">
+                  ₱{Number(activeEv.guaranteed_prize || activeEv.pot_fee || 0).toLocaleString()}
                 </div>
-                <div className="derby-rule-chip">
-                  <span className="derby-rule-label">Weight Bracket</span>
-                  <span className="derby-rule-val is-emerald">
-                    {arenaState.activeEvent.min_weight_grams || 1800}g – {arenaState.activeEvent.max_weight_grams || 2450}g
-                  </span>
-                </div>
-                <div className="derby-rule-chip">
-                  <span className="derby-rule-label">Kasahan Tolerance</span>
-                  <span className="derby-rule-val is-gold">
-                    &le; {arenaState.activeEvent.weight_tolerance_grams || 30}g variance
-                  </span>
-                </div>
-                <div className="derby-rule-chip">
-                  <span className="derby-rule-label">Derby Rules</span>
-                  <span className="derby-rule-val">
-                    {arenaState.activeEvent.derby_rules || 'Standard GAB Rules'}
-                  </span>
+                <div className="prize-stat-sub">
+                  Min Bet: ₱{Number(activeEv.min_bet || 3500).toLocaleString()} &bull; Date: {activeEv.event_date || 'Derby Day'}
                 </div>
               </div>
             </div>
-          )}
 
-          <div className="workspace-panel">
-            <div className="workspace-panel-title">
-              Tournament Calendar ({events.length}) — Single Active Derby Rule
-            </div>
-            {events.length === 0 ? (
-              <div className="module-empty-state">
-                <div className="module-empty-title">No Tournaments Scheduled</div>
-                <div className="module-empty-desc">
-                  Create a Derby Event on the left to unlock Gate 1 and enable participant entry enrollment.
+            {/* Multi-Stage Journey Strip */}
+            <div className="derby-stages-flow-strip">
+              <div className="derby-flow-step-box">
+                <div className="step-tag">STAGE 1: ELIMINATIONS</div>
+                <div className="step-stags">
+                  {activeEv.format?.includes('3-3-5') ? '3 Stags' : activeEv.format?.includes('4-Stag') ? '2 Stags' : 'Elims'}
+                </div>
+                <div className="step-sub">
+                  Advance Cutoff: <strong>&ge; {activeEv.elims_advance_pts || '2.0'} Pts</strong>
                 </div>
               </div>
-            ) : (
-              <div className="data-table-wrap">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Title</th>
-                      <th>Format</th>
-                      <th>Weight Rules</th>
-                      <th>Promoter</th>
-                      <th>Status</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {events.map((ev) => (
-                      <tr key={ev.event_id}>
-                        <td>
-                          <strong>{ev.title}</strong>
-                        </td>
-                        <td>{ev.format}</td>
-                        <td>
-                          <span className="top-mono-item">
-                            {ev.min_weight_grams || 1800}g – {ev.max_weight_grams || 2450}g (&plusmn;{ev.weight_tolerance_grams || 30}g)
-                          </span>
-                        </td>
-                        <td>{ev.promoter}</td>
-                        <td>
-                          <span
-                            className={`status-badge ${ev.status === 'ACTIVE' ? 'is-passed' : 'is-pending'}`}
-                          >
-                            {ev.status}
-                          </span>
-                        </td>
-                        <td>
-                          {ev.status !== 'ACTIVE' && (
-                            <button
-                              type="button"
-                              className="btn-secondary-gold"
-                              onClick={() =>
-                                handleAction(`/api/events/${ev.event_id}`, 'PATCH', {})
-                              }
-                            >
-                              Make Active
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+
+              <div className="step-arrow">&rarr;</div>
+
+              <div className="derby-flow-step-box">
+                <div className="step-tag">STAGE 2: SEMI-FINALS</div>
+                <div className="step-stags">
+                  {activeEv.format?.includes('3-3-5') ? '3 Stags' : activeEv.format?.includes('4-Stag') ? '1 Stag' : 'Semis'}
+                </div>
+                <div className="step-sub">
+                  Scores Back to Zero: <strong>{activeEv.semis_score_reset !== 0 ? 'YES (EV-GBaCA)' : 'NO'}</strong>
+                </div>
               </div>
-            )}
+
+              <div className="step-arrow">&rarr;</div>
+
+              <div className="derby-flow-step-box is-final">
+                <div className="step-tag">STAGE 3: CHAMPIONSHIP FINALS</div>
+                <div className="step-stags">
+                  {activeEv.format?.includes('3-3-5') ? '5 Stags' : activeEv.format?.includes('4-Stag') ? '2 Stags' : 'Finals'}
+                </div>
+                <div className="step-sub">
+                  Purse Contest: <strong>₱{Number(activeEv.guaranteed_prize || 0).toLocaleString()}</strong>
+                </div>
+              </div>
+            </div>
+
+            {/* 4 Pillars Grid */}
+            <div className="derby-pillars-grid">
+              <div className="derby-pillar-box">
+                <div className="pillar-header">
+                  <Scale size={14} className="pillar-icon" />
+                  <span className="pillar-title">Pillar 1: Kasahan &amp; Scale Rules</span>
+                </div>
+                <div className="pillar-content">
+                  <div><strong>Scale Bracket:</strong> {activeEv.min_weight_grams || 1700}g &ndash; {activeEv.max_weight_grams || 2250}g</div>
+                  <div><strong>Kasahan Variance:</strong> &plusmn;{activeEv.weight_tolerance_grams || 35}g Give &amp; Take</div>
+                  <div><strong>Pairing System:</strong> {activeEv.matching_system === 'HABOL_SYSTEM' ? 'Habol System' : 'Standard Fair Match'}</div>
+                  <div><strong>Hennies Policy:</strong> {activeEv.hennies_allowed ? 'Allowed by Exemption' : 'Strictly No Hennies'}</div>
+                </div>
+              </div>
+
+              <div className="derby-pillar-box">
+                <div className="pillar-header">
+                  <BadgeDollarSign size={14} className="pillar-icon" />
+                  <span className="pillar-title">Pillar 2: Pot &amp; Match Bets</span>
+                </div>
+                <div className="pillar-content">
+                  <div>
+                    <strong>Pot Structure:</strong> {activeEv.pot_mode === 'NO_POT_BAYAD_AGAD' ? 'No Pot (Bayad Agad)' : 'Upfront Escrow'}
+                  </div>
+                  <div>
+                    <strong>Day Money / Fee:</strong> ₱{Number(activeEv.day_money_amount || activeEv.pot_fee || 0).toLocaleString()}
+                  </div>
+                  <div><strong>Minimum Bet:</strong> ₱{Number(activeEv.min_bet || 3500).toLocaleString()} per Sultada</div>
+                  <div><strong>Plasada Split:</strong> {activeEv.plasada_split || '70/30'}</div>
+                </div>
+              </div>
+
+              <div className="derby-pillar-box">
+                <div className="pillar-header">
+                  <Layers size={14} className="pillar-icon" />
+                  <span className="pillar-title">Pillar 3: Qualification &amp; Scoring</span>
+                </div>
+                <div className="pillar-content">
+                  <div><strong>Elims Cutoff:</strong> {activeEv.elims_advance_pts || '2.0'} pts to advance</div>
+                  <div><strong>Semi-Finals Reset:</strong> {activeEv.semis_score_reset !== 0 ? 'Scores Reset to 0' : 'Cumulative'}</div>
+                  <div><strong>Banding Eligibility:</strong> {activeEv.banding_category || 'Open Banded'}</div>
+                  <div><strong>Scoring System:</strong> Win = 1.0 pt, Draw = 0.5 pt, Loss = 0 pt</div>
+                </div>
+              </div>
+
+              <div className="derby-pillar-box">
+                <div className="pillar-header">
+                  <Award size={14} className="pillar-icon" />
+                  <span className="pillar-title">Pillar 4: Purse &amp; Awards</span>
+                </div>
+                <div className="pillar-content">
+                  <div><strong>Champion Purse:</strong> ₱{Number(activeEv.champion_prize || 1500000).toLocaleString()}</div>
+                  <div><strong>Runner-Up:</strong> ₱{Number(activeEv.runnerup_prize || 500000).toLocaleString()}</div>
+                  <div><strong>Stag Fighter / Kill:</strong> ₱{Number(activeEv.stag_fighter_award || 1000000).toLocaleString()}</div>
+                  <div><strong>Best Handler / Gaffer:</strong> ₱{Number(activeEv.handler_award || 200000).toLocaleString()} / ₱{Number(activeEv.gaffer_award || 100000).toLocaleString()}</div>
+                </div>
+              </div>
+            </div>
           </div>
+        ) : (
+          <div className="workspace-panel module-empty-state">
+            <Trophy size={48} className="card-title-icon-gold" style={{ marginBottom: '12px' }} />
+            <div className="module-empty-title">No Active Tournament Provisioned</div>
+            <div className="module-empty-desc">
+              Launch the Philippine Coliseo Tournament Carousel Journey to configure multi-stage rules, kasahan tolerance, and physical SQLite WAL storage.
+            </div>
+            <button
+              type="button"
+              className="btn-primary-emerald"
+              style={{ marginTop: '16px' }}
+              onClick={() => setIsDerbyCarouselOpen(true)}
+            >
+              <Sparkles size={16} />
+              <span>Launch Tournament Carousel Journey</span>
+            </button>
+          </div>
+        )}
 
+        {/* Dual Tables Grid: Syndicate Standings & Tournament Archive */}
+        <div className="workspace-split-grid">
+          {/* Enrolled Syndicate Entries Table */}
           <div className="workspace-panel">
             <div className="workspace-panel-title">
-              Enrolled Syndicate Entries & Standings ({entries.length})
+              <Users size={16} className="card-title-icon-gold" />
+              <span>Enrolled Syndicate Entries &amp; Standings ({entries.length})</span>
             </div>
             {entries.length === 0 ? (
               <div className="module-empty-state">
-                <div className="module-empty-title">No Entries Enrolled Yet</div>
+                <div className="module-empty-title">No Entries Registered Yet</div>
                 <div className="module-empty-desc">
-                  Enroll at least 2 entries in Gate 2 so their roosters can be weighed and paired in Kasahan Matchmaking.
+                  Click "+ Enroll Syndicate Entry" above to add participants and unlock Gate 2.
                 </div>
               </div>
             ) : (
@@ -1467,9 +1493,10 @@ export function SubsystemWorkspace({ moduleId }) {
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th>Entry Name</th>
-                      <th>Gallero</th>
+                      <th>Syndicate Team</th>
+                      <th>Owner / Gallero</th>
                       <th>Pot Escrow</th>
+                      <th>Tier</th>
                       <th>W-D-L</th>
                       <th>Points</th>
                     </tr>
@@ -1482,13 +1509,83 @@ export function SubsystemWorkspace({ moduleId }) {
                         </td>
                         <td>{en.owner_gallero}</td>
                         <td>
-                          <span className="status-badge is-passed">{en.pot_payment_status}</span>
+                          <span className={`status-badge ${en.pot_payment_status === 'PAID' ? 'is-passed' : 'is-pending'}`}>
+                            {en.pot_payment_status}
+                          </span>
+                        </td>
+                        <td>{en.syndicate_tier || 'VIP'}</td>
+                        <td>
+                          {en.wins || 0}-{en.draws || 0}-{en.losses || 0}
                         </td>
                         <td>
-                          {en.wins}-{en.draws}-{en.losses}
+                          <strong style={{ color: '#10b981' }}>{(en.points || 0).toFixed(1)} pts</strong>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Tournament Calendar & Archive Table */}
+          <div className="workspace-panel">
+            <div className="workspace-panel-title">
+              <Calendar size={16} className="card-title-icon-gold" />
+              <span>Tournament Calendar &amp; History ({events.length})</span>
+            </div>
+            {events.length === 0 ? (
+              <div className="module-empty-state">
+                <div className="module-empty-title">No Historical Events</div>
+                <div className="module-empty-desc">
+                  All created tournaments will be listed here with single active derby switching.
+                </div>
+              </div>
+            ) : (
+              <div className="data-table-wrap">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Format</th>
+                      <th>Weight Window</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {events.map((ev) => (
+                      <tr key={ev.event_id}>
+                        <td>
+                          <strong>{ev.title}</strong>
+                          <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{ev.promoter}</div>
+                        </td>
+                        <td>{ev.format}</td>
+                        <td>
+                          <span className="top-mono-item">
+                            {ev.min_weight_grams || 1700}g &ndash; {ev.max_weight_grams || 2250}g (&plusmn;{ev.weight_tolerance_grams || 35}g)
+                          </span>
                         </td>
                         <td>
-                          <strong>{en.points.toFixed(1)} pts</strong>
+                          <span className={`status-badge ${ev.status === 'ACTIVE' ? 'is-passed' : 'is-pending'}`}>
+                            {ev.status}
+                          </span>
+                        </td>
+                        <td>
+                          {ev.status !== 'ACTIVE' ? (
+                            <button
+                              type="button"
+                              className="btn-secondary-gold"
+                              style={{ padding: '3px 8px', fontSize: '11px' }}
+                              onClick={() =>
+                                handleAction(`/api/events/${ev.event_id}`, 'PATCH', {})
+                              }
+                            >
+                              Make Active
+                            </button>
+                          ) : (
+                            <span style={{ fontSize: '11px', fontWeight: '700', color: '#10b981' }}>Current Live</span>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -1498,6 +1595,23 @@ export function SubsystemWorkspace({ moduleId }) {
             )}
           </div>
         </div>
+
+        {/* Carousel Journey Modal */}
+        <DerbyTournamentCarouselModal
+          isOpen={isDerbyCarouselOpen}
+          onClose={() => setIsDerbyCarouselOpen(false)}
+          onSubmit={async (payload) => {
+            const res = await handleAction(
+              '/api/events',
+              'POST',
+              payload,
+              `Created & launched tournament "${payload.title}".`
+            );
+            return res;
+          }}
+          submitting={submitting}
+          activeTenant={arenaState.tenant}
+        />
       </div>
     );
   }

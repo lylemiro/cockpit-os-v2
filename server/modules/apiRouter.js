@@ -1670,11 +1670,28 @@ export async function handleApiRequest(req, res, wsHub) {
         pot_fee = 55000,
         promoter,
         plasada_split = '70/30',
-        min_weight_grams = 1800,
-        max_weight_grams = 2450,
-        weight_tolerance_grams = 30,
+        min_weight_grams = 1700,
+        max_weight_grams = 2250,
+        weight_tolerance_grams = 35,
         derby_rules = 'Standard GAB / PD 449 Rules',
-        activate_now = true
+        activate_now = true,
+        guaranteed_prize = 5000000,
+        pot_mode = 'NO_POT_BAYAD_AGAD',
+        day_money_amount = 50000,
+        max_level_bet = 0,
+        banding_category = 'OPEN',
+        hennies_allowed = 0,
+        elims_advance_pts = 2.0,
+        semis_score_reset = 1,
+        champion_prize = 1500000,
+        runnerup_prize = 500000,
+        handler_award = 200000,
+        gaffer_award = 100000,
+        stag_fighter_award = 1000000,
+        cluster_district = '',
+        venue_name = '',
+        matching_system = 'STANDARD',
+        rules_json = '{}'
       } = body;
 
       if (!title || !event_date || !promoter) {
@@ -1692,9 +1709,13 @@ export async function handleApiRequest(req, res, wsHub) {
           INSERT INTO derby_events (
             title, format, event_date, min_bet, pot_fee, promoter,
             plasada_split, min_weight_grams, max_weight_grams,
-            weight_tolerance_grams, derby_rules, status, is_archived
+            weight_tolerance_grams, derby_rules, status, is_archived,
+            guaranteed_prize, pot_mode, day_money_amount, max_level_bet,
+            banding_category, hennies_allowed, elims_advance_pts, semis_score_reset,
+            champion_prize, runnerup_prize, handler_award, gaffer_award,
+            stag_fighter_award, cluster_district, venue_name, matching_system, rules_json
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `)
         .run(
           title,
@@ -1708,7 +1729,24 @@ export async function handleApiRequest(req, res, wsHub) {
           Number(max_weight_grams),
           Number(weight_tolerance_grams),
           derby_rules,
-          status
+          status,
+          Number(guaranteed_prize || 0),
+          pot_mode || 'STANDARD',
+          Number(day_money_amount || 0),
+          Number(max_level_bet || 0),
+          banding_category || 'OPEN',
+          hennies_allowed ? 1 : 0,
+          Number(elims_advance_pts || 2.0),
+          semis_score_reset ? 1 : 0,
+          Number(champion_prize || 0),
+          Number(runnerup_prize || 0),
+          Number(handler_award || 0),
+          Number(gaffer_award || 0),
+          Number(stag_fighter_award || 0),
+          cluster_district || '',
+          venue_name || '',
+          matching_system || 'STANDARD',
+          typeof rules_json === 'string' ? rules_json : JSON.stringify(rules_json || {})
         );
 
       appendAuditLog(
@@ -1717,7 +1755,7 @@ export async function handleApiRequest(req, res, wsHub) {
         promoter,
         hostInfo.terminalId,
         'SUCCESS',
-        `Created tournament "${title}" (${format}) [${min_weight_grams}g–${max_weight_grams}g ±${weight_tolerance_grams}g] with status ${status}`
+        `Created tournament "${title}" (${format}) [${min_weight_grams}g–${max_weight_grams}g ±${weight_tolerance_grams}g, ₱${Number(guaranteed_prize).toLocaleString()} Guaranteed] with status ${status}`
       );
       return syncAndRespond('EVENT_ACTIVATED', tenantId);
     }
