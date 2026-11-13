@@ -317,7 +317,22 @@ The OS includes three curated 16:9 widescreen wallpapers generated via Google AI
    - Optimized for Night/Dark mode where stadium lighting pops dramatically.
 3. **Coliseo Dome (Cinematic Widescreen):**
    - Wide arena dome with the gamecock staged on the right platform, leaving negative space for desktop elements.
-* Switch wallpapers anytime via the **Settings** folder module or by right-clicking the desktop.
+* Switch wallpapers anytime via the **Settings** folder module, taskbar system tray picture button, or by right-clicking the desktop.
+
+### Windows 11 Start Menu, Calendar, Notifications & Global Search
+* **Container-less Contextual Icons:**
+  - Removed artificial box borders around desktop shortcuts. Each of the 19 applications features an authentic, multi-colored vector glyph representing its real arena context.
+  - The signature **Cockpit & Rooms** module is symbolized by an authentic Philippine Gamecock Rooster with ruby red comb, golden hackles, emerald plumage, and leg spurs mounted inside the coliseum pit ring.
+* **Bottom-Left Start Menu (`WindowsStartMenuFlyout.jsx`):**
+  - Features quick search trigger, 19 pinned coliseum apps grid, recent arena events and databases, operator profile card (`EMP-01`), and power actions (Lock, Reboot, Theme, Settings).
+* **Interactive Calendar Flyout (`WindowsCalendarFlyout.jsx`):**
+  - Clicking the date and time clock in the bottom right opens a Windows 11 calendar flyout with live digital clock, date header, month selector, today badge, and live coliseum derby schedule.
+* **Action Center & Notifications Flyout (`WindowsNotificationFlyout.jsx`):**
+  - Bell icon located directly next to the clock displays an unread badge and opens the Action Center with active alerts, plain-English system messages, and tamper-evident audit logs.
+* **Global Search Engine (`GlobalSearchModal.jsx`):**
+  - Triggered via the taskbar search bar, Start Menu search, or <kbd>Ctrl</kbd> + <kbd>K</kbd>.
+  - Indexes all 19 applications, physical SQLite database tables, employees, derby tournaments, roosters/entries, sultada fights, wagers/bets, 23 ARBAC permissions, and audit trails.
+  - Supports category filters (`All`, `Apps`, `Data`, `ARBAC`, `Logs`), keyboard arrows (<kbd>↑</kbd> <kbd>↓</kbd> <kbd>Enter</kbd>), and a real-time metadata preview pane.
 
 ---
 
