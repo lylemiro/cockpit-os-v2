@@ -1983,6 +1983,96 @@
   color: var(--text-primary);
 }
 
+.notif-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.notif-category-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.notif-filter-pill {
+  flex: 1;
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.notif-filter-pill:hover {
+  background: var(--bg-card-solid);
+  color: var(--text-primary);
+}
+
+.notif-filter-pill.is-active {
+  background: var(--emerald-600);
+  color: #ffffff;
+  border-color: var(--emerald-600);
+  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.25);
+}
+
+[data-theme='dark'] .notif-filter-pill.is-active {
+  background: var(--emerald-500);
+  color: #032415;
+  font-weight: 800;
+}
+
+.notif-card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.notif-terminal-tag {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 800;
+  color: var(--emerald-700);
+  background: var(--emerald-50);
+  border: 1px solid var(--emerald-200);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+[data-theme='dark'] .notif-terminal-tag {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.notif-card-meta-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 9.5px;
+}
+
+.notif-actor-name {
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.notif-card-dot {
+  color: var(--text-muted);
+}
+
 .notif-list-container {
   display: flex;
   flex-direction: column;
@@ -2097,7 +2187,7 @@
 
 .notif-quick-actions {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 6px;
   padding-top: 10px;
   border-top: 1px solid var(--border-subtle);

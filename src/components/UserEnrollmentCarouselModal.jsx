@@ -600,3 +600,4 @@ export function UserEnrollmentCarouselModal({
     </div>
   );
 }
+
