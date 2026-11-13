@@ -1242,7 +1242,7 @@ export function SubsystemWorkspace({ moduleId }) {
               }}
             >
               <Sparkles size={14} />
-              <span>+ Launch Tournament Builder</span>
+              <span>+ Create Event</span>
             </button>
 
             {activeEv && (
@@ -1252,7 +1252,7 @@ export function SubsystemWorkspace({ moduleId }) {
                 onClick={() => setShowEnrollDrawer(!showEnrollDrawer)}
               >
                 <Users size={14} />
-                <span>{showEnrollDrawer ? 'Close Enrollment' : '+ Enroll Syndicate Entry'}</span>
+                <span>{showEnrollDrawer ? 'Close Registration' : '+ Register Entry'}</span>
               </button>
             )}
           </div>
@@ -1550,7 +1550,7 @@ export function SubsystemWorkspace({ moduleId }) {
                   <div className="module-empty-state">
                     <div className="module-empty-title">No Entries Registered Yet</div>
                     <div className="module-empty-desc">
-                      Click "+ Enroll Syndicate Entry" above to add participants and unlock Gate 2.
+                      Click "+ Register Entry" above to add participants and unlock Gate 2.
                     </div>
                   </div>
                 ) : (
