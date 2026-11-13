@@ -1450,9 +1450,7 @@ export async function handleApiRequest(req, res, wsHub) {
         mayors_permit,
         bir_cas_min,
         plasada_rate = 0.1,
-        weight_min_grams = 1800,
-        weight_max_grams = 2650,
-        kasahan_tolerance_grams = 30,
+        logo_url = '',
         min_rest_gap = 4,
         vip_seats = 320,
         lower_box_seats = 1450,
@@ -1470,20 +1468,17 @@ export async function handleApiRequest(req, res, wsHub) {
         .prepare(`
           INSERT INTO arena_config (
             id, arena_name, gab_license, mayors_permit, bir_cas_min,
-            plasada_rate, weight_min_grams, weight_max_grams,
-            kasahan_tolerance_grams, min_rest_gap,
+            plasada_rate, logo_url, min_rest_gap,
             vip_seats, lower_box_seats, upper_grandstand_seats, total_cockhouse_bays,
             updated_at
-          ) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+          ) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
           ON CONFLICT(id) DO UPDATE SET
             arena_name = excluded.arena_name,
             gab_license = excluded.gab_license,
             mayors_permit = excluded.mayors_permit,
             bir_cas_min = excluded.bir_cas_min,
             plasada_rate = excluded.plasada_rate,
-            weight_min_grams = excluded.weight_min_grams,
-            weight_max_grams = excluded.weight_max_grams,
-            kasahan_tolerance_grams = excluded.kasahan_tolerance_grams,
+            logo_url = CASE WHEN excluded.logo_url != '' THEN excluded.logo_url ELSE arena_config.logo_url END,
             min_rest_gap = excluded.min_rest_gap,
             vip_seats = excluded.vip_seats,
             lower_box_seats = excluded.lower_box_seats,
@@ -1497,9 +1492,7 @@ export async function handleApiRequest(req, res, wsHub) {
           mayors_permit,
           bir_cas_min,
           Number(plasada_rate),
-          Number(weight_min_grams),
-          Number(weight_max_grams),
-          Number(kasahan_tolerance_grams),
+          logo_url,
           Number(min_rest_gap),
           Number(vip_seats),
           Number(lower_box_seats),
@@ -1507,11 +1500,19 @@ export async function handleApiRequest(req, res, wsHub) {
           Number(total_cockhouse_bays)
         );
 
-      masterDb
-        .prepare(
-          'UPDATE tenants SET arena_name = ?, gab_license = ?, mayors_permit = ?, bir_cas_min = ? WHERE tenant_id = ?'
-        )
-        .run(arena_name, gab_license, mayors_permit, bir_cas_min, tenantId);
+      if (logo_url) {
+        masterDb
+          .prepare(
+            'UPDATE tenants SET arena_name = ?, gab_license = ?, mayors_permit = ?, bir_cas_min = ?, logo_url = ? WHERE tenant_id = ?'
+          )
+          .run(arena_name, gab_license, mayors_permit, bir_cas_min, logo_url, tenantId);
+      } else {
+        masterDb
+          .prepare(
+            'UPDATE tenants SET arena_name = ?, gab_license = ?, mayors_permit = ?, bir_cas_min = ? WHERE tenant_id = ?'
+          )
+          .run(arena_name, gab_license, mayors_permit, bir_cas_min, tenantId);
+      }
 
       appendAuditLog(
         tdb,
@@ -1598,6 +1599,10 @@ export async function handleApiRequest(req, res, wsHub) {
         pot_fee = 55000,
         promoter,
         plasada_split = '70/30',
+        min_weight_grams = 1800,
+        max_weight_grams = 2450,
+        weight_tolerance_grams = 30,
+        derby_rules = 'Standard GAB / PD 449 Rules',
         activate_now = true
       } = body;
 
@@ -1613,8 +1618,12 @@ export async function handleApiRequest(req, res, wsHub) {
 
       tdb
         .prepare(`
-          INSERT INTO derby_events (title, format, event_date, min_bet, pot_fee, promoter, plasada_split, status, is_archived)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)
+          INSERT INTO derby_events (
+            title, format, event_date, min_bet, pot_fee, promoter,
+            plasada_split, min_weight_grams, max_weight_grams,
+            weight_tolerance_grams, derby_rules, status, is_archived
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
         `)
         .run(
           title,
@@ -1624,6 +1633,10 @@ export async function handleApiRequest(req, res, wsHub) {
           Number(pot_fee),
           promoter,
           plasada_split,
+          Number(min_weight_grams),
+          Number(max_weight_grams),
+          Number(weight_tolerance_grams),
+          derby_rules,
           status
         );
 
@@ -1633,7 +1646,7 @@ export async function handleApiRequest(req, res, wsHub) {
         promoter,
         hostInfo.terminalId,
         'SUCCESS',
-        `Created tournament "${title}" (${format}) with status ${status}`
+        `Created tournament "${title}" (${format}) [${min_weight_grams}g–${max_weight_grams}g ±${weight_tolerance_grams}g] with status ${status}`
       );
       return syncAndRespond('EVENT_ACTIVATED', tenantId);
     }
@@ -1726,9 +1739,11 @@ export async function handleApiRequest(req, res, wsHub) {
         });
       }
 
-      const config = tdb.prepare('SELECT * FROM arena_config WHERE id = 1').get();
-      const minW = config?.weight_min_grams ?? 1800;
-      const maxW = config?.weight_max_grams ?? 2650;
+      const activeEvent = tdb
+        .prepare("SELECT * FROM derby_events WHERE status = 'ACTIVE' AND is_archived = 0 ORDER BY event_id DESC LIMIT 1")
+        .get();
+      const minW = activeEvent?.min_weight_grams ?? 1800;
+      const maxW = activeEvent?.max_weight_grams ?? 2450;
       const w = Number(weight_grams);
 
       if (w < minW || w > maxW) {
@@ -1738,10 +1753,10 @@ export async function handleApiRequest(req, res, wsHub) {
           'Timbangan Scale Desk',
           hostInfo.terminalId,
           'WARN',
-          `Gate 3 Rejected Wingband ${wing_band}: ${w}g outside ${minW}g–${maxW}g`
+          `Gate 3 Rejected Wingband ${wing_band}: ${w}g outside Derby Rule bracket ${minW}g–${maxW}g`
         );
         return sendJson(400, {
-          error: `Gate 3 Biometric Rejection: Weight ${w}g is outside the official ${minW}g–${maxW}g bracket.`
+          error: `Gate 3 Biometric Rejection: Weight ${w}g is outside the official Derby Event bracket (${minW}g–${maxW}g).`
         });
       }
 
@@ -1785,8 +1800,7 @@ export async function handleApiRequest(req, res, wsHub) {
         return sendJson(400, { error: 'Gate 1 Violation: No active derby event found.' });
       }
 
-      const config = tdb.prepare('SELECT * FROM arena_config WHERE id = 1').get();
-      const maxTolerance = config?.kasahan_tolerance_grams ?? 30;
+      const maxTolerance = activeEvent?.weight_tolerance_grams ?? 30;
 
       const available = tdb
         .prepare("SELECT * FROM roosters WHERE status = 'WEIGHED' ORDER BY weight_grams ASC")

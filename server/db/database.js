@@ -123,6 +123,10 @@ export function initializeDatabase() {
       FOREIGN KEY (tenant_id) REFERENCES tenants(tenant_id) ON DELETE CASCADE
     );
   `);
+
+  try {
+    masterDb.exec("ALTER TABLE tenants ADD COLUMN logo_url TEXT DEFAULT ''");
+  } catch {}
 }
 
 /**
@@ -413,6 +417,22 @@ export function initializeTenantSchema(tdb) {
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
   `);
+
+  try {
+    tdb.exec("ALTER TABLE arena_config ADD COLUMN logo_url TEXT DEFAULT ''");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN min_weight_grams INTEGER NOT NULL DEFAULT 1800");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN max_weight_grams INTEGER NOT NULL DEFAULT 2450");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN weight_tolerance_grams INTEGER NOT NULL DEFAULT 30");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN derby_rules TEXT DEFAULT ''");
+  } catch {}
 }
 
 export function appendAuditLog(tdb, eventCode, actor, terminalId, severity, details) {

@@ -32,10 +32,13 @@ export function evaluateZeroTrustGates(tdb) {
     )
     .get().count;
 
-  const config = tdb.prepare('SELECT * FROM arena_config WHERE id = 1').get();
-  const minW = config?.weight_min_grams ?? 1800;
-  const maxW = config?.weight_max_grams ?? 2650;
-  const maxTol = config?.kasahan_tolerance_grams ?? 30;
+  const activeEvent = tdb
+    .prepare("SELECT * FROM derby_events WHERE status = 'ACTIVE' AND is_archived = 0 ORDER BY event_id DESC LIMIT 1")
+    .get();
+
+  const minW = activeEvent?.min_weight_grams ?? 1800;
+  const maxW = activeEvent?.max_weight_grams ?? 2450;
+  const maxTol = activeEvent?.weight_tolerance_grams ?? 30;
 
   const validRoosters = tdb
     .prepare(

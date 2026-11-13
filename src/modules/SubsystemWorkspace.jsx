@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Upload, X, Trophy } from 'lucide-react';
 import { useArena } from '../context/ArenaContext.jsx';
 import { DatabaseRelationshipGraph } from '../components/DatabaseRelationshipGraph.jsx';
 import { ArbacManager } from '../components/ArbacManager.jsx';
@@ -28,9 +29,7 @@ export function SubsystemWorkspace({ moduleId }) {
     mayors_permit: '',
     bir_cas_min: '',
     plasada_rate: '0.10',
-    weight_min_grams: '1800',
-    weight_max_grams: '2650',
-    kasahan_tolerance_grams: '30',
+    logo_url: '',
     min_rest_gap: '4',
     vip_seats: '320',
     lower_box_seats: '1450',
@@ -61,7 +60,11 @@ export function SubsystemWorkspace({ moduleId }) {
     min_bet: '5500',
     pot_fee: '55000',
     promoter: '',
-    plasada_split: '70/30'
+    plasada_split: '70/30',
+    min_weight_grams: '1800',
+    max_weight_grams: '2450',
+    weight_tolerance_grams: '30',
+    derby_rules: 'Standard GAB / PD 449 Rules. Wing & leg band verified. Max weight variance 30g.'
   });
 
   const [entryForm, setEntryForm] = useState({
@@ -239,24 +242,47 @@ export function SubsystemWorkspace({ moduleId }) {
               />
             </div>
           </div>
-          <div className="form-row-2col">
-            <div className="form-field">
-              <label className="form-label">Min Weight (g)</label>
-              <input
-                type="number"
-                className="form-input"
-                value={arenaForm.weight_min_grams}
-                onChange={(e) => setArenaForm({ ...arenaForm, weight_min_grams: e.target.value })}
-              />
-            </div>
-            <div className="form-field">
-              <label className="form-label">Max Weight (g)</label>
-              <input
-                type="number"
-                className="form-input"
-                value={arenaForm.weight_max_grams}
-                onChange={(e) => setArenaForm({ ...arenaForm, weight_max_grams: e.target.value })}
-              />
+          <div className="form-field">
+            <label className="form-label">Coliseum Official Logo / Crest</label>
+            <div className="arena-logo-upload-box">
+              {arenaForm.logo_url ? (
+                <div className="arena-logo-preview-card">
+                  <img src={arenaForm.logo_url} alt="Coliseum Logo" className="arena-logo-img" />
+                  <div className="arena-logo-actions">
+                    <button
+                      type="button"
+                      className="btn-secondary-gold"
+                      onClick={() => setArenaForm({ ...arenaForm, logo_url: '' })}
+                    >
+                      <X size={14} />
+                      <span>Remove Logo</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <label className="arena-logo-dropzone">
+                  <Upload size={20} className="card-title-icon-emerald" />
+                  <div className="arena-logo-drop-text">
+                    <strong>Click to upload official Coliseum Logo / Crest</strong>
+                    <span>Supports PNG, JPG, WebP, SVG</span>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="arena-file-input-hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (rev) => {
+                          setArenaForm((prev) => ({ ...prev, logo_url: rev.target.result }));
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                </label>
+              )}
             </div>
           </div>
           <button type="submit" className="btn-primary-emerald" disabled={submitting}>
@@ -270,11 +296,22 @@ export function SubsystemWorkspace({ moduleId }) {
             <div className="module-empty-state">
               <div className="module-empty-title">Arena Profile Not Yet Configured</div>
               <div className="module-empty-desc">
-                Submit the form on the left to establish official GAB, LGU, and BIR CAS MIN parameters along with weight and Kasahan tolerance brackets.
+                Submit the form on the left to establish official GAB, LGU, and BIR CAS MIN parameters and upload the Coliseum Logo.
               </div>
             </div>
           ) : (
             <div className="data-table-wrap">
+              {current.logo_url && (
+                <div className="venue-profile-crest-row">
+                  <div className="venue-profile-crest-wrap">
+                    <img src={current.logo_url} alt="Official Coliseum Crest" className="venue-profile-crest-img" />
+                  </div>
+                  <div className="venue-profile-crest-info">
+                    <div className="venue-profile-crest-name">{current.arena_name}</div>
+                    <div className="venue-profile-crest-tag">Official GAB / LGU Licensed Coliseum Emblem</div>
+                  </div>
+                </div>
+              )}
               <table className="data-table">
                 <tbody>
                   <tr>
@@ -296,13 +333,6 @@ export function SubsystemWorkspace({ moduleId }) {
                   <tr>
                     <th>Plasada Commission</th>
                     <td>{Math.round(current.plasada_rate * 100)}%</td>
-                  </tr>
-                  <tr>
-                    <th>Weight Bracket</th>
-                    <td>
-                      {current.weight_min_grams}g – {current.weight_max_grams}g (Kasahan &le;{' '}
-                      {current.kasahan_tolerance_grams}g)
-                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -532,6 +562,49 @@ export function SubsystemWorkspace({ moduleId }) {
                 onChange={(e) => setEventForm({ ...eventForm, promoter: e.target.value })}
               />
             </div>
+            <div className="form-row-2col">
+              <div className="form-field">
+                <label className="form-label">Derby Min Weight (g)</label>
+                <input
+                  type="number"
+                  className="form-input"
+                  required
+                  value={eventForm.min_weight_grams}
+                  onChange={(e) => setEventForm({ ...eventForm, min_weight_grams: e.target.value })}
+                />
+              </div>
+              <div className="form-field">
+                <label className="form-label">Derby Max Weight (g)</label>
+                <input
+                  type="number"
+                  className="form-input"
+                  required
+                  value={eventForm.max_weight_grams}
+                  onChange={(e) => setEventForm({ ...eventForm, max_weight_grams: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="form-row-2col">
+              <div className="form-field">
+                <label className="form-label">Kasahan Tolerance (±g)</label>
+                <input
+                  type="number"
+                  className="form-input"
+                  required
+                  value={eventForm.weight_tolerance_grams}
+                  onChange={(e) => setEventForm({ ...eventForm, weight_tolerance_grams: e.target.value })}
+                />
+              </div>
+              <div className="form-field">
+                <label className="form-label">Derby Rules &amp; Sanctions</label>
+                <input
+                  className="form-input"
+                  placeholder="e.g. Standard GAB / PD 449 Rules"
+                  value={eventForm.derby_rules}
+                  onChange={(e) => setEventForm({ ...eventForm, derby_rules: e.target.value })}
+                />
+              </div>
+            </div>
             <button type="submit" className="btn-primary-emerald" disabled={submitting}>
               {submitting ? 'Creating...' : '+ Create Derby Event'}
             </button>
@@ -606,6 +679,39 @@ export function SubsystemWorkspace({ moduleId }) {
         </div>
 
         <div className="form-stack">
+          {arenaState?.activeEvent && (
+            <div className="active-derby-rules-banner">
+              <div className="derby-rules-title">
+                <Trophy size={16} className="card-title-icon-gold" />
+                <span>Active Derby: <strong>{arenaState.activeEvent.title}</strong></span>
+              </div>
+              <div className="derby-rules-grid">
+                <div className="derby-rule-chip">
+                  <span className="derby-rule-label">Format</span>
+                  <span className="derby-rule-val">{arenaState.activeEvent.format}</span>
+                </div>
+                <div className="derby-rule-chip">
+                  <span className="derby-rule-label">Weight Bracket</span>
+                  <span className="derby-rule-val is-emerald">
+                    {arenaState.activeEvent.min_weight_grams || 1800}g – {arenaState.activeEvent.max_weight_grams || 2450}g
+                  </span>
+                </div>
+                <div className="derby-rule-chip">
+                  <span className="derby-rule-label">Kasahan Tolerance</span>
+                  <span className="derby-rule-val is-gold">
+                    &le; {arenaState.activeEvent.weight_tolerance_grams || 30}g variance
+                  </span>
+                </div>
+                <div className="derby-rule-chip">
+                  <span className="derby-rule-label">Derby Rules</span>
+                  <span className="derby-rule-val">
+                    {arenaState.activeEvent.derby_rules || 'Standard GAB Rules'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="workspace-panel">
             <div className="workspace-panel-title">
               Tournament Calendar ({events.length}) — Single Active Derby Rule
@@ -624,6 +730,7 @@ export function SubsystemWorkspace({ moduleId }) {
                     <tr>
                       <th>Title</th>
                       <th>Format</th>
+                      <th>Weight Rules</th>
                       <th>Promoter</th>
                       <th>Status</th>
                       <th>Action</th>
@@ -636,6 +743,11 @@ export function SubsystemWorkspace({ moduleId }) {
                           <strong>{ev.title}</strong>
                         </td>
                         <td>{ev.format}</td>
+                        <td>
+                          <span className="top-mono-item">
+                            {ev.min_weight_grams || 1800}g – {ev.max_weight_grams || 2450}g (&plusmn;{ev.weight_tolerance_grams || 30}g)
+                          </span>
+                        </td>
                         <td>{ev.promoter}</td>
                         <td>
                           <span
@@ -786,7 +898,9 @@ export function SubsystemWorkspace({ moduleId }) {
               </div>
             </div>
             <div className="form-field">
-              <label className="form-label">Digital Scale Weight (1,800g – 2,650g)</label>
+              <label className="form-label">
+                Digital Scale Weight ({arenaState?.activeEvent ? `${arenaState.activeEvent.min_weight_grams || 1800}g – ${arenaState.activeEvent.max_weight_grams || 2450}g` : '1,800g – 2,450g'})
+              </label>
               <input
                 type="number"
                 className="form-input"

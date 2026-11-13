@@ -4818,6 +4818,159 @@
   margin-top: 6px;
 }
 
+/* ==========================================================================
+   Coliseum Arena Logo Upload & SSOT Crest Display
+   ========================================================================== */
+.arena-logo-upload-box {
+  width: 100%;
+}
+
+.arena-logo-dropzone {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 2px dashed var(--border-card);
+  border-radius: var(--radius-md);
+  background: var(--bg-card-subtle);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.arena-logo-dropzone:hover {
+  border-color: var(--emerald-500);
+  background: rgba(14, 138, 78, 0.08);
+}
+
+.arena-logo-drop-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.arena-logo-drop-text strong {
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.arena-logo-drop-text span {
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+.arena-file-input-hidden {
+  display: none;
+}
+
+.arena-logo-preview-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 14px;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+}
+
+.arena-logo-img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 3px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.venue-profile-crest-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  background: rgba(14, 138, 78, 0.08);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+}
+
+.venue-profile-crest-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.venue-profile-crest-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.venue-profile-crest-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.venue-profile-crest-tag {
+  font-size: 11px;
+  color: var(--emerald-700);
+  font-weight: 600;
+}
+
+/* Active Derby Rules Banner in Events Management */
+.active-derby-rules-banner {
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.derby-rules-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.derby-rules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+}
+
+.derby-rule-chip {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-subtle);
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.derby-rule-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.derby-rule-val {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
 .form-divider-label {
   display: flex;
   align-items: center;

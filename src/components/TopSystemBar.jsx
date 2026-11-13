@@ -42,7 +42,7 @@ export function TopSystemBar() {
       <div className="top-brand-cluster">
         <div className="brand-crest-diamond">
           <img
-            src="/assets/brand-favicon.png"
+            src={activeTenant?.logo_url || '/assets/brand-favicon.png'}
             alt="Cockpit OS Emblem"
             className="brand-crest-img"
           />
