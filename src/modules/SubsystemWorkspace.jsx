@@ -23,7 +23,8 @@ import {
   BadgeDollarSign,
   Clock,
   RotateCw,
-  Users
+  Users,
+  Calendar
 } from 'lucide-react';
 import { useArena } from '../context/ArenaContext.jsx';
 import { DatabaseRelationshipGraph } from '../components/DatabaseRelationshipGraph.jsx';
