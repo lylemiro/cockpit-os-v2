@@ -1,5 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Database, Wifi, Cpu, Lock, PlusCircle } from 'lucide-react';
+import {
+  ShieldCheck,
+  Database,
+  Wifi,
+  Cpu,
+  Lock,
+  PlusCircle,
+  ArrowRight,
+  User,
+  Users,
+  KeyRound,
+  RotateCcw,
+  Settings2,
+  ChevronRight,
+  HardDrive,
+  CheckCircle2,
+  AlertCircle
+} from 'lucide-react';
 import { useArena } from '../context/ArenaContext.jsx';
 import { AppIconGlyph } from './AppIconGlyph.jsx';
 import { ALL_PERMISSION_KEYS } from './arbacCatalog.js';
@@ -22,7 +39,10 @@ export function BootAndLoginScreen() {
   } = useArena();
 
   const [bootStep, setBootStep] = useState(0);
-  const [creatingTenantMode, setCreatingTenantMode] = useState(false);
+
+  // Modes: 'login' (default real OS login) | 'setup' (first-time provisioning / database switch)
+  const [setupMode, setSetupMode] = useState(false);
+  const [showKeypad, setShowKeypad] = useState(false);
 
   // Login Form State
   const [selectedUserCode, setSelectedUserCode] = useState('');
@@ -36,19 +56,19 @@ export function BootAndLoginScreen() {
     mayors_permit: 'LGU-MP-2026-99201',
     bir_cas_min: 'MIN-20260411-88392014',
     full_name: '',
-    role: 'Chief System Architect / CSO',
+    role: 'Superadmin / Pangulo ng Sabungan',
     zone: 'Executive Command Console',
-    pin_code: ''
+    pin_code: '1234'
   });
 
-  // OS Boot Sequence progression
+  // OS Boot Sequence progression (only on initial load)
   useEffect(() => {
     if (bootCompleted) return undefined;
     const t1 = setTimeout(() => setBootStep(1), 350);
-    const t2 = setTimeout(() => setBootStep(2), 750);
-    const t3 = setTimeout(() => setBootStep(3), 1150);
-    const t4 = setTimeout(() => setBootStep(4), 1550);
-    const t5 = setTimeout(() => setBootCompleted(true), 2100);
+    const t2 = setTimeout(() => setBootStep(2), 700);
+    const t3 = setTimeout(() => setBootStep(3), 1050);
+    const t4 = setTimeout(() => setBootStep(4), 1400);
+    const t5 = setTimeout(() => setBootCompleted(true), 1800);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
@@ -60,13 +80,17 @@ export function BootAndLoginScreen() {
 
   const tenants = arenaState?.tenants || [];
   const employees = arenaState?.employees || [];
+  const activeTenant = arenaState?.activeTenant;
   const sys = arenaState?.systemMetrics;
 
+  // Auto-select primary operator (e.g. EMP-01) on load
   useEffect(() => {
-    if (employees.length > 0 && !selectedUserCode) {
+    if (employees.length > 0 && (!selectedUserCode || !employees.some((e) => e.staff_code === selectedUserCode))) {
       setSelectedUserCode(employees[0].staff_code);
     }
   }, [employees, selectedUserCode]);
+
+  const currentOperator = employees.find((e) => e.staff_code === selectedUserCode) || employees[0] || null;
 
   // STAGE 1: OS KERNEL & HARDWARE BOOT SEQUENCE
   if (!bootCompleted) {
@@ -142,8 +166,29 @@ export function BootAndLoginScreen() {
     );
   }
 
-  // STAGE 2: ZERO-TRUST MULTI-TENANT / MULTI-DATABASE LOGIN & FIRST-BOOT WIZARD
-  const showProvisionWizard = tenants.length === 0 || creatingTenantMode;
+  // Handle PIN submission
+  const handleLoginSubmit = async (e) => {
+    if (e) e.preventDefault();
+    if (!selectedUserCode || !pinInput) return;
+
+    setError(null);
+    const res = await mutateApi('/api/auth/login', 'POST', {
+      tenant_id: activeTenantId,
+      employee_id: selectedUserCode,
+      pin_code: pinInput
+    });
+
+    if (res.ok && res.data?.operator) {
+      setPinInput('');
+      setAuthenticatedOperator(res.data.operator);
+      if (notifySuccess) {
+        notifySuccess(
+          'Terminal Session Unlocked',
+          `Welcome, ${res.data.operator.full_name}. Gate 0 security verified.`
+        );
+      }
+    }
+  };
 
   const handleDigitClick = (digit) => {
     if (pinInput.length < 8) {
@@ -151,58 +196,90 @@ export function BootAndLoginScreen() {
     }
   };
 
+  // Determine whether to show First-Boot Setup wizard
+  // Shows ONLY if zero tenants exist on a new server, or when explicitly requested via setupMode
+  const isFirstBootNewServer = tenants.length === 0;
+  const showSetupWizard = isFirstBootNewServer || setupMode;
+
   return (
-    <div className="os-boot-screen">
-      <div className="os-login-card">
-        <header className="os-login-header">
-          <div className="top-brand-cluster">
-            <div className="brand-crest-diamond">
-              <img
-                src="/assets/brand-favicon.png"
-                alt="Cockpit OS Emblem"
-                className="brand-crest-img"
-              />
-            </div>
-            <div className="brand-title-stack">
-              <span className="os-boot-title">COCKPIT OS — GATE 0 AUTHENTICATION</span>
-              <span className="os-boot-subtitle">
-                MULTI-TENANT PHYSICAL DB ISOLATION &amp; 23-PERMISSION ARBAC
-              </span>
-            </div>
-          </div>
+    <div className="os-boot-screen is-real-os-login">
+      {/* Top Bar with System Telemetry */}
+      <div className="real-os-top-bar">
+        <div className="real-os-brand-pill">
+          <AppIconGlyph name="Monitor" size={14} />
+          <span>COCKPIT OS v2.4.0</span>
+        </div>
 
-          <div className="os-login-badges">
-            <span className="gateway-pill">
-              <Cpu size={12} />
-              {sys?.terminalId || 'HOST'}
+        <div className="real-os-telemetry-cluster">
+          <span className="telemetry-pill">
+            <Cpu size={12} />
+            <span>{sys?.terminalId || 'TERM-LOCAL'}</span>
+          </span>
+          <span className="telemetry-pill is-online">
+            <Wifi size={12} />
+            <span>{sys?.lanIp || '127.0.0.1'}</span>
+          </span>
+          {activeTenant && !showSetupWizard && (
+            <span className="telemetry-pill is-venue">
+              <HardDrive size={12} />
+              <span>{activeTenant.tenant_code}: {activeTenant.arena_name}</span>
             </span>
-            <span className="gateway-pill">
-              <Wifi size={12} />
-              {sys?.lanIp || '127.0.0.1'}
-            </span>
-          </div>
-        </header>
+          )}
+        </div>
+      </div>
 
-        {error && (
-          <div className="status-alert-banner is-error">
-            <span>{error}</span>
-            <button
-              type="button"
-              className="btn-danger-outline"
-              onClick={() => setError(null)}
-            >
-              Clear
-            </button>
-          </div>
-        )}
+      {/* Global Error Banner */}
+      {error && (
+        <div className="real-os-error-toast">
+          <AlertCircle size={16} />
+          <span>{error}</span>
+          <button
+            type="button"
+            className="toast-close-x"
+            onClick={() => setError(null)}
+          >
+            ×
+          </button>
+        </div>
+      )}
 
-        {loading ? (
-          <div className="skeleton-stack">
-            <div className="skeleton-line" />
-            <div className="skeleton-line" />
-            <div className="skeleton-line" />
-          </div>
-        ) : showProvisionWizard ? (
+      {/* =========================================================================
+         CASE A: FIRST TIME NEW SERVER SETUP / DATABASE PROVISIONING WIZARD
+         ========================================================================= */}
+      {showSetupWizard ? (
+        <div className="os-login-card setup-wizard-card">
+          <header className="os-login-header">
+            <div className="top-brand-cluster">
+              <div className="brand-crest-diamond">
+                <img
+                  src="/assets/brand-favicon.png"
+                  alt="Cockpit OS Emblem"
+                  className="brand-crest-img"
+                />
+              </div>
+              <div className="brand-title-stack">
+                <span className="os-boot-title">
+                  {isFirstBootNewServer
+                    ? 'FIRST-BOOT SERVER INITIALIZATION'
+                    : 'COLISEUM ARENA DATABASE SETUP'}
+                </span>
+                <span className="os-boot-subtitle">
+                  PROVISION DEDICATED PHYSICAL SQLITE WAL &amp; ROOT SUPERADMIN
+                </span>
+              </div>
+            </div>
+
+            {!isFirstBootNewServer && (
+              <button
+                type="button"
+                className="btn-secondary-gold"
+                onClick={() => setSetupMode(false)}
+              >
+                Back to User Sign-In &rarr;
+              </button>
+            )}
+          </header>
+
           <form
             className="form-stack"
             onSubmit={async (e) => {
@@ -212,36 +289,73 @@ export function BootAndLoginScreen() {
                 permissions: ALL_PERMISSION_KEYS
               });
               if (res.ok && res.data?.operator) {
-                setCreatingTenantMode(false);
+                setSetupMode(false);
                 setAuthenticatedOperator(res.data.operator);
               }
             }}
           >
-            <div className="workspace-panel-title">
-              {tenants.length === 0
-                ? 'First-Boot Initialization: Provision Isolated Coliseum Tenant Database & Root DB Owner'
-                : 'Provision New Dedicated Coliseum Tenant SQLite Database'}
+            <div className="setup-intro-callout">
+              <HardDrive size={20} className="card-title-icon-emerald" />
+              <p>
+                {isFirstBootNewServer
+                  ? 'Welcome to Cockpit OS. No arena databases were detected on this server. Configure your initial coliseum venue credentials below to initialize the physical SQLite WAL database.'
+                  : 'Select an existing arena database partition or provision an additional isolated database file for a new venue.'}
+              </p>
+            </div>
+
+            {/* Existing Tenant Selector if any exist */}
+            {tenants.length > 0 && (
+              <div className="form-field select-db-field">
+                <label className="form-label">Switch Active Arena Database Drive</label>
+                <div className="db-select-row">
+                  <select
+                    className="form-select is-lg"
+                    value={activeTenantId || ''}
+                    onChange={(e) => {
+                      setSelectedUserCode('');
+                      switchTenant(e.target.value);
+                    }}
+                  >
+                    {tenants.map((t) => (
+                      <option key={t.tenant_id} value={t.tenant_id}>
+                        {t.tenant_code} — {t.arena_name} ({t.db_file_name})
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    className="btn-primary-emerald"
+                    onClick={() => setSetupMode(false)}
+                  >
+                    Use Selected Database &rarr;
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="form-divider-label">
+              <span>Or Provision New Venue Database File:</span>
             </div>
 
             <div className="form-row-2col">
               <div className="form-field">
-                <label className="form-label">Tenant Code (Creates Dedicated .db File)</label>
+                <label className="form-label">Tenant Partition Code</label>
                 <input
                   className="form-input"
                   required
-                  placeholder="e.g. SJC-01"
+                  placeholder="e.g. SJC-01, CEBU-01"
                   value={setupForm.tenant_code}
                   onChange={(e) =>
-                    setSetupForm({ ...setupForm, tenant_code: e.target.value })
+                    setSetupForm({ ...setupForm, tenant_code: e.target.value.toUpperCase() })
                   }
                 />
               </div>
               <div className="form-field">
-                <label className="form-label">Coliseum / Arena Tenant Name</label>
+                <label className="form-label">Coliseum / Arena Venue Name</label>
                 <input
                   className="form-input"
                   required
-                  placeholder="e.g. SAN JUAN COLISEUM ARENA"
+                  placeholder="e.g. San Juan Coliseum Arena"
                   value={setupForm.arena_name}
                   onChange={(e) =>
                     setSetupForm({ ...setupForm, arena_name: e.target.value })
@@ -277,11 +391,11 @@ export function BootAndLoginScreen() {
 
             <div className="form-row-2col">
               <div className="form-field">
-                <label className="form-label">Root Database Operator Full Name</label>
+                <label className="form-label">Pangulo / Superadmin Full Legal Name</label>
                 <input
                   className="form-input"
                   required
-                  placeholder="e.g. Engr. Dante Alcantara"
+                  placeholder="e.g. Victoriano S. Santos"
                   value={setupForm.full_name}
                   onChange={(e) =>
                     setSetupForm({ ...setupForm, full_name: e.target.value })
@@ -289,12 +403,12 @@ export function BootAndLoginScreen() {
                 />
               </div>
               <div className="form-field">
-                <label className="form-label">Root Operator Security PIN (4–6 digits)</label>
+                <label className="form-label">Operator Security PIN (4–6 digits)</label>
                 <input
                   type="password"
                   className="form-input"
                   required
-                  placeholder="Enter 4+ digit PIN (e.g. 1234)"
+                  placeholder="1234"
                   value={setupForm.pin_code}
                   onChange={(e) =>
                     setSetupForm({ ...setupForm, pin_code: e.target.value })
@@ -303,159 +417,187 @@ export function BootAndLoginScreen() {
               </div>
             </div>
 
-            <div className="action-btn-row">
+            <div className="action-btn-row mt-3">
               <button
                 type="submit"
                 className="btn-primary-emerald"
                 disabled={submitting}
               >
                 {submitting
-                  ? 'Provisioning Tenant Database & Binding Host...'
+                  ? 'Initializing Database...'
                   : 'Initialize Dedicated SQLite DB & Boot Into Cockpit OS'}
               </button>
-              {tenants.length > 0 && (
+
+              {!isFirstBootNewServer && (
                 <button
                   type="button"
                   className="btn-secondary-gold"
-                  onClick={() => setCreatingTenantMode(false)}
+                  onClick={() => setSetupMode(false)}
                 >
-                  Back to Operator Sign-In
+                  Cancel
                 </button>
               )}
             </div>
           </form>
-        ) : (
-          <div className="workspace-split-grid">
-            <div className="workspace-panel form-stack">
-              <div className="workspace-panel-title">
-                1. Select Isolated Tenant Database
-              </div>
-              <div className="form-field">
-                <label className="form-label">Mounted Physical SQLite Database</label>
-                <select
-                  className="form-select"
-                  value={activeTenantId || ''}
-                  onChange={(e) => {
-                    setSelectedUserCode('');
-                    switchTenant(e.target.value);
-                  }}
-                >
-                  {tenants.map((t) => (
-                    <option key={t.tenant_id} value={t.tenant_id}>
-                      {t.tenant_code} — {t.arena_name} ({t.db_file_name})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <button
-                type="button"
-                className="btn-secondary-gold"
-                onClick={() => setCreatingTenantMode(true)}
-              >
-                <PlusCircle size={13} /> + Provision Another Isolated Tenant DB
-              </button>
-
-              <div className="workspace-panel-title">
-                2. Select Database Operator Account
-              </div>
-              {employees.length === 0 ? (
-                <div className="card-empty-state">
-                  <span className="card-empty-text">
-                    No operators found in this Tenant DB.
-                  </span>
+        </div>
+      ) : (
+        /* =========================================================================
+           CASE B: REAL OS USER LOGIN SCREEN (JUST LIKE WINDOWS 11 / REAL OS LOGIN)
+           ========================================================================= */
+        <div className="real-os-login-container">
+          <div className="real-os-user-card">
+            {/* Operator Avatar with Glowing Halo */}
+            <div className="real-os-avatar-cluster">
+              <div className="real-os-avatar-ring">
+                <div className="real-os-avatar-inner">
+                  <User size={48} className="card-title-icon-emerald" />
                 </div>
-              ) : (
-                <div className="form-field">
-                  <label className="form-label">Enrolled ARBAC Operator</label>
-                  <select
-                    className="form-select"
-                    value={selectedUserCode}
-                    onChange={(e) => setSelectedUserCode(e.target.value)}
-                  >
-                    {employees.map((emp) => (
-                      <option key={emp.employee_id} value={emp.staff_code}>
-                        {emp.staff_code} — {emp.full_name} ({emp.role} •{' '}
-                        {emp.permissions_count}/23 Perms)
-                        {emp.is_locked ? ' [LOCKED]' : ''}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
+              </div>
+              <div className="real-os-avatar-status-dot" />
             </div>
 
-            <form
-              className="workspace-panel form-stack"
-              onSubmit={async (e) => {
-                e.preventDefault();
-                const res = await mutateApi('/api/auth/login', 'POST', {
-                  tenant_id: activeTenantId,
-                  employee_id: selectedUserCode,
-                  pin_code: pinInput
-                });
-                if (res.ok && res.data?.operator) {
-                  setPinInput('');
-                  setAuthenticatedOperator(res.data.operator);
-                  if (notifySuccess) {
-                    notifySuccess(
-                      'Terminal Session Unlocked',
-                      `Welcome, ${res.data.operator.full_name}. Gate 0 security verified.`
-                    );
-                  }
-                }
-              }}
-            >
-              <div className="workspace-panel-title">
-                3. Enter Gate 0 Security PIN (3-Strikes Lockout Policy)
+            {/* Operator Identification */}
+            <div className="real-os-identity-stack">
+              <h1 className="real-os-operator-name">
+                {currentOperator ? currentOperator.full_name : 'Coliseum Operator'}
+              </h1>
+              <div className="real-os-role-badge">
+                <span className="role-code-tag">
+                  {currentOperator ? currentOperator.staff_code : 'EMP-01'}
+                </span>
+                <span className="role-name-text">
+                  {currentOperator ? currentOperator.role : 'Authorized Coliseum Staff'}
+                </span>
               </div>
+              <div className="real-os-zone-sub">
+                {currentOperator?.zone || 'Executive Command Console'}
+              </div>
+            </div>
 
-              <div className="form-field">
-                <label className="form-label">Operator PIN</label>
+            {/* Password / PIN Login Input Form */}
+            <form className="real-os-pin-form" onSubmit={handleLoginSubmit}>
+              <div className="real-os-pin-input-wrap">
+                <div className="pin-key-icon">
+                  <Lock size={15} />
+                </div>
                 <input
                   type="password"
-                  className="form-input"
+                  className="real-os-pin-input"
+                  autoFocus
                   required
                   placeholder="Enter Security PIN"
                   value={pinInput}
                   onChange={(e) => setPinInput(e.target.value)}
                 />
+                <button
+                  type="submit"
+                  className="real-os-pin-submit-btn"
+                  disabled={submitting || !pinInput}
+                  title="Unlock Cockpit OS Session [Enter]"
+                >
+                  <ArrowRight size={18} />
+                </button>
               </div>
 
-              <div className="pin-keypad-grid">
-                {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'CLR', '0', '⌫'].map(
-                  (key) => (
-                    <button
-                      key={key}
-                      type="button"
-                      className="pin-key-btn"
-                      onClick={() => {
-                        if (key === 'CLR') setPinInput('');
-                        else if (key === '⌫') setPinInput((p) => p.slice(0, -1));
-                        else handleDigitClick(key);
-                      }}
-                    >
-                      {key}
-                    </button>
-                  )
-                )}
+              {/* Toggle On-Screen Keypad for POS/Touch Terminals */}
+              <div className="real-os-keypad-toggle-row">
+                <button
+                  type="button"
+                  className="btn-keypad-toggle"
+                  onClick={() => setShowKeypad((prev) => !prev)}
+                >
+                  <KeyRound size={13} />
+                  <span>{showKeypad ? 'Hide On-Screen Keypad' : 'Touch Keypad'}</span>
+                </button>
               </div>
 
-              <button
-                type="submit"
-                className="btn-primary-emerald"
-                disabled={submitting || !selectedUserCode || !pinInput}
-              >
-                <Lock size={13} />{' '}
-                {submitting
-                  ? 'Verifying Gate 0 Hardware & PIN...'
-                  : 'Authenticate & Unlock Cockpit OS Desktop'}
-              </button>
+              {/* On-Screen Numeric Keypad */}
+              {showKeypad && (
+                <div className="real-os-keypad-grid">
+                  {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'CLR', '0', '⌫'].map(
+                    (key) => (
+                      <button
+                        key={key}
+                        type="button"
+                        className="os-keypad-key"
+                        onClick={() => {
+                          if (key === 'CLR') setPinInput('');
+                          else if (key === '⌫') setPinInput((p) => p.slice(0, -1));
+                          else handleDigitClick(key);
+                        }}
+                      >
+                        {key}
+                      </button>
+                    )
+                  )}
+                </div>
+              )}
+
+              <div className="real-os-lockout-notice">
+                <ShieldCheck size={13} />
+                <span>Zero-Trust Gate 0 • 3-strikes hardware lockout policy</span>
+              </div>
             </form>
+
+            {/* Other Enrolled Operators User Switcher (Windows 11 style) */}
+            {employees.length > 1 && (
+              <div className="real-os-user-switcher-section">
+                <span className="switcher-label">Switch Operator Account:</span>
+                <div className="switcher-users-row">
+                  {employees.map((emp) => {
+                    const isSelected = emp.staff_code === selectedUserCode;
+                    return (
+                      <button
+                        key={emp.employee_id}
+                        type="button"
+                        className={`switcher-user-chip ${isSelected ? 'is-selected' : ''}`}
+                        onClick={() => {
+                          setSelectedUserCode(emp.staff_code);
+                          setPinInput('');
+                        }}
+                      >
+                        <div className="chip-avatar">
+                          {emp.full_name
+                            .split(' ')
+                            .map((n) => n[0])
+                            .slice(0, 2)
+                            .join('')}
+                        </div>
+                        <div className="chip-details">
+                          <span className="chip-name">{emp.full_name}</span>
+                          <span className="chip-role">{emp.staff_code}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+
+          {/* Real OS Footer Bar with Arena DB Setup Link */}
+          <div className="real-os-bottom-footer">
+            <button
+              type="button"
+              className="footer-setup-btn"
+              onClick={() => setSetupMode(true)}
+              title="Open Server & Coliseum Database Setup"
+            >
+              <Settings2 size={14} />
+              <span>Database &amp; Server Setup</span>
+            </button>
+
+            <span className="footer-copyright-text">
+              COCKPIT OS v2.4.0 • Enterprise Zero-Trust Arena Architecture
+            </span>
+
+            <span className="footer-status-pill">
+              <span className="pulse-green-dot" />
+              <span>Offline-First LAN Mesh</span>
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
