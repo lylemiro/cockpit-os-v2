@@ -675,14 +675,6 @@ export function SubsystemWorkspace({ moduleId }) {
                     </td>
                   </tr>
                   <tr>
-                    <th>Net Coliseum Retained</th>
-                    <td>
-                      <strong className="text-emerald">
-                        {Math.max(0, ((current.plasada_rate ?? 0.10) - (current.teller_commission_rate ?? 0.02) - (current.system_commission_rate ?? 0.01)) * 100).toFixed(1)}%
-                      </strong>
-                    </td>
-                  </tr>
-                  <tr>
                     <th>Regulatory Status</th>
                     <td>
                       <span className="badge-tag is-pass">

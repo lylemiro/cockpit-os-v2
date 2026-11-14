@@ -324,3 +324,4 @@ export function EventDetailFullscreenModal({
     ? createPortal(modalContent, document.body)
     : modalContent;
 }
+
