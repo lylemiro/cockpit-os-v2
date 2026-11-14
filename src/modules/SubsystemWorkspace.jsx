@@ -33,6 +33,7 @@ import { DatabaseRelationshipGraph } from '../components/DatabaseRelationshipGra
 import { ArbacManager } from '../components/ArbacManager.jsx';
 import { DerbyTournamentCarouselModal } from '../components/DerbyTournamentCarouselModal.jsx';
 import { EventDetailFullscreenModal } from '../components/EventDetailFullscreenModal.jsx';
+import RegisterEntryCarouselModal from '../components/RegisterEntryCarouselModal.jsx';
 
 export function SubsystemWorkspace({ moduleId }) {
   const {
@@ -54,7 +55,10 @@ export function SubsystemWorkspace({ moduleId }) {
   const [isEditingArena, setIsEditingArena] = useState(false);
   const [paperworkDocType, setPaperworkDocType] = useState('bout_sheet'); // 'bout_sheet' | 'tari_clearance' | 'plasada_voucher'
   const [isDerbyCarouselOpen, setIsDerbyCarouselOpen] = useState(false);
-  const [showEnrollDrawer, setShowEnrollDrawer] = useState(false);
+  const [isRegisterEntryModalOpen, setIsRegisterEntryModalOpen] = useState(false);
+  const [collectPotModal, setCollectPotModal] = useState(null);
+  const [collectPaymentMethod, setCollectPaymentMethod] = useState('CASH');
+  const [collectReceiptNum, setCollectReceiptNum] = useState('');
   const [derbyCarouselConfig, setDerbyCarouselConfig] = useState(null);
   const [editingDerbyEvent, setEditingDerbyEvent] = useState(null);
   const [selectedEventDetail, setSelectedEventDetail] = useState(null);
@@ -1245,102 +1249,14 @@ export function SubsystemWorkspace({ moduleId }) {
               <button
                 type="button"
                 className="btn-secondary-gold"
-                onClick={() => setShowEnrollDrawer(!showEnrollDrawer)}
+                onClick={() => setIsRegisterEntryModalOpen(true)}
               >
                 <Users size={14} />
-                <span>{showEnrollDrawer ? 'Close Registration' : '+ Register Entry'}</span>
+                <span>+ Register Entry</span>
               </button>
             )}
           </div>
         </div>
-
-        {/* Quick Inline Entry Enrollment Drawer (Active when opened) */}
-        {showEnrollDrawer && activeEv && (
-          <form
-            className="workspace-panel form-stack animate-fadeIn"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              const res = await handleAction(
-                '/api/entries',
-                'POST',
-                entryForm,
-                `Enrolled syndicate entry "${entryForm.entry_name.toUpperCase()}".`
-              );
-              if (res.ok) {
-                setEntryForm({ ...entryForm, entry_name: '', owner_gallero: '' });
-                setShowEnrollDrawer(false);
-              }
-            }}
-          >
-            <div className="workspace-panel-title">
-              <Users size={16} className="card-title-icon-gold" />
-              <span>Gate 2: Fast Syndicate Entry Enrollment &amp; Pot Escrow</span>
-            </div>
-            <div className="form-row-2col">
-              <div className="form-field">
-                <label className="form-label">Entry / Syndicate Team Name *</label>
-                <input
-                  className="form-input"
-                  required
-                  placeholder="e.g. THUNDERBIRD GOLD"
-                  value={entryForm.entry_name}
-                  onChange={(e) => setEntryForm({ ...entryForm, entry_name: e.target.value })}
-                />
-              </div>
-              <div className="form-field">
-                <label className="form-label">Owner / Gallero Breeder *</label>
-                <input
-                  className="form-input"
-                  required
-                  placeholder="e.g. Boss Atong / San Juan Farm"
-                  value={entryForm.owner_gallero}
-                  onChange={(e) => setEntryForm({ ...entryForm, owner_gallero: e.target.value })}
-                />
-              </div>
-            </div>
-            <div className="form-row-2col">
-              <div className="form-field">
-                <label className="form-label">Pot Escrow Status</label>
-                <select
-                  className="form-select"
-                  value={entryForm.pot_payment_status}
-                  onChange={(e) =>
-                    setEntryForm({ ...entryForm, pot_payment_status: e.target.value })
-                  }
-                >
-                  <option value="PAID">PAID (Verified Escrow)</option>
-                  <option value="PENDING_CASHIER">PENDING_CASHIER (Pay at Cage)</option>
-                  <option value="EXEMPT">EXEMPT (Sponsor / Promoter Entry)</option>
-                </select>
-              </div>
-              <div className="form-field">
-                <label className="form-label">Coliseum Seating Tier</label>
-                <select
-                  className="form-select"
-                  value={entryForm.syndicate_tier}
-                  onChange={(e) => setEntryForm({ ...entryForm, syndicate_tier: e.target.value })}
-                >
-                  <option>VIP Ringside</option>
-                  <option>Lower Box</option>
-                  <option>Upper Grandstand</option>
-                </select>
-              </div>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-              <button
-                type="button"
-                className="btn-cancel-flat"
-                onClick={() => setShowEnrollDrawer(false)}
-              >
-                Cancel
-              </button>
-              <button type="submit" className="btn-primary-emerald" disabled={submitting}>
-                {submitting && <RotateCw size={14} className="spin" />}
-                <span>{submitting ? 'Saving Entry...' : '+ Submit & Enroll Entry'}</span>
-              </button>
-            </div>
-          </form>
-        )}
 
         {/* Dynamic Display: Active Tournament Hero vs 2-Column Launchpad */}
         {activeEv ? (
@@ -1557,32 +1473,63 @@ export function SubsystemWorkspace({ moduleId }) {
                           <th>Syndicate Team</th>
                           <th>Owner / Gallero</th>
                           <th>Pot Escrow</th>
-                          <th>Tier</th>
+                          <th>Stags Weighed</th>
                           <th>W-D-L</th>
                           <th>Points</th>
+                          <th>Cashier Action</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {entries.map((en) => (
-                          <tr key={en.entry_id}>
-                            <td>
-                              <strong>{en.entry_name}</strong>
-                            </td>
-                            <td>{en.owner_gallero}</td>
-                            <td>
-                              <span className={`status-badge ${en.pot_payment_status === 'PAID' ? 'is-passed' : 'is-pending'}`}>
-                                {en.pot_payment_status}
-                              </span>
-                            </td>
-                            <td>{en.syndicate_tier || 'VIP'}</td>
-                            <td>
-                              {en.wins || 0}-{en.draws || 0}-{en.losses || 0}
-                            </td>
-                            <td>
-                              <strong style={{ color: '#10b981' }}>{(en.points || 0).toFixed(1)} pts</strong>
-                            </td>
-                          </tr>
-                        ))}
+                        {entries.map((en) => {
+                          const stagCount = (arenaState.roosters || []).filter(r => r.entry_id === en.entry_id).length;
+                          const isPaid = en.pot_payment_status === 'PAID';
+                          return (
+                            <tr key={en.entry_id}>
+                              <td>
+                                <strong>{en.entry_name}</strong>
+                                <div className="table-promoter-sub">
+                                  {en.farm_location || en.contact_number || 'Regional Entry'}
+                                </div>
+                              </td>
+                              <td>{en.owner_gallero}</td>
+                              <td>
+                                <span className={isPaid ? 'cashier-pot-badge-paid' : 'cashier-pot-badge-unpaid'}>
+                                  {isPaid ? 'PAID (Verified Escrow)' : 'UNPAID (Pending Cashier)'}
+                                </span>
+                              </td>
+                              <td>
+                                <span className="category-pill-btn">
+                                  {stagCount} Birds Weighed
+                                </span>
+                              </td>
+                              <td>
+                                {en.wins || 0}-{en.draws || 0}-{en.losses || 0}
+                              </td>
+                              <td>
+                                <strong className="passport-value is-emerald">{(en.points || 0).toFixed(1)} pts</strong>
+                              </td>
+                              <td>
+                                {!isPaid ? (
+                                  <button
+                                    type="button"
+                                    className="btn-primary-emerald"
+                                    onClick={() => {
+                                      setCollectPaymentMethod('CASH');
+                                      setCollectReceiptNum(`OR-${Date.now().toString().slice(-6)}`);
+                                      setCollectPotModal(en);
+                                    }}
+                                  >
+                                    Collect Pot
+                                  </button>
+                                ) : (
+                                  <span className="table-promoter-sub">
+                                    {en.receipt_number || 'Cleared'}
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
@@ -2301,7 +2248,116 @@ export function SubsystemWorkspace({ moduleId }) {
           events={selectedEventDetail ? [selectedEventDetail] : []}
           initialIndex={0}
           onClose={() => setSelectedEventDetail(null)}
+          onEdit={(ev) => {
+            setEditingDerbyEvent(ev);
+            setDerbyCarouselConfig(null);
+            setIsDerbyCarouselOpen(true);
+            setSelectedEventDetail(null);
+          }}
+          submitting={submitting}
         />
+
+        {/* Register Entry Fullscreen Carousel Journey Modal */}
+        <RegisterEntryCarouselModal
+          isOpen={isRegisterEntryModalOpen}
+          onClose={() => setIsRegisterEntryModalOpen(false)}
+          activeEvent={activeEv}
+          existingEntries={entries}
+          onSuccess={() => {
+            setIsRegisterEntryModalOpen(false);
+          }}
+          handleAction={handleAction}
+        />
+
+        {/* Collect Pot Modal Popup */}
+        {collectPotModal && (
+          <div className="crud-pin-backdrop" onClick={() => !submitting && setCollectPotModal(null)}>
+            <form
+              className="crud-pin-modal animate-scaleIn"
+              onClick={(e) => e.stopPropagation()}
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const res = await handleAction(
+                  '/api/cashier/collect-pot',
+                  'POST',
+                  {
+                    entry_id: collectPotModal.entry_id,
+                    payment_method: collectPaymentMethod,
+                    receipt_number: collectReceiptNum || `OR-${Date.now().toString().slice(-6)}`,
+                    amount_collected: activeEv?.pot_fee || 0
+                  },
+                  `Collected pot fee for "${collectPotModal.entry_name}". Stags unlocked for matchmaking!`
+                );
+                if (res && res.ok !== false) {
+                  setCollectPotModal(null);
+                }
+              }}
+            >
+              <div className="crud-pin-modal-header">
+                <div className="crud-pin-modal-title">
+                  <BadgeDollarSign size={18} className="card-title-icon-gold" />
+                  <span>Collect Pot Escrow & Clear Entry</span>
+                </div>
+                <button
+                  type="button"
+                  className="journey-close-btn"
+                  onClick={() => setCollectPotModal(null)}
+                >
+                  <X size={14} />
+                </button>
+              </div>
+
+              <div className="crud-pin-modal-desc">
+                Settle tournament pot escrow for <strong>{collectPotModal.entry_name}</strong> (Owner: {collectPotModal.owner_gallero}). Once paid, this entry will be immediately unlocked for Kasahan matchmaking.
+              </div>
+
+              <div className="form-field">
+                <label className="form-label">Payment Method</label>
+                <select
+                  className="form-select"
+                  value={collectPaymentMethod}
+                  onChange={(e) => setCollectPaymentMethod(e.target.value)}
+                >
+                  <option value="CASH">Cash (Coliseum Vault)</option>
+                  <option value="BANK_TRANSFER">Bank Wire / Instant Transfer</option>
+                  <option value="GCASH_MAYA">GCash / Maya Digital Pay</option>
+                  <option value="MANAGERS_CHECK">Manager's Check</option>
+                  <option value="SPONSOR_EXEMPT">Promoter / Sponsor Exempt</option>
+                </select>
+              </div>
+
+              <div className="form-field">
+                <label className="form-label">Official Receipt / Reference #</label>
+                <input
+                  className="form-input"
+                  required
+                  placeholder="e.g. OR-2026-8912"
+                  value={collectReceiptNum}
+                  onChange={(e) => setCollectReceiptNum(e.target.value)}
+                />
+              </div>
+
+              <div className="crud-pin-modal-actions">
+                <button
+                  type="button"
+                  className="btn-cancel-flat"
+                  onClick={() => setCollectPotModal(null)}
+                  disabled={submitting}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary-emerald"
+                  disabled={submitting}
+                >
+                  {submitting && <RotateCw size={14} className="spin" />}
+                  <span>{submitting ? 'Confirming...' : 'Verify & Clear Pot Escrow'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
       </div>
     );
   }
@@ -2312,9 +2368,32 @@ export function SubsystemWorkspace({ moduleId }) {
     const roosters = arenaState.roosters || [];
     const fights = arenaState.fights || [];
 
+    const unpaidEntries = entries.filter((e) => e.pot_payment_status !== 'PAID');
+    const unpaidWeighedStags = roosters.filter(
+      (r) => r.status === 'WEIGHED' && unpaidEntries.some((e) => e.entry_id === r.entry_id)
+    );
+
     return (
       <div className="workspace-split-grid">
         <div className="form-stack">
+          {unpaidWeighedStags.length > 0 && (
+            <div className="kasahan-unpaid-warning-banner">
+              <div className="kasahan-unpaid-banner-content">
+                <AlertTriangle size={18} />
+                <span>
+                  <strong>Gate 2 Matchmaking Hold:</strong> {unpaidWeighedStags.length} weighed stag(s) from unpaid syndicate entries are strictly blocked from auto-pairing until Pot Escrow is settled at the Center Cashier Cage.
+                </span>
+              </div>
+              <button
+                type="button"
+                className="btn-primary-emerald"
+                onClick={() => setActiveModuleId('cashier-payouts')}
+              >
+                Open Cashier Cage
+              </button>
+            </div>
+          )}
+
           <form
             className="workspace-panel form-stack"
             onSubmit={async (e) => {
@@ -2754,8 +2833,8 @@ export function SubsystemWorkspace({ moduleId }) {
     );
   }
 
-  // 8. GRANDSTAND BETTING & 9. CASHIER PAYOUTS
-  if (moduleId === 'grandstand-betting' || moduleId === 'cashier-payouts') {
+  // 8. GRANDSTAND BETTING
+  if (moduleId === 'grandstand-betting') {
     const fights = arenaState.fights || [];
     const wagers = arenaState.wagers || [];
 
@@ -2844,6 +2923,198 @@ export function SubsystemWorkspace({ moduleId }) {
                     <th>Wager</th>
                     <th>Net Payout</th>
                     <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {wagers.map((w) => (
+                    <tr key={w.ticket_id}>
+                      <td>
+                        <strong>{w.ticket_id}</strong>
+                      </td>
+                      <td>
+                        #{w.fight_number} • {w.side}
+                      </td>
+                      <td>₱{w.amount.toLocaleString()}</td>
+                      <td>₱{w.potential_payout.toLocaleString()}</td>
+                      <td>
+                        <span
+                          className={`status-badge ${w.status === 'WON' || w.status === 'PAID_OUT' ? 'is-passed' : 'is-pending'}`}
+                        >
+                          {w.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // 9. CASHIER PAYOUTS & GATE 2 POT ESCROW CLEARANCE
+  if (moduleId === 'cashier-payouts') {
+    const entries = arenaState.entries || [];
+    const roosters = arenaState.roosters || [];
+    const wagers = arenaState.wagers || [];
+    const activeEv = arenaState.activeEvent;
+    const potDueAmount = activeEv?.pot_fee || 0;
+
+    const unpaidEntries = entries.filter((e) => e.pot_payment_status !== 'PAID');
+    const paidEntries = entries.filter((e) => e.pot_payment_status === 'PAID');
+
+    return (
+      <div className="workspace-split-grid">
+        {/* Left Column: Gate 2 Pot Escrow Receivables */}
+        <div className="form-stack">
+          <div className="workspace-panel">
+            <div className="workspace-panel-title">
+              <BadgeDollarSign size={16} className="card-title-icon-gold" />
+              <span>Gate 2: Center Cashier Cage • Unpaid Pot Receivables ({unpaidEntries.length})</span>
+            </div>
+
+            {notice && <div className="status-alert-banner is-success">{notice}</div>}
+
+            {unpaidEntries.length === 0 ? (
+              <div className="module-empty-state">
+                <CheckCircle2 size={32} className="card-title-icon-emerald" />
+                <div className="module-empty-title">All Pot Fees Cleared</div>
+                <div className="module-empty-desc">
+                  Every registered syndicate entry has settled pot escrow. All weighed stags are unlocked for Kasahan matchmaking.
+                </div>
+              </div>
+            ) : (
+              <div className="data-table-wrap">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Syndicate Team</th>
+                      <th>Owner / Gallero</th>
+                      <th>Pot Due</th>
+                      <th>Weighed Stags</th>
+                      <th>Cashier Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {unpaidEntries.map((en) => {
+                      const stagCount = roosters.filter((r) => r.entry_id === en.entry_id).length;
+                      return (
+                        <tr key={en.entry_id}>
+                          <td>
+                            <strong>{en.entry_name}</strong>
+                            <div className="table-promoter-sub">
+                              {en.farm_location || en.contact_number || 'Regional Entry'}
+                            </div>
+                          </td>
+                          <td>{en.owner_gallero}</td>
+                          <td>
+                            <strong className="passport-value is-gold">
+                              ₱{potDueAmount.toLocaleString()}
+                            </strong>
+                          </td>
+                          <td>
+                            <span className="category-pill-btn">
+                              {stagCount} Stags
+                            </span>
+                          </td>
+                          <td>
+                            <button
+                              type="button"
+                              className="btn-primary-emerald"
+                              onClick={() => {
+                                setCollectPaymentMethod('CASH');
+                                setCollectReceiptNum(`OR-${Date.now().toString().slice(-6)}`);
+                                setCollectPotModal(en);
+                              }}
+                            >
+                              Collect Pot Fee
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Cleared Pot Escrow Registry (Paid) */}
+          <div className="workspace-panel">
+            <div className="workspace-panel-title">
+              <CheckCircle2 size={16} className="card-title-icon-emerald" />
+              <span>Verified Pot Escrow Clearance List ({paidEntries.length})</span>
+            </div>
+
+            {paidEntries.length === 0 ? (
+              <div className="module-empty-state">
+                <div className="module-empty-title">No Paid Entries Yet</div>
+                <div className="module-empty-desc">
+                  Collect pot fees above to clear entries and populate this escrow registry.
+                </div>
+              </div>
+            ) : (
+              <div className="data-table-wrap">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Syndicate Team</th>
+                      <th>Receipt #</th>
+                      <th>Method</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paidEntries.map((en) => (
+                      <tr key={en.entry_id}>
+                        <td>
+                          <strong>{en.entry_name}</strong>
+                          <div className="table-promoter-sub">{en.owner_gallero}</div>
+                        </td>
+                        <td>
+                          <code>{en.receipt_number || 'OFFICIAL-ESCROW'}</code>
+                        </td>
+                        <td>
+                          <span className="category-pill-btn">{en.payment_method || 'CASH'}</span>
+                        </td>
+                        <td>
+                          <span className="cashier-pot-badge-paid">
+                            Verified Escrow
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Column: Issued Wager Tickets & Barcode Payouts */}
+        <div className="workspace-panel">
+          <div className="workspace-panel-title">
+            Gate 8: Issued Wager Tickets & Barcode Payouts ({wagers.length})
+          </div>
+          {wagers.length === 0 ? (
+            <div className="module-empty-state">
+              <div className="module-empty-title">No Bet Tickets Issued</div>
+              <div className="module-empty-desc">
+                Wagers placed at Grandstand Betting will appear here for payout scanning and liquidation.
+              </div>
+            </div>
+          ) : (
+            <div className="data-table-wrap">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Ticket Barcode</th>
+                    <th>Fight / Side</th>
+                    <th>Wager</th>
+                    <th>Net Payout</th>
+                    <th>Status</th>
                     <th>Cashier Action</th>
                   </tr>
                 </thead>
@@ -2885,6 +3156,96 @@ export function SubsystemWorkspace({ moduleId }) {
             </div>
           )}
         </div>
+
+        {/* Collect Pot Modal Popup */}
+        {collectPotModal && (
+          <div className="crud-pin-backdrop" onClick={() => !submitting && setCollectPotModal(null)}>
+            <form
+              className="crud-pin-modal animate-scaleIn"
+              onClick={(e) => e.stopPropagation()}
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const res = await handleAction(
+                  '/api/cashier/collect-pot',
+                  'POST',
+                  {
+                    entry_id: collectPotModal.entry_id,
+                    payment_method: collectPaymentMethod,
+                    receipt_number: collectReceiptNum || `OR-${Date.now().toString().slice(-6)}`,
+                    amount_collected: potDueAmount
+                  },
+                  `Collected pot fee for "${collectPotModal.entry_name}". Stags unlocked for matchmaking!`
+                );
+                if (res && res.ok !== false) {
+                  setCollectPotModal(null);
+                }
+              }}
+            >
+              <div className="crud-pin-modal-header">
+                <div className="crud-pin-modal-title">
+                  <BadgeDollarSign size={18} className="card-title-icon-gold" />
+                  <span>Collect Pot Escrow & Clear Entry</span>
+                </div>
+                <button
+                  type="button"
+                  className="journey-close-btn"
+                  onClick={() => setCollectPotModal(null)}
+                >
+                  <X size={14} />
+                </button>
+              </div>
+
+              <div className="crud-pin-modal-desc">
+                Settle tournament pot escrow for <strong>{collectPotModal.entry_name}</strong> (Owner: {collectPotModal.owner_gallero}). Once paid, this entry will be immediately unlocked for Kasahan matchmaking.
+              </div>
+
+              <div className="form-field">
+                <label className="form-label">Payment Method</label>
+                <select
+                  className="form-select"
+                  value={collectPaymentMethod}
+                  onChange={(e) => setCollectPaymentMethod(e.target.value)}
+                >
+                  <option value="CASH">Cash (Coliseum Vault)</option>
+                  <option value="BANK_TRANSFER">Bank Wire / Instant Transfer</option>
+                  <option value="GCASH_MAYA">GCash / Maya Digital Pay</option>
+                  <option value="MANAGERS_CHECK">Manager's Check</option>
+                  <option value="SPONSOR_EXEMPT">Promoter / Sponsor Exempt</option>
+                </select>
+              </div>
+
+              <div className="form-field">
+                <label className="form-label">Official Receipt / Reference #</label>
+                <input
+                  className="form-input"
+                  required
+                  placeholder="e.g. OR-2026-8912"
+                  value={collectReceiptNum}
+                  onChange={(e) => setCollectReceiptNum(e.target.value)}
+                />
+              </div>
+
+              <div className="crud-pin-modal-actions">
+                <button
+                  type="button"
+                  className="btn-cancel-flat"
+                  onClick={() => setCollectPotModal(null)}
+                  disabled={submitting}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary-emerald"
+                  disabled={submitting}
+                >
+                  {submitting && <RotateCw size={14} className="spin" />}
+                  <span>{submitting ? 'Confirming...' : 'Verify & Clear Pot Escrow'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
       </div>
     );
   }

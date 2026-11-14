@@ -57,6 +57,12 @@ export function DerbyTournamentCarouselModal({
   );
   const [clusterDistrict, setClusterDistrict] = useState('Eastern Visayas Region 8 (Samar, Leyte, Biliran)');
   const [eventDate, setEventDate] = useState(new Date().toISOString().slice(0, 10));
+  const [semisDate, setSemisDate] = useState(
+    new Date(Date.now() + 6 * 86400000).toISOString().slice(0, 10)
+  );
+  const [finalsDate, setFinalsDate] = useState(
+    new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10)
+  );
 
   // 2. DYNAMIC KASAHAN & SCALE RULES
   const [minWeightGrams, setMinWeightGrams] = useState(1700);
@@ -210,6 +216,8 @@ export function DerbyTournamentCarouselModal({
         setVenueName(editingEvent.venue_name || activeTenant?.arena_name || '');
         setClusterDistrict(editingEvent.cluster_district || '');
         setEventDate(editingEvent.event_date ? String(editingEvent.event_date).slice(0, 10) : new Date().toISOString().slice(0, 10));
+        setSemisDate(editingEvent.semis_event_date ? String(editingEvent.semis_event_date).slice(0, 10) : new Date(Date.now() + 6 * 86400000).toISOString().slice(0, 10));
+        setFinalsDate(editingEvent.finals_event_date ? String(editingEvent.finals_event_date).slice(0, 10) : new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10));
         setMinWeightGrams(editingEvent.min_weight_grams ?? 1700);
         setMaxWeightGrams(editingEvent.max_weight_grams ?? 2250);
         setWeightToleranceGrams(editingEvent.weight_tolerance_grams ?? 35);
@@ -326,6 +334,8 @@ export function DerbyTournamentCarouselModal({
       venue_name: venueName.trim(),
       cluster_district: clusterDistrict.trim(),
       event_date: eventDate,
+      semis_event_date: isMultiStage ? semisDate : '',
+      finals_event_date: isMultiStage ? finalsDate : '',
       min_weight_grams: Number(minWeightGrams),
       max_weight_grams: Number(maxWeightGrams),
       weight_tolerance_grams: Number(weightToleranceGrams),
@@ -690,16 +700,57 @@ export function DerbyTournamentCarouselModal({
                     />
                   </div>
 
-                  <div className="stage-form-group">
-                    <label>Official Derby Event Date *</label>
-                    <input
-                      type="date"
-                      className="input-stage"
-                      required
-                      value={eventDate}
-                      onChange={(e) => setEventDate(e.target.value)}
-                    />
-                  </div>
+                  {isMultiStage ? (
+                    <div className="stage-form-group full-row">
+                      <label>Multi-Stage Championship Progression Schedule (Dates per Stage)</label>
+                      <div className="form-row-3col">
+                        <div className="stage-form-group">
+                          <label>Stage 1: Eliminations Date *</label>
+                          <input
+                            type="date"
+                            className="input-stage"
+                            required
+                            value={eventDate}
+                            onChange={(e) => setEventDate(e.target.value)}
+                          />
+                          <span className="field-hint-text">Fight Card: {elimsRounds} Stags / Cocks</span>
+                        </div>
+                        <div className="stage-form-group">
+                          <label>Stage 2: Semi-Finals Date *</label>
+                          <input
+                            type="date"
+                            className="input-stage"
+                            required
+                            value={semisDate}
+                            onChange={(e) => setSemisDate(e.target.value)}
+                          />
+                          <span className="field-hint-text">Fight Card: {semisRounds} Stags / Cocks</span>
+                        </div>
+                        <div className="stage-form-group">
+                          <label>Stage 3: Finals Date *</label>
+                          <input
+                            type="date"
+                            className="input-stage"
+                            required
+                            value={finalsDate}
+                            onChange={(e) => setFinalsDate(e.target.value)}
+                          />
+                          <span className="field-hint-text">Fight Card: {finalsRounds} Stags / Cocks</span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="stage-form-group">
+                      <label>Official Derby Event Date *</label>
+                      <input
+                        type="date"
+                        className="input-stage"
+                        required
+                        value={eventDate}
+                        onChange={(e) => setEventDate(e.target.value)}
+                      />
+                    </div>
+                  )}
 
                   <div className="stage-form-group">
                     <label>Official Format Descriptor (Auto-derived or Custom)</label>

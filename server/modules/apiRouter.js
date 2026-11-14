@@ -1759,6 +1759,9 @@ export async function handleApiRequest(req, res, wsHub) {
         title,
         format = '4-Cock Derby',
         event_date,
+        semis_event_date = '',
+        finals_event_date = '',
+        current_active_stage = 1,
         min_bet = 5500,
         pot_fee = 55000,
         promoter,
@@ -1811,7 +1814,8 @@ export async function handleApiRequest(req, res, wsHub) {
       tdb
         .prepare(`
           INSERT INTO derby_events (
-            title, format, event_date, min_bet, pot_fee, promoter,
+            title, format, event_date, semis_event_date, finals_event_date, current_active_stage,
+            min_bet, pot_fee, promoter,
             plasada_split, min_weight_grams, max_weight_grams,
             weight_tolerance_grams, derby_rules, status, is_archived,
             guaranteed_prize, pot_mode, day_money_amount, max_level_bet,
@@ -1819,12 +1823,15 @@ export async function handleApiRequest(req, res, wsHub) {
             champion_prize, runnerup_prize, handler_award, gaffer_award,
             stag_fighter_award, cluster_district, venue_name, matching_system, rules_json
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `)
         .run(
           title,
           format,
           event_date,
+          semis_event_date || '',
+          finals_event_date || '',
+          Number(current_active_stage || 1),
           Number(min_bet),
           Number(pot_fee),
           promoter,
@@ -1878,6 +1885,9 @@ export async function handleApiRequest(req, res, wsHub) {
         title = target.title,
         format = target.format,
         event_date = target.event_date,
+        semis_event_date = target.semis_event_date || '',
+        finals_event_date = target.finals_event_date || '',
+        current_active_stage = target.current_active_stage || 1,
         min_bet = target.min_bet,
         pot_fee = target.pot_fee,
         promoter = target.promoter,
@@ -1922,7 +1932,8 @@ export async function handleApiRequest(req, res, wsHub) {
       tdb
         .prepare(`
           UPDATE derby_events SET
-            title = ?, format = ?, event_date = ?, min_bet = ?, pot_fee = ?, promoter = ?,
+            title = ?, format = ?, event_date = ?, semis_event_date = ?, finals_event_date = ?, current_active_stage = ?,
+            min_bet = ?, pot_fee = ?, promoter = ?,
             plasada_split = ?, min_weight_grams = ?, max_weight_grams = ?,
             weight_tolerance_grams = ?, derby_rules = ?, status = ?,
             guaranteed_prize = ?, pot_mode = ?, day_money_amount = ?, max_level_bet = ?,
@@ -1935,6 +1946,9 @@ export async function handleApiRequest(req, res, wsHub) {
           title,
           format,
           event_date,
+          semis_event_date || '',
+          finals_event_date || '',
+          Number(current_active_stage || 1),
           Number(min_bet),
           Number(pot_fee),
           promoter,
@@ -1973,6 +1987,7 @@ export async function handleApiRequest(req, res, wsHub) {
         `Updated tournament "${title}" (${format}) for ${event_date} [Status: ${nextStatus}]`
       );
       return syncAndRespond('EVENT_UPDATED', tenantId);
+    }
     }
 
     if (method === 'PATCH' && pathname.startsWith('/api/events/')) {
@@ -2055,40 +2070,140 @@ export async function handleApiRequest(req, res, wsHub) {
       }
 
       const {
+        entry_id,
         entry_name,
         owner_gallero,
-        syndicate_tier = 'VIP Ringside',
-        pot_payment_status = 'PAID',
-        pot_amount = activeEvent.pot_fee
+        contact_number = '',
+        farm_location = '',
+        handler_name = '',
+        gaffer_name = '',
+        stage_num = 1,
+        stags = []
       } = body;
 
       if (!entry_name || !owner_gallero) {
         return sendJson(400, { error: 'Entry Name and Owner/Gallero are required.' });
       }
 
-      tdb
-        .prepare(`
-          INSERT INTO derby_entries (event_id, entry_name, owner_gallero, syndicate_tier, pot_payment_status, pot_amount)
-          VALUES (?, ?, ?, ?, ?, ?)
-        `)
-        .run(
-          activeEvent.event_id,
-          entry_name.toUpperCase(),
+      let targetEntryId = entry_id ? Number(entry_id) : null;
+      const potAmount = Number(activeEvent.pot_fee || 0);
+
+      tdb.exec('BEGIN IMMEDIATE TRANSACTION');
+      try {
+        if (targetEntryId) {
+          // Reusing existing entry for returning team / semi-finals / finals
+          tdb.prepare(`
+            UPDATE derby_entries 
+            SET contact_number = COALESCE(NULLIF(?, ''), contact_number),
+                farm_location = COALESCE(NULLIF(?, ''), farm_location),
+                handler_name = COALESCE(NULLIF(?, ''), handler_name),
+                gaffer_name = COALESCE(NULLIF(?, ''), gaffer_name)
+            WHERE entry_id = ?
+          `).run(contact_number, farm_location, handler_name, gaffer_name, targetEntryId);
+        } else {
+          // New entry: starts with UNPAID pot escrow status
+          const insRes = tdb
+            .prepare(`
+              INSERT INTO derby_entries (
+                event_id, entry_name, owner_gallero, contact_number, farm_location,
+                handler_name, gaffer_name, syndicate_tier, pot_payment_status, pot_amount
+              )
+              VALUES (?, ?, ?, ?, ?, ?, ?, 'Standard', 'UNPAID', ?)
+            `)
+            .run(
+              activeEvent.event_id,
+              entry_name.toUpperCase(),
+              owner_gallero,
+              contact_number,
+              farm_location,
+              handler_name,
+              gaffer_name,
+              potAmount
+            );
+          targetEntryId = insRes.lastInsertRowid;
+        }
+
+        // Insert stag entries into roosters table
+        if (Array.isArray(stags) && stags.length > 0) {
+          const insertRooster = tdb.prepare(`
+            INSERT INTO roosters (
+              entry_id, wing_band, leg_band, strain, weight_grams,
+              plumage_color, leg_color, is_henny, stage_num, status
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'WEIGHED')
+          `);
+
+          for (let i = 0; i < stags.length; i++) {
+            const s = stags[i];
+            const wb = (s.wing_band || `WB-${targetEntryId}-${stage_num}-${i + 1}`).toUpperCase().trim();
+            const lb = (s.leg_band || `LB-${targetEntryId}-${stage_num}-${i + 1}`).toUpperCase().trim();
+            const wt = Number(s.weight_grams || 1900);
+            const strain = s.strain || 'Regular Breed';
+            const plumage = s.plumage_color || 'Pula';
+            const leg = s.leg_color || 'Yellow';
+            const isHenny = s.is_henny ? 1 : 0;
+
+            insertRooster.run(
+              targetEntryId,
+              wb,
+              lb,
+              strain,
+              wt,
+              plumage,
+              leg,
+              isHenny,
+              Number(stage_num || 1)
+            );
+          }
+        }
+
+        tdb.exec('COMMIT');
+
+        appendAuditLog(
+          tdb,
+          'ENTRY_REGISTERED',
           owner_gallero,
-          syndicate_tier,
-          pot_payment_status,
-          Number(pot_amount)
+          hostInfo.terminalId,
+          'SUCCESS',
+          `Registered syndicate entry "${entry_name.toUpperCase()}" with ${stags.length} stags (Status: UNPAID - Queued for Cashier)`
         );
+
+        return syncAndRespond('ENTRY_REGISTERED', tenantId);
+      } catch (err) {
+        tdb.exec('ROLLBACK');
+        return sendJson(500, { error: `Failed to register entry: ${err.message}` });
+      }
+    }
+
+    if (method === 'POST' && pathname === '/api/cashier/collect-pot') {
+      const { entry_id, payment_method = 'CASH', receipt_number = '', amount_collected } = body;
+      if (!entry_id) {
+        return sendJson(400, { error: 'entry_id is required' });
+      }
+      const entry = tdb.prepare('SELECT * FROM derby_entries WHERE entry_id = ?').get(Number(entry_id));
+      if (!entry) {
+        return sendJson(404, { error: 'Entry not found' });
+      }
+
+      tdb.prepare(`
+        UPDATE derby_entries 
+        SET pot_payment_status = 'PAID', 
+            payment_method = ?, 
+            receipt_number = ?, 
+            paid_at = datetime('now')
+        WHERE entry_id = ?
+      `).run(payment_method, receipt_number, Number(entry_id));
 
       appendAuditLog(
         tdb,
-        'ENTRY_REGISTERED',
-        owner_gallero,
+        'ENTRY_POT_COLLECTED',
+        'Center Cashier Cage',
         hostInfo.terminalId,
         'SUCCESS',
-        `Enrolled entry "${entry_name.toUpperCase()}" (${pot_payment_status})`
+        `Collected pot fee for "${entry.entry_name}" (Receipt #${receipt_number || 'AUTO'}, ${payment_method}) - Entry unlocked for Kasahan matchmaking`
       );
-      return syncAndRespond('ENTRY_REGISTERED', tenantId);
+
+      return syncAndRespond('ENTRY_POT_COLLECTED', tenantId);
     }
 
     // =========================================================================
@@ -2165,13 +2280,34 @@ export async function handleApiRequest(req, res, wsHub) {
 
       const maxTolerance = activeEvent?.weight_tolerance_grams ?? 30;
 
+      // Strict Payment Guard: Only stags whose entry has PAID (or EXEMPT) pot escrow are eligible for matchmaking
       const available = tdb
-        .prepare("SELECT * FROM roosters WHERE status = 'WEIGHED' ORDER BY weight_grams ASC")
+        .prepare(`
+          SELECT r.*, e.entry_name, e.pot_payment_status
+          FROM roosters r
+          JOIN derby_entries e ON r.entry_id = e.entry_id
+          WHERE r.status = 'WEIGHED' AND e.pot_payment_status IN ('PAID', 'EXEMPT')
+          ORDER BY r.weight_grams ASC
+        `)
         .all();
 
+      const unpaidSummary = tdb
+        .prepare(`
+          SELECT COUNT(r.rooster_id) as cnt, GROUP_CONCAT(DISTINCT e.entry_name) as unpaid_teams
+          FROM roosters r
+          JOIN derby_entries e ON r.entry_id = e.entry_id
+          WHERE r.status = 'WEIGHED' AND e.pot_payment_status NOT IN ('PAID', 'EXEMPT')
+        `)
+        .get();
+
       if (available.length < 2) {
+        if (unpaidSummary && unpaidSummary.cnt > 0) {
+          return sendJson(400, {
+            error: `Gate 2 Payment Enforcement: ${unpaidSummary.cnt} weighed stag(s) from unpaid entries [${unpaidSummary.unpaid_teams}] are BLOCKED from matchmaking. Under Coliseum Rules, entries must settle Pot Escrow at the Cashier first.`
+          });
+        }
         return sendJson(400, {
-          error: 'Gate 3 Prerequisite: At least 2 un-paired weighed roosters are required.'
+          error: 'Gate 3 Prerequisite: At least 2 paid, un-paired weighed roosters are required.'
         });
       }
 

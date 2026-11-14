@@ -543,6 +543,45 @@ export function initializeTenantSchema(tdb) {
   try {
     tdb.exec("ALTER TABLE derby_events ADD COLUMN rules_json TEXT DEFAULT '{}'");
   } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN semis_event_date TEXT DEFAULT ''");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN finals_event_date TEXT DEFAULT ''");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_events ADD COLUMN current_active_stage INTEGER DEFAULT 1");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_entries ADD COLUMN contact_number TEXT DEFAULT ''");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_entries ADD COLUMN farm_location TEXT DEFAULT ''");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_entries ADD COLUMN handler_name TEXT DEFAULT ''");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_entries ADD COLUMN gaffer_name TEXT DEFAULT ''");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_entries ADD COLUMN paid_at TEXT DEFAULT ''");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_entries ADD COLUMN receipt_number TEXT DEFAULT ''");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE derby_entries ADD COLUMN payment_method TEXT DEFAULT 'CASH'");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE roosters ADD COLUMN strain TEXT DEFAULT ''");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE roosters ADD COLUMN is_henny INTEGER DEFAULT 0");
+  } catch {}
+  try {
+    tdb.exec("ALTER TABLE roosters ADD COLUMN stage_num INTEGER DEFAULT 1");
+  } catch {}
 }
 
 export function appendAuditLog(tdb, eventCode, actor, terminalId, severity, details) {
