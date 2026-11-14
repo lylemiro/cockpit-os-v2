@@ -510,7 +510,7 @@ export function DerbyTournamentCarouselModal({
                   </div>
                 </div>
 
-                <div className="form-row-3col">
+                <div className="form-row-3col is-stage-header-row">
                   <div className="stage-form-group">
                     <label>Tournament Category (Type Custom or Pick Preset)</label>
                     <input
@@ -730,7 +730,7 @@ export function DerbyTournamentCarouselModal({
                 </div>
               </div>
 
-              {/* Live Scale Envelope Display */}
+              {/* Live Scale Envelope Display with 3-Column Inputs */}
               <div className="roles-quick-checklist-strip">
                 <div className="checklist-strip-header">
                   <div className="checklist-strip-title">
@@ -756,94 +756,108 @@ export function DerbyTournamentCarouselModal({
                     <div className="derby-scale-end-sub">({(maxWeightGrams / 1000).toFixed(3)} kg)</div>
                   </div>
                 </div>
+
+                <div className="form-row-3col">
+                  <div className="stage-form-group">
+                    <label>Minimum Accepted Weight (grams) *</label>
+                    <input
+                      type="number"
+                      className="input-stage"
+                      required
+                      value={minWeightGrams}
+                      onChange={(e) => setMinWeightGrams(Number(e.target.value))}
+                    />
+                    <span className="field-hint-text">EV-GBaCA / LRAC Standard: 1,700g (1.700 kg)</span>
+                  </div>
+
+                  <div className="stage-form-group">
+                    <label>Maximum Accepted Weight (grams) *</label>
+                    <input
+                      type="number"
+                      className="input-stage"
+                      required
+                      value={maxWeightGrams}
+                      onChange={(e) => setMaxWeightGrams(Number(e.target.value))}
+                    />
+                    <span className="field-hint-text">EV-GBaCA / LRAC Standard: 2,250g (2.250 kg)</span>
+                  </div>
+
+                  <div className="stage-form-group">
+                    <label>Kasahan Give &amp; Take Variance (&plusmn;grams) *</label>
+                    <input
+                      type="number"
+                      className="input-stage"
+                      required
+                      value={weightToleranceGrams}
+                      onChange={(e) => setWeightToleranceGrams(Number(e.target.value))}
+                    />
+                    <span className="field-hint-text">Official rule: 35g give &amp; take for Kasahan matchmaking</span>
+                  </div>
+                </div>
               </div>
 
-              <div className="stage-input-grid">
-                <div className="stage-form-group">
-                  <label>Minimum Accepted Weight (grams) *</label>
-                  <input
-                    type="number"
-                    className="input-stage"
-                    required
-                    value={minWeightGrams}
-                    onChange={(e) => setMinWeightGrams(Number(e.target.value))}
-                  />
-                  <span className="field-hint-text">EV-GBaCA / LRAC Standard: 1,700g (1.700 kg)</span>
+              {/* Matchmaking Algorithm & Banding Governance Card */}
+              <div className="roles-quick-checklist-strip">
+                <div className="checklist-strip-header">
+                  <div className="checklist-strip-title">
+                    <Layers size={14} className="card-title-icon-gold" />
+                    <span>Matchmaking Algorithm &amp; Coliseum Banding Governance</span>
+                  </div>
+                  <span className="checklist-strip-hint">
+                    Authentic Habol System &amp; GAB / PD 449 Banding Protocols
+                  </span>
                 </div>
+                <div className="stage-input-grid">
+                  <div className="stage-form-group">
+                    <label>Automated Matchmaking System</label>
+                    <select
+                      className="input-stage"
+                      value={matchingSystem}
+                      onChange={(e) => setMatchingSystem(e.target.value)}
+                    >
+                      <option value="HABOL_SYSTEM">Habol System (Catch-Up Variable Pairing for Late Entries)</option>
+                      <option value="STANDARD">Standard Fair Weight Automated Pairing</option>
+                      <option value="FIGHT_ALL">Fight All / Round Robin (Walang Iwanan)</option>
+                    </select>
+                    <span className="field-hint-text">Habol system allows controlled variance matching for dynamic cards</span>
+                  </div>
 
-                <div className="stage-form-group">
-                  <label>Maximum Accepted Weight (grams) *</label>
-                  <input
-                    type="number"
-                    className="input-stage"
-                    required
-                    value={maxWeightGrams}
-                    onChange={(e) => setMaxWeightGrams(Number(e.target.value))}
-                  />
-                  <span className="field-hint-text">EV-GBaCA / LRAC Standard: 2,250g (2.250 kg)</span>
-                </div>
+                  <div className="stage-form-group">
+                    <label>Hennies &amp; Gender Policy</label>
+                    <select
+                      className="input-stage"
+                      value={henniesAllowed}
+                      onChange={(e) => setHenniesAllowed(Number(e.target.value))}
+                    >
+                      <option value={0}>Strictly No Hennies Allowed (Bring Stag Registry)</option>
+                      <option value={1}>Hennies Allowed by Special Exemption</option>
+                    </select>
+                    <span className="field-hint-text">Official poster requirement: Hennies strictly prohibited</span>
+                  </div>
 
-                <div className="stage-form-group">
-                  <label>Kasahan Give &amp; Take Variance (&plusmn;grams) *</label>
-                  <input
-                    type="number"
-                    className="input-stage"
-                    required
-                    value={weightToleranceGrams}
-                    onChange={(e) => setWeightToleranceGrams(Number(e.target.value))}
-                  />
-                  <span className="field-hint-text">Official rule: 35g give &amp; take for Kasahan matchmaking</span>
-                </div>
+                  <div className="stage-form-group">
+                    <label>Banding Eligibility Category</label>
+                    <select
+                      className="input-stage"
+                      value={bandingCategory}
+                      onChange={(e) => setBandingCategory(e.target.value)}
+                    >
+                      <option value="OPEN">Open Banded (Any Verified Local or Federation Band)</option>
+                      <option value="NATIONAL_ONLY">National Bands Only (EV-GBaCA, WPC, Bakbakan, Digmaan)</option>
+                      <option value="LATE_BORN">National &amp; Late Born Bands Only</option>
+                    </select>
+                  </div>
 
-                <div className="stage-form-group">
-                  <label>Automated Matchmaking System</label>
-                  <select
-                    className="input-stage"
-                    value={matchingSystem}
-                    onChange={(e) => setMatchingSystem(e.target.value)}
-                  >
-                    <option value="HABOL_SYSTEM">Habol System (Catch-Up Variable Pairing for Late Entries)</option>
-                    <option value="STANDARD">Standard Fair Weight Automated Pairing</option>
-                    <option value="FIGHT_ALL">Fight All / Round Robin (Walang Iwanan)</option>
-                  </select>
-                  <span className="field-hint-text">Habol system allows controlled variance matching for dynamic cards</span>
-                </div>
-
-                <div className="stage-form-group">
-                  <label>Hennies &amp; Gender Policy</label>
-                  <select
-                    className="input-stage"
-                    value={henniesAllowed}
-                    onChange={(e) => setHenniesAllowed(Number(e.target.value))}
-                  >
-                    <option value={0}>Strictly No Hennies Allowed (Bring Stag Registry)</option>
-                    <option value={1}>Hennies Allowed by Special Exemption</option>
-                  </select>
-                  <span className="field-hint-text">Official poster requirement: Hennies strictly prohibited</span>
-                </div>
-
-                <div className="stage-form-group">
-                  <label>Banding Eligibility Category</label>
-                  <select
-                    className="input-stage"
-                    value={bandingCategory}
-                    onChange={(e) => setBandingCategory(e.target.value)}
-                  >
-                    <option value="OPEN">Open Banded (Any Verified Local or Federation Band)</option>
-                    <option value="NATIONAL_ONLY">National Bands Only (EV-GBaCA, WPC, Bakbakan, Digmaan)</option>
-                    <option value="LATE_BORN">National &amp; Late Born Bands Only</option>
-                  </select>
-                </div>
-
-                <div className="stage-form-group full-row">
-                  <label>Entry Submission &amp; Banding Deadlines</label>
-                  <input
-                    className="input-stage"
-                    value={submissionCutoff}
-                    onChange={(e) => setSubmissionCutoff(e.target.value)}
-                    placeholder="e.g. 1 day before derby until 12:00 NN"
-                  />
-                  <span className="field-hint-text">Official submission window printed on paperwork</span>
+                  <div className="stage-form-group full-row">
+                    <label>Entry Submission &amp; Banding Deadlines</label>
+                    <input
+                      className="input-stage"
+                      value={submissionCutoff}
+                      onChange={(e) => setSubmissionCutoff(e.target.value)}
+                      placeholder="e.g. 1 day before derby until 12:00 NN"
+                    />
+                    <span className="field-hint-text">Official submission window printed on paperwork</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -863,94 +877,106 @@ export function DerbyTournamentCarouselModal({
                 </div>
               </div>
 
-              <div className="stage-input-grid">
-                <div className="stage-form-group">
-                  <label>Pot Money Structure Architecture</label>
-                  <select
-                    className="input-stage"
-                    value={potMode}
-                    onChange={(e) => setPotMode(e.target.value)}
-                  >
-                    <option value="NO_POT_BAYAD_AGAD">No Pot Money on Elims (Bayad Agad / Day Money Subsidized)</option>
-                    <option value="UPFRONT_POT_ESCROW">Standard Upfront Pot Escrow (Fixed Entry Fee Deposited)</option>
-                  </select>
+              {/* Pot Money & Betting Economics Card */}
+              <div className="roles-quick-checklist-strip">
+                <div className="checklist-strip-header">
+                  <div className="checklist-strip-title">
+                    <BadgeDollarSign size={14} className="card-title-icon-gold" />
+                    <span>Pot Architecture, Guaranteed Prize &amp; Betting Limits</span>
+                  </div>
+                  <span className="checklist-strip-hint">
+                    Philippine Cockfighting Law (PD 449) Escrow Standards
+                  </span>
                 </div>
-
-                {potMode === 'NO_POT_BAYAD_AGAD' ? (
+                <div className="stage-input-grid">
                   <div className="stage-form-group">
-                    <label>Day Money / Bayad Agad Amount (₱)</label>
+                    <label>Pot Money Structure Architecture</label>
+                    <select
+                      className="input-stage"
+                      value={potMode}
+                      onChange={(e) => setPotMode(e.target.value)}
+                    >
+                      <option value="NO_POT_BAYAD_AGAD">No Pot Money on Elims (Bayad Agad / Day Money Subsidized)</option>
+                      <option value="UPFRONT_POT_ESCROW">Standard Upfront Pot Escrow (Fixed Entry Fee Deposited)</option>
+                    </select>
+                  </div>
+
+                  {potMode === 'NO_POT_BAYAD_AGAD' ? (
+                    <div className="stage-form-group">
+                      <label>Day Money / Bayad Agad Amount (₱)</label>
+                      <input
+                        type="number"
+                        className="input-stage"
+                        value={dayMoneyAmount}
+                        onChange={(e) => setDayMoneyAmount(Number(e.target.value))}
+                        placeholder="50000"
+                      />
+                      <span className="field-hint-text">Guaranteed Day Money for participating clusters (₱20,000–₱150,000)</span>
+                    </div>
+                  ) : (
+                    <div className="stage-form-group">
+                      <label>Upfront Pot Fee per Syndicate Entry (₱)</label>
+                      <input
+                        type="number"
+                        className="input-stage"
+                        value={potFee}
+                        onChange={(e) => setPotFee(Number(e.target.value))}
+                        placeholder="55000"
+                      />
+                      <span className="field-hint-text">Escrow amount collected at cashier desk per entry</span>
+                    </div>
+                  )}
+
+                  <div className="stage-form-group">
+                    <label>Total Guaranteed Tournament Prize Pool (₱) *</label>
                     <input
                       type="number"
                       className="input-stage"
-                      value={dayMoneyAmount}
-                      onChange={(e) => setDayMoneyAmount(Number(e.target.value))}
-                      placeholder="50000"
+                      required
+                      value={guaranteedPrize}
+                      onChange={(e) => setGuaranteedPrize(Number(e.target.value))}
+                      placeholder="5000000"
                     />
-                    <span className="field-hint-text">Guaranteed Day Money for participating clusters (₱20,000–₱150,000)</span>
+                    <span className="field-hint-text">e.g. ₱5,000,000 (₱5 Million Guaranteed)</span>
                   </div>
-                ) : (
+
                   <div className="stage-form-group">
-                    <label>Upfront Pot Fee per Syndicate Entry (₱)</label>
+                    <label>Minimum Bet per Sultada (₱) *</label>
                     <input
                       type="number"
                       className="input-stage"
-                      value={potFee}
-                      onChange={(e) => setPotFee(Number(e.target.value))}
-                      placeholder="55000"
+                      required
+                      value={minBet}
+                      onChange={(e) => setMinBet(Number(e.target.value))}
+                      placeholder="3500"
                     />
-                    <span className="field-hint-text">Escrow amount collected at cashier desk per entry</span>
+                    <span className="field-hint-text">Official standards: ₱3,300 / ₱3,500 / ₱4,400 per sultada</span>
                   </div>
-                )}
 
-                <div className="stage-form-group">
-                  <label>Total Guaranteed Tournament Prize Pool (₱) *</label>
-                  <input
-                    type="number"
-                    className="input-stage"
-                    required
-                    value={guaranteedPrize}
-                    onChange={(e) => setGuaranteedPrize(Number(e.target.value))}
-                    placeholder="5000000"
-                  />
-                  <span className="field-hint-text">e.g. ₱5,000,000 (₱5 Million Guaranteed)</span>
-                </div>
+                  <div className="stage-form-group">
+                    <label>Max Level Bet / Declared Bet (₱)</label>
+                    <input
+                      type="number"
+                      className="input-stage"
+                      value={maxLevelBet}
+                      onChange={(e) => setMaxLevelBet(Number(e.target.value))}
+                      placeholder="0 for Open Declared, or 11000"
+                    />
+                    <span className="field-hint-text">0 = Open Declared Level Bet (or e.g. ₱11,000 max level bet)</span>
+                  </div>
 
-                <div className="stage-form-group">
-                  <label>Minimum Bet per Sultada (₱) *</label>
-                  <input
-                    type="number"
-                    className="input-stage"
-                    required
-                    value={minBet}
-                    onChange={(e) => setMinBet(Number(e.target.value))}
-                    placeholder="3500"
-                  />
-                  <span className="field-hint-text">Official standards: ₱3,300 / ₱3,500 / ₱4,400 per sultada</span>
-                </div>
-
-                <div className="stage-form-group">
-                  <label>Max Level Bet / Declared Bet (₱)</label>
-                  <input
-                    type="number"
-                    className="input-stage"
-                    value={maxLevelBet}
-                    onChange={(e) => setMaxLevelBet(Number(e.target.value))}
-                    placeholder="0 for Open Declared, or 11000"
-                  />
-                  <span className="field-hint-text">0 = Open Declared Level Bet (or e.g. ₱11,000 max level bet)</span>
-                </div>
-
-                <div className="stage-form-group">
-                  <label>Coliseum Plasada Split / Commission</label>
-                  <select
-                    className="input-stage"
-                    value={plasadaSplit}
-                    onChange={(e) => setPlasadaSplit(e.target.value)}
-                  >
-                    <option value="70/30">70% Promoter / 30% Coliseum Operations</option>
-                    <option value="80/20">80% Promoter / 20% Coliseum Operations</option>
-                    <option value="100/0">100% Retained by Coliseum</option>
-                  </select>
+                  <div className="stage-form-group">
+                    <label>Coliseum Plasada Split / Commission</label>
+                    <select
+                      className="input-stage"
+                      value={plasadaSplit}
+                      onChange={(e) => setPlasadaSplit(e.target.value)}
+                    >
+                      <option value="70/30">70% Promoter / 30% Coliseum Operations</option>
+                      <option value="80/20">80% Promoter / 20% Coliseum Operations</option>
+                      <option value="100/0">100% Retained by Coliseum</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1015,123 +1041,163 @@ export function DerbyTournamentCarouselModal({
                 </div>
               </div>
 
-              <div className="stage-input-grid">
-                <div className="stage-form-group">
-                  <label>Semi-Finals Score Reset Protocol</label>
-                  <select
-                    className="input-stage"
-                    value={semisScoreReset}
-                    onChange={(e) => setSemisScoreReset(Number(e.target.value))}
-                  >
-                    <option value={1}>Scores Reset Back to Zero on Semi-Finals (EV-GBaCA Standard Rule)</option>
-                    <option value={0}>Cumulative Points Carryover Across All Stages</option>
-                  </select>
-                  <span className="field-hint-text">EV-GBaCA Poster: "On the Semi-Final, all scores will be back to zero"</span>
+              {/* Advancement Thresholds & Championship Escrow */}
+              <div className="roles-quick-checklist-strip">
+                <div className="checklist-strip-header">
+                  <div className="checklist-strip-title">
+                    <Trophy size={14} className="card-title-icon-gold" />
+                    <span>Advancement Protocol &amp; Championship Purse Escrow</span>
+                  </div>
+                  <span className="checklist-strip-hint">
+                    EV-GBaCA / LRAC Cutoff &amp; Escrow Distribution
+                  </span>
                 </div>
+                <div className="stage-input-grid">
+                  <div className="stage-form-group">
+                    <label>Semi-Finals Score Reset Protocol</label>
+                    <select
+                      className="input-stage"
+                      value={semisScoreReset}
+                      onChange={(e) => setSemisScoreReset(Number(e.target.value))}
+                    >
+                      <option value={1}>Scores Reset Back to Zero on Semi-Finals (EV-GBaCA Standard Rule)</option>
+                      <option value={0}>Cumulative Points Carryover Across All Stages</option>
+                    </select>
+                    <span className="field-hint-text">EV-GBaCA Poster: "On the Semi-Final, all scores will be back to zero"</span>
+                  </div>
 
-                <div className="stage-form-group">
-                  <label>Elimination Advancing Cutoff (Points)</label>
-                  <select
-                    className="input-stage"
-                    value={elimsAdvancePts}
-                    onChange={(e) => setElimsAdvancePts(e.target.value)}
-                  >
-                    <option value="2.0">Score 2.0, 2.5, 3.0 pts advance (2 wins or more)</option>
-                    <option value="2.5">Score 2.5, 3.0 pts advance (2 wins + 1 draw)</option>
-                    <option value="3.0">Clean Sweep (3.0 pts clean record only)</option>
-                  </select>
-                  <span className="field-hint-text">Official qualifying rule from Encuentro sa Otso</span>
+                  <div className="stage-form-group">
+                    <label>Elimination Advancing Cutoff (Points)</label>
+                    <select
+                      className="input-stage"
+                      value={elimsAdvancePts}
+                      onChange={(e) => setElimsAdvancePts(e.target.value)}
+                    >
+                      <option value="2.0">Score 2.0, 2.5, 3.0 pts advance (2 wins or more)</option>
+                      <option value="2.5">Score 2.5, 3.0 pts advance (2 wins + 1 draw)</option>
+                      <option value="3.0">Clean Sweep (3.0 pts clean record only)</option>
+                    </select>
+                    <span className="field-hint-text">Official qualifying rule from Encuentro sa Otso</span>
+                  </div>
+
+                  <div className="stage-form-group">
+                    <label>Champion Purse (₱)</label>
+                    <input
+                      type="number"
+                      className="input-stage"
+                      value={championPrize}
+                      onChange={(e) => setChampionPrize(Number(e.target.value))}
+                    />
+                  </div>
+
+                  <div className="stage-form-group">
+                    <label>Runner-Up Purse (₱)</label>
+                    <input
+                      type="number"
+                      className="input-stage"
+                      value={runnerupPrize}
+                      onChange={(e) => setRunnerupPrize(Number(e.target.value))}
+                    />
+                  </div>
                 </div>
+              </div>
 
-                <div className="stage-form-group">
-                  <label>Champion Purse (₱)</label>
-                  <input
-                    type="number"
-                    className="input-stage"
-                    value={championPrize}
-                    onChange={(e) => setChampionPrize(Number(e.target.value))}
-                  />
+              {/* Point Progression Brackets (4 Columns) */}
+              <div className="roles-quick-checklist-strip">
+                <div className="checklist-strip-header">
+                  <div className="checklist-strip-title">
+                    <Layers size={14} className="card-title-icon-gold" />
+                    <span>Points Progression Brackets Distribution</span>
+                  </div>
+                  <span className="checklist-strip-hint">
+                    EV-GBaCA Sanctioned Bracket Prizes (Any 7, 6, 5, 3 Points)
+                  </span>
                 </div>
+                <div className="form-row-4col">
+                  <div className="stage-form-group">
+                    <label>Any 7 Points Bracket (₱)</label>
+                    <input
+                      type="number"
+                      className="input-stage"
+                      value={bracketAny7Prize}
+                      onChange={(e) => setBracketAny7Prize(Number(e.target.value))}
+                    />
+                  </div>
 
-                <div className="stage-form-group">
-                  <label>Runner-Up Purse (₱)</label>
-                  <input
-                    type="number"
-                    className="input-stage"
-                    value={runnerupPrize}
-                    onChange={(e) => setRunnerupPrize(Number(e.target.value))}
-                  />
+                  <div className="stage-form-group">
+                    <label>Any 6 Points Bracket (₱)</label>
+                    <input
+                      type="number"
+                      className="input-stage"
+                      value={bracketAny6Prize}
+                      onChange={(e) => setBracketAny6Prize(Number(e.target.value))}
+                    />
+                  </div>
+
+                  <div className="stage-form-group">
+                    <label>Any 5 Points Bracket (₱)</label>
+                    <input
+                      type="number"
+                      className="input-stage"
+                      value={bracketAny5Prize}
+                      onChange={(e) => setBracketAny5Prize(Number(e.target.value))}
+                    />
+                  </div>
+
+                  <div className="stage-form-group">
+                    <label>Any 3 Points / Consolation (₱)</label>
+                    <input
+                      type="number"
+                      className="input-stage"
+                      value={bracketAny3Prize}
+                      onChange={(e) => setBracketAny3Prize(Number(e.target.value))}
+                    />
+                  </div>
                 </div>
+              </div>
 
-                <div className="stage-form-group">
-                  <label>Any 7 Points Bracket (₱)</label>
-                  <input
-                    type="number"
-                    className="input-stage"
-                    value={bracketAny7Prize}
-                    onChange={(e) => setBracketAny7Prize(Number(e.target.value))}
-                  />
+              {/* Special Cockpit Awards (3 Columns) */}
+              <div className="roles-quick-checklist-strip">
+                <div className="checklist-strip-header">
+                  <div className="checklist-strip-title">
+                    <Sparkles size={14} className="card-title-icon-gold" />
+                    <span>Cockpit Personnel &amp; Special Gamefowl Awards</span>
+                  </div>
+                  <span className="checklist-strip-hint">
+                    Artalyer Trophy &amp; Official Regulatory Recognition
+                  </span>
                 </div>
+                <div className="form-row-3col">
+                  <div className="stage-form-group">
+                    <label>Stag Fighter of the Year / Fastest Kill (₱)</label>
+                    <input
+                      type="number"
+                      className="input-stage"
+                      value={stagFighterAward}
+                      onChange={(e) => setStagFighterAward(Number(e.target.value))}
+                    />
+                    <span className="field-hint-text">Learned from EV-GBaCA: ₱1M award + Artalyer Trophy</span>
+                  </div>
 
-                <div className="stage-form-group">
-                  <label>Any 6 Points Bracket (₱)</label>
-                  <input
-                    type="number"
-                    className="input-stage"
-                    value={bracketAny6Prize}
-                    onChange={(e) => setBracketAny6Prize(Number(e.target.value))}
-                  />
-                </div>
+                  <div className="stage-form-group">
+                    <label>Best Handler Special Award (₱)</label>
+                    <input
+                      type="number"
+                      className="input-stage"
+                      value={handlerAward}
+                      onChange={(e) => setHandlerAward(Number(e.target.value))}
+                    />
+                  </div>
 
-                <div className="stage-form-group">
-                  <label>Any 5 Points Bracket (₱)</label>
-                  <input
-                    type="number"
-                    className="input-stage"
-                    value={bracketAny5Prize}
-                    onChange={(e) => setBracketAny5Prize(Number(e.target.value))}
-                  />
-                </div>
-
-                <div className="stage-form-group">
-                  <label>Any 3 Points / Consolation (₱)</label>
-                  <input
-                    type="number"
-                    className="input-stage"
-                    value={bracketAny3Prize}
-                    onChange={(e) => setBracketAny3Prize(Number(e.target.value))}
-                  />
-                </div>
-
-                <div className="stage-form-group">
-                  <label>Stag Fighter of the Year / Fastest Kill (₱)</label>
-                  <input
-                    type="number"
-                    className="input-stage"
-                    value={stagFighterAward}
-                    onChange={(e) => setStagFighterAward(Number(e.target.value))}
-                  />
-                  <span className="field-hint-text">Learned from EV-GBaCA: ₱1M award + Artalyer Trophy</span>
-                </div>
-
-                <div className="stage-form-group">
-                  <label>Best Handler Special Award (₱)</label>
-                  <input
-                    type="number"
-                    className="input-stage"
-                    value={handlerAward}
-                    onChange={(e) => setHandlerAward(Number(e.target.value))}
-                  />
-                </div>
-
-                <div className="stage-form-group">
-                  <label>Best Gaffer (Mananari) Award (₱)</label>
-                  <input
-                    type="number"
-                    className="input-stage"
-                    value={gafferAward}
-                    onChange={(e) => setGafferAward(Number(e.target.value))}
-                  />
+                  <div className="stage-form-group">
+                    <label>Best Gaffer (Mananari) Award (₱)</label>
+                    <input
+                      type="number"
+                      className="input-stage"
+                      value={gafferAward}
+                      onChange={(e) => setGafferAward(Number(e.target.value))}
+                    />
+                  </div>
                 </div>
               </div>
             </div>

@@ -269,15 +269,37 @@
 .form-row-2col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 20px;
   align-items: start;
 }
 
 .form-row-3col {
   display: grid;
-  grid-template-columns: 1.35fr 0.75fr 1.2fr;
-  gap: 16px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
   align-items: start;
+}
+
+.form-row-3col.is-stage-header-row {
+  grid-template-columns: 1.35fr 0.85fr 1.35fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.form-row-4col {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .form-row-4col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .form-row-3col {
+    grid-template-columns: 1fr;
+  }
 }
 
 .field-hint {
@@ -2756,10 +2778,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
+  padding: 18px 40px;
   background: var(--bg-card-subtle);
   border-bottom: 1px solid var(--border-card);
-  gap: 16px;
+  gap: 20px;
   flex-shrink: 0;
 }
 
@@ -2924,23 +2946,27 @@
 .journey-slide-container {
   flex: 1;
   overflow-y: auto;
-  padding: 24px 32px;
+  padding: 28px 48px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
 }
 
 .journey-slide {
-  max-width: 1040px;
+  max-width: 1560px;
   margin: 0 auto;
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
   animation: stageSlideIn 0.2s ease;
 }
 
 .journey-slide-stage {
+  max-width: 1560px;
+  margin: 0 auto;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -3204,16 +3230,16 @@
 .stage-form-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   background: var(--bg-card-subtle);
   border: 1px solid var(--border-card);
-  padding: 16px 18px;
-  border-radius: 12px;
+  padding: 20px 24px;
+  border-radius: 14px;
 }
 
 .form-section-title {
   margin: 0;
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 800;
   color: var(--text-primary);
   text-transform: uppercase;
@@ -3223,7 +3249,7 @@
 .stage-input-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px 20px;
+  gap: 20px 28px;
 }
 
 .stage-form-group {
@@ -3233,22 +3259,24 @@
 }
 
 .stage-form-group.full-row {
-  grid-column: span 2;
+  grid-column: 1 / -1;
 }
 
 .stage-form-group label {
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--text-secondary);
+  line-height: 1.3;
 }
 
 .input-stage {
   width: 100%;
-  padding: 10px 14px;
+  height: 44px;
+  padding: 10px 16px;
   font-family: inherit;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.4;
   background: var(--bg-card-solid);
@@ -3257,6 +3285,12 @@
   color: var(--text-primary);
   outline: none;
   transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+
+select.input-stage {
+  height: 44px;
+  cursor: pointer;
 }
 
 .input-stage::placeholder {
@@ -3352,11 +3386,12 @@
 .roles-quick-checklist-strip {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 18px 20px;
+  gap: 16px;
+  padding: 22px 28px;
   background: var(--bg-card-subtle);
   border: 1px solid var(--border-card);
-  border-radius: 12px;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
   margin-bottom: 0;
 }
 
@@ -3364,20 +3399,26 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 10px;
+  gap: 16px;
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--border-subtle);
 }
 
 .checklist-strip-title {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12.5px;
+  gap: 10px;
+  font-size: 13px;
   font-weight: 800;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   color: var(--text-primary);
+}
+
+.checklist-strip-hint {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
 }
 
 .checklist-strip-hint {
@@ -3708,32 +3749,46 @@
 
 .passport-details-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px 20px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px 24px;
 }
 
 .passport-field {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
 }
 
 .passport-field.full-row {
+  grid-column: 1 / -1;
+}
+
+.passport-field.span-2 {
   grid-column: span 2;
 }
 
+@media (max-width: 1024px) {
+  .passport-details-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 .passport-label {
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--text-muted);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .passport-value {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text-primary);
+  line-height: 1.4;
 }
 
 .passport-value.is-gold {
@@ -3756,7 +3811,7 @@
 
 .passport-value.is-mono {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 /* 3. Navigation Footer Bar */
@@ -3764,10 +3819,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 24px;
+  padding: 16px 40px;
   background: var(--bg-card-subtle);
   border-top: 1px solid var(--border-card);
-  gap: 16px;
+  gap: 20px;
   flex-shrink: 0;
 }
 
@@ -6268,20 +6323,20 @@
 }
 
 .passport-manifesto-text {
-  font-size: 11px;
-  line-height: 1.5;
+  font-size: 12px;
+  line-height: 1.6;
   color: var(--text-secondary);
 }
 
 .derby-activate-checkbox-row {
-  margin-top: 12px;
+  margin-top: 14px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .derby-activate-checkbox-label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   color: var(--text-primary);
@@ -6292,16 +6347,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 8px 12px;
+  gap: 14px;
+  padding: 10px 18px;
   background: var(--bg-card-solid);
   border: 1px solid var(--border-subtle);
-  border-radius: 8px;
+  border-radius: 10px;
   flex-wrap: wrap;
 }
 
 .category-preset-label {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -6312,14 +6367,14 @@
 .category-quick-pills {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
   align-items: center;
 }
 
 .category-pill-btn {
-  padding: 4px 12px;
+  padding: 6px 14px;
   font-family: inherit;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
   border-radius: var(--radius-pill, 999px);
   border: 1px solid var(--border-card);
@@ -6332,6 +6387,7 @@
 .category-pill-btn:hover {
   border-color: var(--emerald-500);
   color: var(--text-primary);
+  background: var(--emerald-50);
 }
 
 .category-pill-btn.is-active {

@@ -120,13 +120,13 @@ export function EventDetailFullscreenModal({
               </div>
 
               <div className="passport-details-grid">
-                <div className="passport-detail-cell">
+                <div className="passport-field">
                   <span className="passport-label">
                     <Calendar size={12} /> Official Event Date
                   </span>
                   <span className="passport-value">{ev.event_date || 'N/A'}</span>
                 </div>
-                <div className="passport-detail-cell">
+                <div className="passport-field">
                   <span className="passport-label">
                     <MapPin size={12} /> Coliseum Venue
                   </span>
@@ -134,7 +134,7 @@ export function EventDetailFullscreenModal({
                     {ev.venue_name || 'Coliseum Main Arena'}
                   </span>
                 </div>
-                <div className="passport-detail-cell">
+                <div className="passport-field">
                   <span className="passport-label">
                     <Users size={12} /> Cluster / District
                   </span>
@@ -142,7 +142,7 @@ export function EventDetailFullscreenModal({
                     {ev.cluster_district || 'Regional Open'}
                   </span>
                 </div>
-                <div className="passport-detail-cell">
+                <div className="passport-field">
                   <span className="passport-label">
                     <Layers size={12} /> Format &amp; Category
                   </span>
